@@ -56,6 +56,7 @@ import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.core.Response;
+import pnnl.goss.core.server.GossRequestHandler;
 import pnnl.goss.powergrid.PowergridModel;
 import pnnl.goss.powergrid.collections.PowergridList;
 import pnnl.goss.powergrid.dao.PowergridDao;
@@ -67,8 +68,7 @@ import pnnl.goss.powergrid.requests.RequestPowergridTimeStep;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStepValues;
 import pnnl.goss.powergrid.server.PowergridServerActivator;
 import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
-import pnnl.goss.powergrid.server.impl.PowergridListerImpl;
-import pnnl.goss.server.core.GossRequestHandler;
+
 
 public class RequestPowergridHandler extends GossRequestHandler {
 
@@ -110,19 +110,22 @@ public class RequestPowergridHandler extends GossRequestHandler {
 	}
 	
 	private DataResponse getAvailablePowergrids(PowergridDao dao){
-		PowergridListerImpl lister = new PowergridListerImpl();
+		return null;
+		/*PowergridListerImpl lister = new PowergridListerImpl();
 		PowergridList grids = new PowergridList(lister.getPowergrids());
 		DataResponse response = new DataResponse();
 		response.setData(grids);
-		return response;
+		return response;*/
 	}
 	
 	private DataResponse getAllPowergrids(){
-		DataResponse response = new DataResponse();
+		/*DataResponse response = new DataResponse();
 		PowergridListerImpl lister = new PowergridListerImpl();
 		PowergridList powergridList = new PowergridList(lister.getPowergrids());
 		response.setData(powergridList);
 		return response;
+		*/
+		return null;
 	}
 
 	public DataResponse getResponse(Request request) {

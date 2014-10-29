@@ -77,7 +77,7 @@ import pnnl.goss.powergrid.datamodel.Substation;
 import pnnl.goss.powergrid.datamodel.SwitchedShunt;
 import pnnl.goss.powergrid.datamodel.Transformer;
 import pnnl.goss.powergrid.datamodel.Zone;
-import pnnl.goss.server.core.InvalidDatasourceException;
+import pnnl.goss.core.server.InvalidDatasourceException;
 
 public class PowergridDaoMySql implements PowergridDao {
 

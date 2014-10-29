@@ -71,7 +71,7 @@ import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.server.PowergridService;
 import pnnl.goss.powergrid.server.WebDataException;
 import pnnl.goss.powergrid.server.handlers.RequestPowergridHandler;
-import pnnl.goss.server.core.GossDataServices;
+import pnnl.goss.core.server.GossDataServices;
 
 @Component
 @Provides

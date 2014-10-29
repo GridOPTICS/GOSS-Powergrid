@@ -58,9 +58,11 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pnnl.goss.core.server.InvalidDatasourceException;
 import pnnl.goss.powergrid.dao.PowergridDaoMySql;
 import pnnl.goss.powergrid.datamodel.Powergrid;
-import pnnl.goss.server.core.InvalidDatasourceException;
+
+
 
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 

@@ -58,11 +58,10 @@ import pnnl.goss.core.Data;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.core.Response;
+import pnnl.goss.core.server.GossRequestHandler;
 import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
 import pnnl.goss.powergrid.server.PowergridServerActivator;
 import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
-import pnnl.goss.server.core.GossRequestHandler;
-import pnnl.goss.server.core.GossServerActivator;
 
 public class RequestContingencyModelTimeStepValuesHandler extends GossRequestHandler {
 
