@@ -1,0 +1,15 @@
+// These are the properties that are in this feature set.
+include 'powergrid-common', 
+        'powergrid-server'
+        
+
+rootProject.name = 'powergrid'
+
+// loop over the sub-projects declared above.
+rootProject.children.each {
+    // The build file for each of the children is the original name.gradle
+    it.buildFileName = it.name + '.gradle'
+}
+
+
+
