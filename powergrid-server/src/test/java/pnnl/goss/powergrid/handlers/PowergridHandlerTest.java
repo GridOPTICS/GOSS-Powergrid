@@ -49,12 +49,13 @@ import java.sql.Timestamp;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.Before;
-
 import org.junit.Test;
+
 
 //Let's import Mockito statically so that the code looks clearer
 import static org.mockito.Mockito.*;
 import pnnl.goss.core.DataResponse;
+import pnnl.goss.core.server.GossDataServices;
 import pnnl.goss.powergrid.ContingencyModel;
 import pnnl.goss.powergrid.PowergridModel;
 import pnnl.goss.powergrid.requests.RequestContingencyModel;
@@ -63,7 +64,7 @@ import pnnl.goss.powergrid.requests.RequestPowergridTimeStep;
 import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
 import pnnl.goss.powergrid.server.handlers.RequestContingencyModelHandler;
 import pnnl.goss.powergrid.server.handlers.RequestPowergridHandler;
-import pnnl.goss.server.core.GossDataServices;
+
 
 public class PowergridHandlerTest {
 

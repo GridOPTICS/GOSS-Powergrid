@@ -7,11 +7,12 @@ import javax.activation.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
+import pnnl.goss.core.server.BasicDataSourceCreator;
+import pnnl.goss.core.server.internal.BasicDataSourceCreatorImpl;
 import pnnl.goss.powergrid.dao.PowergridDao;
 import pnnl.goss.powergrid.dao.PowergridDaoMySql;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.server.impl.PowergridPersist;
-import pnnl.goss.server.core.BasicDataSourceCreator;
 
 public class TestPowergridCassandra {
 
@@ -19,7 +20,7 @@ public class TestPowergridCassandra {
 	
 	public static void main(String[] args) throws Exception {
 		
-		BasicDataSourceCreator dsc = new BasicDataSourceCreator();
+		BasicDataSourceCreator dsc = new BasicDataSourceCreatorImpl();
 		BasicDataSource datasource = null;
 		try {
 			datasource = dsc.create("jdbc:mysql://we22743:3306/north", "root", "rootpass");
