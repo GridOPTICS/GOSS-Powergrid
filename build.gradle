@@ -12,11 +12,17 @@ allprojects {
 	}
 }
 
+task wrapper (type: Wrapper) {
+	gradleVersion = '2.1'
+}
+
 subprojects {    
 	apply plugin: "java"
     apply plugin: "osgi"
 	apply plugin: "maven"
+	apply plugin: "groovy"
 	
+	sourceCompatibility = '1.7'
 	
     jar {
         manifest {
@@ -26,20 +32,24 @@ subprojects {
     }
     
     dependencies {
+		compile 'org.codehaus.groovy:groovy-all:2.3.3'
+		
         // Logging should be available to all projects
         compile "org.slf4j:slf4j-api:1.7.5"
         compile "org.slf4j:slf4j-log4j12:1.7.5"
         
-        // ipojo annotations for service registry/retrieval.        
-        compile 'org.apache.felix:org.apache.felix.ipojo.annotations:1.12.0'
-        
+		// Both client and server need access to the following dependencies
+		compile 'com.impetus.kundera.core:kundera-core:2.13.1'
+		compile "pnnl.goss:goss-core:0.1.6-SNAPSHOT"
+		// ipojo annotations for service registry/retrieval.
+		compile 'org.apache.felix:org.apache.felix.ipojo.annotations:1.12.0'
+		
+		
         // For testing we are going to use these ubiquitous
         testCompile "junit:junit:4.11"
         testCompile "org.mockito:mockito-core:1.10.8"
-        
-        // Both client and server need access to the following dependencies
-        compile 'com.impetus.kundera.core:kundera-core:2.13.1'
-        compile "pnnl.goss:goss-core:0.1.6-SNAPSHOT"
+		testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+		
     }
 }
 	

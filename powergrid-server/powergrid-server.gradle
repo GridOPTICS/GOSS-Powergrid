@@ -12,3 +12,25 @@ dependencies {
     compile 'com.impetus.kundera.client:kundera-rdbms:2.13.1'
     compile "mysql:mysql-connector-java:5.1.33"
 }
+
+sourceSets {
+	main {
+		groovy {
+			// override the default locations, rather than adding additional ones
+			srcDirs = ['src/main/groovy', 'src/main/java']
+		}
+		java {
+			srcDirs = [] // don't compile Java code twice
+		}
+	}
+	
+	test {
+		groovy {
+			// override the default locations, rather than adding additional ones
+			srcDirs = ['src/test/java', 'src/test/groovy']
+		}
+		java {
+			srcDirs = [] // don't compile Java code twice
+		}
+	}
+}
