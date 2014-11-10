@@ -56,7 +56,10 @@ import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.core.Response;
+import pnnl.goss.core.server.AbstractRequestHandler;
 import pnnl.goss.core.server.GossRequestHandler;
+import pnnl.goss.core.server.annotations.RequestHandler;
+import pnnl.goss.core.server.annotations.RequestItem;
 import pnnl.goss.powergrid.PowergridModel;
 import pnnl.goss.powergrid.collections.PowergridList;
 import pnnl.goss.powergrid.dao.PowergridDao;
@@ -69,8 +72,11 @@ import pnnl.goss.powergrid.requests.RequestPowergridTimeStepValues;
 import pnnl.goss.powergrid.server.PowergridServerActivator;
 import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
 
+@RequestHandler(value = { 
+		@RequestItem(value = RequestPowergrid.class)
 
-public class RequestPowergridHandler extends GossRequestHandler {
+		})
+public class RequestPowergridHandler extends AbstractRequestHandler {
 
 	private static Logger log = LoggerFactory.getLogger(RequestPowergridHandler.class);
 		
