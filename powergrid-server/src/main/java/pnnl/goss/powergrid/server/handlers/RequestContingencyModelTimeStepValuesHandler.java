@@ -53,12 +53,17 @@ import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.core.Response;
 import pnnl.goss.core.server.AbstractRequestHandler;
+import pnnl.goss.core.server.annotations.RequestHandler;
+import pnnl.goss.core.server.annotations.RequestItem;
 import pnnl.goss.powergrid.ContingencyTimeStepModelValues;
 import pnnl.goss.powergrid.datamodel.ContingencyBranchViolation;
 import pnnl.goss.powergrid.datamodel.ContingencyBusViolation;
 import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
 import pnnl.goss.powergrid.server.PowergridServerActivator;
 
+@RequestHandler(value={
+		@RequestItem(value=RequestContingencyModelTimeStepValues.class)		
+})
 public class RequestContingencyModelTimeStepValuesHandler extends AbstractRequestHandler {
 
 	String datasourceKey = null;

@@ -69,9 +69,11 @@ import pnnl.goss.powergrid.requests.RequestPowergridTimeStepValues;
 import pnnl.goss.powergrid.server.PowergridServerActivator;
 
 @RequestHandler(value = { 
-		@RequestItem(value = RequestPowergrid.class)
-
-		})
+		@RequestItem(value = RequestPowergrid.class),
+		@RequestItem(value = RequestPowergridTimeStep.class),
+		@RequestItem(value = RequestPowergridList.class),
+		@RequestItem(value = RequestPowergridTimeStepValues.class)
+})
 public class RequestPowergridHandler extends AbstractRequestHandler {
 
 	private static Logger log = LoggerFactory.getLogger(RequestPowergridHandler.class);
