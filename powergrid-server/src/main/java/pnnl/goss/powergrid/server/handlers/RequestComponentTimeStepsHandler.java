@@ -44,15 +44,6 @@
 */
 package pnnl.goss.powergrid.server.handlers;
 
-import pnnl.goss.powergrid.datamodel.LineTimeStep;
-import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
-
-import java.sql.ResultSet;
-import java.sql.Statement;
-
-import pnnl.goss.core.Data;
-import pnnl.goss.core.DataResponse;
-import pnnl.goss.core.Request;
 
 
 public class RequestComponentTimeStepsHandler{

@@ -44,26 +44,22 @@
 */
 package pnnl.goss.powergrid.server.handlers;
 
-import pnnl.goss.powergrid.ContingencyTimeStepModelValues;
-import pnnl.goss.powergrid.datamodel.Contingency;
-import pnnl.goss.powergrid.datamodel.ContingencyBranchViolation;
-import pnnl.goss.powergrid.datamodel.ContingencyBusViolation;
-
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import pnnl.goss.core.Data;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.core.Response;
-import pnnl.goss.core.server.GossRequestHandler;
+import pnnl.goss.core.server.AbstractRequestHandler;
+import pnnl.goss.powergrid.ContingencyTimeStepModelValues;
+import pnnl.goss.powergrid.datamodel.ContingencyBranchViolation;
+import pnnl.goss.powergrid.datamodel.ContingencyBusViolation;
 import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
 import pnnl.goss.powergrid.server.PowergridServerActivator;
-import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
 
-public class RequestContingencyModelTimeStepValuesHandler extends GossRequestHandler {
+public class RequestContingencyModelTimeStepValuesHandler extends AbstractRequestHandler {
 
 	String datasourceKey = null;
 	

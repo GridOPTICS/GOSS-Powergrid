@@ -44,14 +44,14 @@
 */
 package pnnl.goss.powergrid.collections;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import pnnl.goss.core.Data;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 
-public class PowergridList extends Data {
+public class PowergridList implements Serializable {
 	List<Powergrid> grids = new ArrayList<Powergrid>();
 	
 	public PowergridList(List<Powergrid> availablePowergrids) {

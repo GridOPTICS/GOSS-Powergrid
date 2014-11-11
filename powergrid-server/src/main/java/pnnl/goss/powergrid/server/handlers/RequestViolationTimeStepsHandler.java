@@ -47,7 +47,6 @@ package pnnl.goss.powergrid.server.handlers;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import pnnl.goss.core.Data;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.powergrid.requests.RequestViolationTimeSteps;

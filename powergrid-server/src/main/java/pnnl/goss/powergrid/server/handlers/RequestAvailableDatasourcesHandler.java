@@ -46,15 +46,13 @@ package pnnl.goss.powergrid.server.handlers;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.core.Response;
-import pnnl.goss.core.server.GossRequestHandler;
-import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
+import pnnl.goss.core.server.AbstractRequestHandler;
 
 
 
-public class RequestAvailableDatasourcesHandler extends GossRequestHandler {
+public class RequestAvailableDatasourcesHandler extends AbstractRequestHandler {
 
 	@Override
 	public Response handle(Request request) {

@@ -54,7 +54,7 @@ import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.core.Response;
-import pnnl.goss.core.server.GossRequestHandler;
+import pnnl.goss.core.server.AbstractRequestHandler;
 import pnnl.goss.powergrid.ContingencyModel;
 import pnnl.goss.powergrid.dao.PowergridDao;
 import pnnl.goss.powergrid.dao.PowergridDaoMySql;
@@ -65,7 +65,7 @@ import pnnl.goss.powergrid.requests.RequestContingencyModel;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
 
-public class RequestContingencyModelHandler extends GossRequestHandler {
+public class RequestContingencyModelHandler extends AbstractRequestHandler {
 
 	@Override
 	public Response handle(Request request) {

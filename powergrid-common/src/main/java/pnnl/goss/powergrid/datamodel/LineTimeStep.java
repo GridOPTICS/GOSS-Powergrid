@@ -9,13 +9,12 @@
 package pnnl.goss.powergrid.datamodel;
 
 import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
-
-import pnnl.goss.core.Data;
 
 
 /**
@@ -81,7 +80,7 @@ import pnnl.goss.core.Data;
     "p",
     "q"
 })
-public class LineTimeStep extends Data  implements Serializable
+public class LineTimeStep implements Serializable
 {
 
     private final static long serialVersionUID = 12343L;
