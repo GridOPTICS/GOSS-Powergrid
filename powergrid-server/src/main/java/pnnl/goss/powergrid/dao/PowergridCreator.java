@@ -8,5 +8,5 @@ public interface PowergridCreator {
 	PowergridModel uploadModel();
 	
 		
-	
+	//PowergridModel uploadCimModel()
 }
