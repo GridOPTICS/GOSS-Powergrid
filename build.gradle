@@ -9,6 +9,7 @@ allprojects {
         mavenCentral()
         jcenter()
         maven{url "http://dl.bintray.com/gridoptics/GOSS/"}
+        maven{url "http://dl.bintray.com/gridoptics/goss/"}
     }
 }
 
@@ -35,9 +36,6 @@ subprojects {
         // Both client and server need access to the following dependencies
         compile "com.impetus.kundera.core:kundera-core:$kunderaVersion"
         compile "pnnl.goss:goss-core:$gossCoreVersion"
-        // ipojo annotations for service registry/retrieval.
-        compile "org.apache.felix:org.apache.felix.ipojo.annotations:$ipojoVersion"
-
 
         // For testing we are going to use these ubiquitous
         testCompile "junit:junit:$junitVersion"

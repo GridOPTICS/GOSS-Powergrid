@@ -1,0 +1,3 @@
+dependencies {
+    compile "pnnl.goss:goss-core:${gossCoreVersion}"
+}

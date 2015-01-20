@@ -3,9 +3,7 @@ dependencies {
 
     compile project(":powergrid-common")
 
-    compile "org.apache.felix:org.apache.felix.ipojo.annotations:$ipojoVersion"
-
-    compile "pnnl.goss:goss-core-server:0.1.7"
+    compile "pnnl.goss:goss-core-server:${gossCoreVersion}"
 
     compile "com.impetus.kundera.core:kundera-core:$kunderaVersion"
     compile "com.impetus.kundera.client:kundera-cassandra:$kunderaVersion"
