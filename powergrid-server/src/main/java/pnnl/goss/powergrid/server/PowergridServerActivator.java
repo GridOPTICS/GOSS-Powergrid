@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2014, Battelle Memorial Institute
+    Copyright (c) 2014, Battelle Memorial Institute
     All rights reserved.
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -11,7 +11,7 @@
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-     
+
     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -44,11 +44,6 @@
 */
 package pnnl.goss.powergrid.server;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Invalidate;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.felix.ipojo.annotations.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,122 +56,116 @@ import pnnl.goss.powergrid.requests.RequestPowergridTimeStep;
 import pnnl.goss.powergrid.server.handlers.RequestPowergridHandler;
 import pnnl.goss.security.core.authorization.basic.AccessControlHandlerAllowAll;
 
-
-@Instantiate
-@Component
 public class PowergridServerActivator{
 
-	public static final String PROP_POWERGRID_DATASERVICE = "goss/powergrid";
-	// These are defined in the datasources config and loaded into the dataServices object
-	// by karaf.
-	public static final String PROP_POWERGRID_USER = "powergrid.db.user";
-	public static final String PROP_POWERGRID_PASSWORD = "powergrid.db.password";
-	public static final String PROP_POWERGRID_URI = "powergrid.db.uri";
-		
-	/**
-	 * <p>
-	 * Add logging to the class so that we can debug things effectively after deployment.
-	 * </p>
-	 */
-	private static Logger log = LoggerFactory.getLogger(PowergridServerActivator.class);
+    public static final String PROP_POWERGRID_DATASERVICE = "goss/powergrid";
+    // These are defined in the datasources config and loaded into the dataServices object
+    // by karaf.
+    public static final String PROP_POWERGRID_USER = "powergrid.db.user";
+    public static final String PROP_POWERGRID_PASSWORD = "powergrid.db.password";
+    public static final String PROP_POWERGRID_URI = "powergrid.db.uri";
 
-	private GossRequestHandlerRegistrationService registrationService;
-	private GossDataServices dataServices;
-	
-	@Requires
-	private BasicDataSourceCreator datasourceCreator;
-		
-	public PowergridServerActivator(
-			@Requires GossRequestHandlerRegistrationService registrationService,
-			@Requires GossDataServices dataServices) {
-		this.registrationService = registrationService;
-		this.dataServices = dataServices;
-		log.debug("Constructing activator");
-	}
-	
-	
-	private void registerDataService() {
-		if (datasourceCreator == null){
-			log.error("BaseicDataSourcCreator not created properly.");
-		}
-		if (!dataServices.contains(PROP_POWERGRID_DATASERVICE)) {
-			log.debug("Attempting to register dataservice: "
-					+ PROP_POWERGRID_DATASERVICE);
-			String user = dataServices.getPropertyValue(PROP_POWERGRID_USER);
-			String uri = dataServices.getPropertyValue(PROP_POWERGRID_URI);
-			String password = dataServices.getPropertyValue(PROP_POWERGRID_PASSWORD);
-			
-			try {
-				dataServices.registerData(PROP_POWERGRID_DATASERVICE,
-						datasourceCreator.create(uri, user, password));
-			} catch (Exception e) {
-				log.error(e.getMessage(), e);
-			}
-		}
-	}
-	
-	@Validate
-	public void start(){
-		
-		
-				
-		if(registrationService != null){
-			// Registering service handlers here
-			registrationService.addHandlerMapping(RequestPowergrid.class, RequestPowergridHandler.class);
-			registrationService.addHandlerMapping(RequestPowergridTimeStep.class, RequestPowergridHandler.class);
-			registrationService.addHandlerMapping(RequestPowergridList.class, RequestPowergridHandler.class);
-			
-			registrationService.addSecurityMapping(RequestPowergrid.class, AccessControlHandlerAllowAll.class);
-			registrationService.addSecurityMapping(RequestPowergridTimeStep.class, AccessControlHandlerAllowAll.class);
-			
-			update();
-		}
-		else{
-			log.debug(GossRequestHandlerRegistrationService.class.getName()+" not found!");
-		}		
-	}
-	
-	@Invalidate
-	public void stop() {
-		try {
-			log.info("Stopping the bundle"+this.getClass().getName());
-			
-			if (registrationService != null) {
-				registrationService.removeHandlerMapping(RequestPowergrid.class);
-				registrationService.removeHandlerMapping(RequestPowergridTimeStep.class);
-				registrationService.removeHandlerMapping(RequestPowergridList.class);
-				
-				registrationService.removeSecurityMapping(RequestPowergrid.class);
-				registrationService.removeSecurityMapping(RequestPowergridTimeStep.class);
-			}			
-			
-		} catch (Exception e) {
-			log.error(e.getStackTrace().toString());
-			e.printStackTrace();
-		}
-	}
+    /**
+     * <p>
+     * Add logging to the class so that we can debug things effectively after deployment.
+     * </p>
+     */
+    private static Logger log = LoggerFactory.getLogger(PowergridServerActivator.class);
 
-	public void update() throws IllegalStateException{
-		if (dataServices == null){
-			throw new IllegalStateException("dataservices cannot be null!");
-		}
-		
-		registerDataService();
-	}
-	
-	/*
-	@SuppressWarnings("rawtypes")
-	@Updated
-	public synchronized void updated(Dictionary config){
-		log.debug("Updating configuration for: "+this.getClass().getName());
-		log.debug("updating");
-		user = (String) config.get(PROP_POWERGRID_USER);
-		password = (String) config.get(PROP_POWERGRID_PASSWORD);
-		uri = (String) config.get(PROP_POWERGRID_URI);
+    private GossRequestHandlerRegistrationService registrationService;
+    private GossDataServices dataServices;
+    private BasicDataSourceCreator datasourceCreator;
 
-		log.debug("updated uri: " + uri + "\n\tuser:" + user);
-		registerDataService();
-		
-	}*/
+    public PowergridServerActivator(
+            GossRequestHandlerRegistrationService registrationService,
+            GossDataServices dataServices) {
+        this.registrationService = registrationService;
+        this.dataServices = dataServices;
+        log.debug("Constructing activator");
+    }
+
+
+    private void registerDataService() {
+        if (datasourceCreator == null){
+            log.error("BaseicDataSourcCreator not created properly.");
+        }
+        if (!dataServices.contains(PROP_POWERGRID_DATASERVICE)) {
+            log.debug("Attempting to register dataservice: "
+                    + PROP_POWERGRID_DATASERVICE);
+            String user = dataServices.getPropertyValue(PROP_POWERGRID_USER);
+            String uri = dataServices.getPropertyValue(PROP_POWERGRID_URI);
+            String password = dataServices.getPropertyValue(PROP_POWERGRID_PASSWORD);
+
+            try {
+                dataServices.registerData(PROP_POWERGRID_DATASERVICE,
+                        datasourceCreator.create(uri, user, password));
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    public void start(){
+
+
+
+        if(registrationService != null){
+            // Registering service handlers here
+            registrationService.addHandlerMapping(RequestPowergrid.class, RequestPowergridHandler.class);
+            registrationService.addHandlerMapping(RequestPowergridTimeStep.class, RequestPowergridHandler.class);
+            registrationService.addHandlerMapping(RequestPowergridList.class, RequestPowergridHandler.class);
+
+            registrationService.addSecurityMapping(RequestPowergrid.class, AccessControlHandlerAllowAll.class);
+            registrationService.addSecurityMapping(RequestPowergridTimeStep.class, AccessControlHandlerAllowAll.class);
+
+            update();
+        }
+        else{
+            log.debug(GossRequestHandlerRegistrationService.class.getName()+" not found!");
+        }
+    }
+
+
+    public void stop() {
+        try {
+            log.info("Stopping the bundle"+this.getClass().getName());
+
+            if (registrationService != null) {
+                registrationService.removeHandlerMapping(RequestPowergrid.class);
+                registrationService.removeHandlerMapping(RequestPowergridTimeStep.class);
+                registrationService.removeHandlerMapping(RequestPowergridList.class);
+
+                registrationService.removeSecurityMapping(RequestPowergrid.class);
+                registrationService.removeSecurityMapping(RequestPowergridTimeStep.class);
+            }
+
+        } catch (Exception e) {
+            log.error(e.getStackTrace().toString());
+            e.printStackTrace();
+        }
+    }
+
+    public void update() throws IllegalStateException{
+        if (dataServices == null){
+            throw new IllegalStateException("dataservices cannot be null!");
+        }
+
+        registerDataService();
+    }
+
+    /*
+    @SuppressWarnings("rawtypes")
+    @Updated
+    public synchronized void updated(Dictionary config){
+        log.debug("Updating configuration for: "+this.getClass().getName());
+        log.debug("updating");
+        user = (String) config.get(PROP_POWERGRID_USER);
+        password = (String) config.get(PROP_POWERGRID_PASSWORD);
+        uri = (String) config.get(PROP_POWERGRID_URI);
+
+        log.debug("updated uri: " + uri + "\n\tuser:" + user);
+        registerDataService();
+
+    }*/
 
 }
