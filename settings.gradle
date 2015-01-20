@@ -1,9 +1,9 @@
 // These are the properties that are in this feature set.
-include 'powergrid-common', 
+include 'powergrid-common',
         'powergrid-server'
-        
 
-rootProject.name = 'powergrid'
+
+rootProject.name = 'powergrid-feature'
 
 // loop over the sub-projects declared above.
 rootProject.children.each {
