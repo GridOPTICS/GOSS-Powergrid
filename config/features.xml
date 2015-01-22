@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<features xmlns="http://karaf.apache.org/xmlns/features/v1.2.0" name="goss-powergrid-${project.version}" >
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.2.0" name="@project.name@-@project.version@" >
 
-    <feature name="goss-powergrid-feature" version="${pom.version}">
-		
-		<feature>jdbc</feature>
-		<feature>jpa</feature>
-		<feature>openjpa</feature>
-		<feature>hibernate</feature>
-		<feature>goss-core-feature</feature>
-		
-    	<bundle dependency="true">wrap:mvn:com.impetus.kundera.core/kundera-core/2.13</bundle>
-    	<bundle start-level="88" dependency="true">mvn:pnnl.goss/goss-powergrid-common/${pom.version}</bundle>
-    	<bundle start-level="89" dependency="true">mvn:pnnl.goss/goss-powergrid-server/${pom.version}</bundle>
-    	
+    <feature name="goss-powergrid-feature" version="@project.version@">
+
+        <feature>jndi</feature>
+        <feature>jpa</feature>
+        <feature>transaction</feature>
+
+        <feature>goss-core-feature</feature>
+        <bundle>mvn:org.apache.geronimo.specs/geronimo-jpa_2.0_spec/@geronimoJpaSpecVersion@</bundle>
+        <bundle>wrap:mvn:net.sourceforge.serp/serp/@serpVersion@</bundle>
+
+        <bundle dependency="true">wrap:mvn:com.impetus.kundera.core/kundera-core/@kunderaVersion@</bundle>
+        <bundle start-level="88" dependency="true">mvn:pnnl.goss.powergrid/powergrid-common/@project.version@</bundle>
+        <bundle start-level="89" dependency="true">mvn:pnnl.goss.powergrid/powergrid-server/@project.version@</bundle>
+
     </feature>
  </features>
