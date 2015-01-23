@@ -1,6 +1,7 @@
 // These are the properties that are in this feature set.
 include 'powergrid-common',
-        'powergrid-server'
+        'powergrid-server',
+        'powergrid-commands'
 
 
 rootProject.name = 'powergrid-feature'

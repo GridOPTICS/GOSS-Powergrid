@@ -12,8 +12,13 @@
         <bundle>wrap:mvn:net.sourceforge.serp/serp/@serpVersion@</bundle>
 
         <bundle dependency="true">wrap:mvn:com.impetus.kundera.core/kundera-core/@kunderaVersion@</bundle>
-        <bundle start-level="88" dependency="true">mvn:pnnl.goss.powergrid/powergrid-common/@project.version@</bundle>
-        <bundle start-level="89" dependency="true">mvn:pnnl.goss.powergrid/powergrid-server/@project.version@</bundle>
+        <bundle dependency="true">mvn:pnnl.goss.powergrid/powergrid-common/@project.version@</bundle>
+        <bundle dependency="true">mvn:pnnl.goss.powergrid/powergrid-server/@project.version@</bundle>
 
+    </feature>
+
+    <feature name="goss-powergrid-commands" version="@project.version@">
+        <feature>goss-powergrid-feature</feature>
+        <bundle dependency="true">mvn:pnnl.goss.powergrid/powergrid-commands/@project.version@</bundle>
     </feature>
  </features>
