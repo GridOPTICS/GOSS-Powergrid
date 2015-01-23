@@ -13,7 +13,7 @@ http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/ja
     </jaxrs:server>
 
     <bean class="pnnl.goss.powergrid.server.impl.PowergridServiceImpl" id="powergridBean">
-        <property name="dataServices" ref="dataServicesRef"></property>
+<!--        <property name="dataServices" ref="dataServicesRef"></property>-->
         <property name="clientFactory" ref="clientFactoryServiceRef"></property>
     </bean>
 
@@ -22,7 +22,7 @@ http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/ja
 
     </service>
 
-    <reference id="dataServicesRef" interface="pnnl.goss.core.server.GossDataServices"></reference>
+<!--    <reference id="dataServicesRef" interface="pnnl.goss.core.server.GossDataServices"></reference>-->
     <reference id="clientFactoryServiceRef" interface="pnnl.goss.core.ClientFactory"></reference>
 
     <!--<service id="pgService" interface="pnnl.goss.powergrid.server.PowergridService" ref="powergridBean">
