@@ -125,7 +125,7 @@ subprojects {
             runtime "org.slf4j:slf4j-log4j12:${slf4jVersion}"
 
             // For osgi bundles
-            runtime "org.osgi:org.osgi.core:${osgiVersion}"
+            compile "org.osgi:org.osgi.core:${osgiVersion}"  // needed for commands.
             runtime "org.osgi:org.osgi.compendium:${osgiVersion}"
 
             // For testing we are going to use these ubiquitous
