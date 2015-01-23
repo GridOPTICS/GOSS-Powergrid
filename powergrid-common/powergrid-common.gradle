@@ -5,3 +5,14 @@ dependencies {
         exclude module: 'javax.persistence'
     }
 }
+
+jar {
+    manifest {
+        instruction 'Export-Package', 'pnnl.goss.powergrid',
+                                        'pnnl.goss.powergrid.collections',
+                                        'pnnl.goss.powergrid.datamodel',
+                                        'pnnl.goss.powergrid.requests',
+                                        'pnnl.goss.powergrid.topology',
+                                        'pnnl.goss.powergrid.topology.nodebreaker'
+    }
+}
