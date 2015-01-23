@@ -6,7 +6,7 @@
 http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
 http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd">
 
-    <jaxrs:server id="powergridService" address="/powergrid">
+    <jaxrs:server id="powergridServiceWs" address="/powergrid">
         <jaxrs:serviceBeans>
             <ref component-id="powergridBean"/>
         </jaxrs:serviceBeans>
@@ -16,6 +16,11 @@ http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/ja
         <property name="dataServices" ref="dataServicesRef"></property>
         <property name="clientFactory" ref="clientFactoryServiceRef"></property>
     </bean>
+
+    <service id="powergridService" ref="powergridBean"
+        interface="pnnl.goss.powergrid.server.PowergridService">
+
+    </service>
 
     <reference id="dataServicesRef" interface="pnnl.goss.core.server.GossDataServices"></reference>
     <reference id="clientFactoryServiceRef" interface="pnnl.goss.core.ClientFactory"></reference>
