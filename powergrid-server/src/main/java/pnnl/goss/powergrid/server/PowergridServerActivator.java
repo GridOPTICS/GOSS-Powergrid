@@ -44,128 +44,109 @@
 */
 package pnnl.goss.powergrid.server;
 
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.cm.ConfigurationException;
+import org.osgi.service.cm.ManagedService;
+import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pnnl.goss.core.server.BasicDataSourceCreator;
 import pnnl.goss.core.server.GossDataServices;
 import pnnl.goss.core.server.GossRequestHandlerRegistrationService;
-import pnnl.goss.powergrid.requests.RequestPowergrid;
-import pnnl.goss.powergrid.requests.RequestPowergridList;
-import pnnl.goss.powergrid.requests.RequestPowergridTimeStep;
-import pnnl.goss.powergrid.server.handlers.RequestPowergridHandler;
-import pnnl.goss.security.core.authorization.basic.AccessControlHandlerAllowAll;
+import pnnl.goss.core.server.internal.GossDataServicesImpl;
+import pnnl.goss.powergrid.server.impl.PowergridServiceImpl;
 
-public class PowergridServerActivator{
+public class PowergridServerActivator implements BundleActivator, ManagedService{
 
-    public static final String PROP_POWERGRID_DATASERVICE = "goss/powergrid";
-    // These are defined in the datasources config and loaded into the dataServices object
-    // by karaf.
-    public static final String PROP_POWERGRID_USER = "powergrid.db.user";
-    public static final String PROP_POWERGRID_PASSWORD = "powergrid.db.password";
-    public static final String PROP_POWERGRID_URI = "powergrid.db.uri";
-
-    /**
-     * <p>
-     * Add logging to the class so that we can debug things effectively after deployment.
-     * </p>
-     */
     private static Logger log = LoggerFactory.getLogger(PowergridServerActivator.class);
+    public static final String CONFIG_PID = "pnnl.goss.powergrid";
+    private static final String PROP_DS_KEY = "datasource-key";
 
-    private GossRequestHandlerRegistrationService registrationService;
-    private GossDataServices dataServices;
-    private BasicDataSourceCreator datasourceCreator;
+    private Hashtable<String, Object> properties = new Hashtable<>();
+    private static String powergridDsKey;
 
-    public PowergridServerActivator(
-            GossRequestHandlerRegistrationService registrationService,
-            GossDataServices dataServices) {
-        this.registrationService = registrationService;
-        this.dataServices = dataServices;
-        log.debug("Constructing activator");
+    private ServiceTracker<GossDataServices, Object> datasourceTracker;
+    private BundleContext context;
+    private PowergridService powergridService;
+    private ServiceRegistration<PowergridService> powergridServiceRegistration;
+
+    private ServiceTracker<GossRequestHandlerRegistrationService, Object> registrationServiceTracker;
+
+
+    public static String getPowergridDsKey(){
+        return powergridDsKey;
     }
 
-
-    private void registerDataService() {
-        if (datasourceCreator == null){
-            log.error("BaseicDataSourcCreator not created properly.");
-        }
-        if (!dataServices.contains(PROP_POWERGRID_DATASERVICE)) {
-            log.debug("Attempting to register dataservice: "
-                    + PROP_POWERGRID_DATASERVICE);
-            String user = dataServices.getPropertyValue(PROP_POWERGRID_USER);
-            String uri = dataServices.getPropertyValue(PROP_POWERGRID_URI);
-            String password = dataServices.getPropertyValue(PROP_POWERGRID_PASSWORD);
-
-            try {
-                dataServices.registerData(PROP_POWERGRID_DATASERVICE,
-                        datasourceCreator.create(uri, user, password));
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
+    @Override
+    public void updated(Dictionary<String, ?> properties)
+            throws ConfigurationException {
+        log.debug("Updating Bundle Configuration");
+        this.properties.clear();
+        Enumeration<String> keys = properties.keys();
+        while (keys.hasMoreElements()){
+            String k = keys.nextElement();
+            log.debug("CONFIG: "+k);
+            if (k.equals(PROP_DS_KEY)){
+                PowergridServerActivator.powergridDsKey = (String) properties.get(k);
             }
+            this.properties.put(k, properties.get(k));
         }
+
     }
 
-    public void start(){
+//    private void registerServices(){
+//        if(datasourceTracker == null) return;
+//        powergridService = new PowergridServiceImpl(
+//                (GossDataServices) datasourceTracker.getService());
+//
+//        powergridServiceRegistration = context.registerService(PowergridService.class,
+//                powergridService, null);
+//    }
+//
+//    private void unregisterServices(){
+//
+//        powergridServiceRegistration.unregister();
+//        powergridService = null;
+//        powergridServiceRegistration = null;
+//
+//    }
 
 
+    @Override
+    public void start(BundleContext context) throws Exception {
+        log.debug("Starting Bundle");
+        this.context = context;
 
-        if(registrationService != null){
-            // Registering service handlers here
-            registrationService.addHandlerMapping(RequestPowergrid.class, RequestPowergridHandler.class);
-            registrationService.addHandlerMapping(RequestPowergridTimeStep.class, RequestPowergridHandler.class);
-            registrationService.addHandlerMapping(RequestPowergridList.class, RequestPowergridHandler.class);
+        Hashtable<String, Object> properties = new Hashtable<>();
+        properties.put(Constants.SERVICE_PID, CONFIG_PID);
+        context.registerService(ManagedService.class, this, properties);
 
-            registrationService.addSecurityMapping(RequestPowergrid.class, AccessControlHandlerAllowAll.class);
-            registrationService.addSecurityMapping(RequestPowergridTimeStep.class, AccessControlHandlerAllowAll.class);
+        registrationServiceTracker =
+                new ServiceTracker<GossRequestHandlerRegistrationService, Object>(context,
+                        GossRequestHandlerRegistrationService.class,  null);
+        registrationServiceTracker.open();
+        GossRequestHandlerRegistrationService regService = (GossRequestHandlerRegistrationService)
+                registrationServiceTracker.getService();
 
-            update();
-        }
-        else{
-            log.debug(GossRequestHandlerRegistrationService.class.getName()+" not found!");
-        }
+        regService.addHandlerFromBundleContext(context);
     }
 
 
-    public void stop() {
-        try {
-            log.info("Stopping the bundle"+this.getClass().getName());
-
-            if (registrationService != null) {
-                registrationService.removeHandlerMapping(RequestPowergrid.class);
-                registrationService.removeHandlerMapping(RequestPowergridTimeStep.class);
-                registrationService.removeHandlerMapping(RequestPowergridList.class);
-
-                registrationService.removeSecurityMapping(RequestPowergrid.class);
-                registrationService.removeSecurityMapping(RequestPowergridTimeStep.class);
-            }
-
-        } catch (Exception e) {
-            log.error(e.getStackTrace().toString());
-            e.printStackTrace();
-        }
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        log.debug("Stoping Bundle");
+        GossRequestHandlerRegistrationService regService = (GossRequestHandlerRegistrationService)
+                registrationServiceTracker.getService();
+        registrationServiceTracker.close();
+        registrationServiceTracker = null;
+        datasourceTracker.close();
+        datasourceTracker = null;
     }
-
-    public void update() throws IllegalStateException{
-        if (dataServices == null){
-            throw new IllegalStateException("dataservices cannot be null!");
-        }
-
-        registerDataService();
-    }
-
-    /*
-    @SuppressWarnings("rawtypes")
-    @Updated
-    public synchronized void updated(Dictionary config){
-        log.debug("Updating configuration for: "+this.getClass().getName());
-        log.debug("updating");
-        user = (String) config.get(PROP_POWERGRID_USER);
-        password = (String) config.get(PROP_POWERGRID_PASSWORD);
-        uri = (String) config.get(PROP_POWERGRID_URI);
-
-        log.debug("updated uri: " + uri + "\n\tuser:" + user);
-        registerDataService();
-
-    }*/
-
 }
