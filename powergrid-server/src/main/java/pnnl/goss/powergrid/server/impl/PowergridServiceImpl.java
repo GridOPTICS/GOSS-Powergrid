@@ -46,17 +46,21 @@ package pnnl.goss.powergrid.server.impl;
 
 import java.util.List;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import javax.jms.JMSException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pnnl.goss.core.Client;
+import pnnl.goss.core.Client.PROTOCOL;
+import pnnl.goss.core.ClientFactory;
 import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Response;
+import pnnl.goss.core.server.GossDataServices;
+import pnnl.goss.core.server.GossRequestHandlerRegistrationService;
 import pnnl.goss.powergrid.PowergridModel;
 import pnnl.goss.powergrid.collections.PowergridList;
 import pnnl.goss.powergrid.datamodel.Powergrid;
@@ -65,59 +69,51 @@ import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.server.PowergridService;
 import pnnl.goss.powergrid.server.WebDataException;
 import pnnl.goss.powergrid.server.handlers.RequestPowergridHandler;
-import pnnl.goss.core.server.GossDataServices;
 
 public class PowergridServiceImpl implements PowergridService {
 
     private static Logger log = LoggerFactory.getLogger(PowergridServiceImpl.class);
 
-    public void validate(){
-        log.debug("Validating powergrid");
-    }
-
-    public void invalidate(){
-        log.debug("Invalidating powergrid");
-    }
+    private ClientFactory gossClientFactory;
+    private GossDataServices dataServices;
+    private GossRequestHandlerRegistrationService registrationServices;
 
     public PowergridServiceImpl(){
-//		try{
-//			InitialContext ic = new InitialContext();
-//			dataServices = (GossDataServices) ic.lookup("osgi:service/"+GossDataServices.class.getName());
-//		}
-//		catch(NamingException e){
-//			log.error("Exception getting: " + GossDataServices.class.getName()+ "\n"+e.getMessage());
-//		}
+        log.debug("Constructing");
+    }
 
+    public void setRegistrationHandlerService(GossRequestHandlerRegistrationService service){
+        log.debug("Setting registration services");
+        registrationServices = service;
     }
-    /*
-    public PowergridServiceImpl(@Requires GossDataServices dataServices){
+
+    public void setDataServices(GossDataServices dataServices){
+        log.debug("Setting dataServices");
         this.dataServices = dataServices;
-    }*/
-    private GossDataServices getDataServices(){
-        GossDataServices dataServices = null;
-        try{
-            InitialContext ic = new InitialContext();
-            dataServices = (GossDataServices) ic.lookup("osgi:service/"+GossDataServices.class.getName());
-        }
-        catch(NamingException e){
-            log.error("Exception getting: " + GossDataServices.class.getName()+ "\n"+e.getMessage());
-        }
-        return dataServices;
     }
+
+    public void setClientFactory(ClientFactory client){
+        log.debug("Setting client factory");
+        gossClientFactory = client;
+    }
+
 
     @XmlElementWrapper(name="Powergrids")
     @XmlElement(name="Powergrid", type=Powergrid.class)
     public List<Powergrid> getPowergrids() {
-        if (this.getDataServices() == null){
-            log.error("DataServices are currently null!");
-            throw new WebDataException("Invalid configuration detected.");
+
+        Client client = gossClientFactory.create(PROTOCOL.OPENWIRE);
+        Response response = null;
+
+        try {
+            response = (Response) client.getResponse(new RequestPowergridList());
+        } catch (JMSException e) {
+            log.error(e.getMessage(), e);
+            throw new WebDataException(e.getMessage());
         }
-        RequestPowergridList powergridList = new RequestPowergridList();
-        RequestPowergridHandler handler = new RequestPowergridHandler();
-        handler.setGossDataservices(getDataServices());
-
-        Response response = handler.handle(powergridList);
-
+        finally{
+            client.close();
+        }
         throwDataError(response);
 
         DataResponse dataResponse= (DataResponse)response;
@@ -126,27 +122,28 @@ public class PowergridServiceImpl implements PowergridService {
     }
 
     public PowergridModel getPowergridModel(String powergridName) {
-        if (getDataServices() == null){
-            log.error("DataServices are currently null!");
-            throw new WebDataException("Invalid configuration detected.");
-        }
-        RequestPowergrid request = new RequestPowergrid(powergridName);
-        RequestPowergridHandler handler = new RequestPowergridHandler();
-        handler.setGossDataservices(getDataServices());
-        Response response = handler.getResponse(request);
+        Client client = gossClientFactory.create(PROTOCOL.OPENWIRE);
+        Response response = null;
 
+        try {
+            response = (Response) client.getResponse(new RequestPowergrid(powergridName));
+        } catch (JMSException e) {
+            log.error(e.getMessage(), e);
+            throw new WebDataException(e.getMessage());
+        }
+        finally{
+            client.close();
+        }
         throwDataError(response);
 
-        return (PowergridModel)((DataResponse) response).getData();
+        DataResponse dataResponse= (DataResponse)response;
+        return (PowergridModel)dataResponse.getData();
     }
 
     public PowergridModel getPowergridModelAt(String powergridName, String timestep) {
-        if (getDataServices() == null){
-            log.error("DataServices are currently null!");
-            throw new WebDataException("Invalid configuration detected.");
-        }
-        // TODO Auto-generated method stub
-        return null;
+
+        throw new WebDataException("Not Implemented Yet!");
+
     }
 
     private void throwDataError(Response response) {
