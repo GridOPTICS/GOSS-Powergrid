@@ -4,7 +4,7 @@ class PsseParser {
 
     ParserResultLog resultLog
     def model
-    def modelValid = false
+    boolean modelValid = false
 
     ParserResultLog parse(File defConfig, File tempDir, File inputFile){
         def config = new ConfigSlurper().parse(defConfig.text)
@@ -13,6 +13,8 @@ class PsseParser {
         createTempCards(tempDir, inputFile, cards)
         model = createObjects(tempDir, cards)
         validateModel(cards)
+        // True if no errors
+        modelValid = resultLog.errors.size() == 0
         resultLog
     }
 

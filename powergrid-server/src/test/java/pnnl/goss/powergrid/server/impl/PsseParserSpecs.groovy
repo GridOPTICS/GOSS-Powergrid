@@ -31,6 +31,8 @@ class PsseParserSpecs extends Specification {
 
         then:
         assert results != null
+        assert parser.modelValid
+
         def model = parser.model
         assert model != null
         assert model.buses.size() == 14
@@ -40,6 +42,7 @@ class PsseParserSpecs extends Specification {
         assert model.areas.size() == 1
         assert model.zones.size() == 1
         assert model.owners.size() == 1
+
         assert results.errors.size() == 0
     }
 
