@@ -4,24 +4,24 @@ package pnnl.goss.powergrid.parsers
  * Create the busbranch model from the raw input file.
  *
  * @param inDir
- * @param cards
- * @param cardMaps
+ * @param cards - A list of objects with a name and column definition attribute
  * @return
  */
-def createObjects(String inDir, List cards, Map cardMaps){
+def createObjects(String inDir, List cards){
     def objMap = [:]
 
     cards.each { card ->
+        println card.name
 
         // Only deal with the cards that have the object meta data defined.
-        if (cardMaps.containsKey(card)){
+        if (card?.columns){
 
-            def objDef = cardMaps.get(card)
+            def objDef = card.columns
 
             // prepare for the output of the current card's items.
             objMap[card] = []
 
-            def cardFile = new File("${inDir}/${card}.card").readLines().each{ line ->
+            def cardFile = new File("${inDir}/${card.name}.card").readLines().each{ line ->
                 def obj = new Expando()
                 line.split(",").eachWithIndex { item, i ->
 
@@ -56,7 +56,7 @@ def createObjects(String inDir, List cards, Map cardMaps){
  * @param sectionCard
  * @return
  */
-def createCards(String tempDir, String rawFile, List sectionCard ){
+def createTempCards(String tempDir, String rawFile, List sectionCard ){
     def inputFile = new File(rawFile)
     int lineNum = 0
     String header = ""
@@ -67,19 +67,23 @@ def createCards(String tempDir, String rawFile, List sectionCard ){
         if (lineNum < 3) {
             writer.write("${line}\n")
             lineNum ++
+            //println sprintf("%4d|%s", [lineNum, line])
             return
         }
+
+        lineNum ++
+        //println sprintf("%4d|%s", [lineNum, line])
 
         if (currentCard == -1){
             writer.close()
             currentCard = sectionCard.remove(0)
-            writer = new FileWriter("${tempDir}/${currentCard}.card")
+            writer = new FileWriter("${tempDir}/${currentCard.name}.card")
         }
 
         if (line.startsWith('0')){
             currentCard = sectionCard.remove(0)
             writer.close()
-            writer = new FileWriter("${tempDir}/${currentCard}.card")
+            writer = new FileWriter("${tempDir}/${currentCard.name}.card")
         }
         else{
             writer.write("${line}\n")
@@ -91,104 +95,115 @@ def createCards(String tempDir, String rawFile, List sectionCard ){
 
 static void main(def args){
 
-    def cards = ['buses',
-                    'generators',
-                    'branches',
-                    'transformer_adjustment',
-                    'area',
-                    'two_terminal_dc',
-                    'switched_shunts',
-                    'impedance_correction',
-                    'multi_terminal_dc',
-                    'multi_section_line',
-                    'zone',
-                    'inter_area_transfer',
-                    'owner',
-                    'facts_device']
+    def file = "src/main/java/pnnl/goss/powergrid/parsers/Psse23Definitions.groovy"
+    def config = new ConfigSlurper().parse(new File(file).text)
 
     def tempDir = "C:/temp/data"
-    createCards(tempDir, "C:/Projects/gridpack/IEEE14.raw", cards.clone())
+    def cards = config.cards
 
-    def busObjectDef = [
-        [field: 'busNumber', outFormat: '%7d', datatype: int,
-            description: "Bus numbers 1 to 999999"],
-        [field: 'busType', outFormat: "'%2d'", datatype: int,
-            description: "Bus Type 1) load 2) generator 3) swing 4) isolated"],
-        [field: 'pLoad',		datatype: double,
-            description: "Active power component of constant power in MW"],
-        [field: 'qLoad',		datatype: double,
-            description: "Reactive power component of constant power in MVar"],
-        [field: 'gShunt',		datatype: double,
-            description: "Active component of the shunt admittance to ground, entered in MW"],
-        [field: 'bShunt',		datatype: double,
-            description: "Reactive component of shunt admittance to ground, entered in Mvar (positive for cpacitor negative for reactor)"],
-        [field: 'area',			datatype: int,
-            description: "Area the load is assigned"],
-        [field: 'vMag',			datatype: double,
-            description: "Bus voltage magnitude, in per unit volatge"],
-        [field: 'vAng',			datatype: double,
-            description: "Bus voltage phase angle, in degrees"],
-        [field: 'name',			datatype: String,
-            description: "Alpha-numeric identifier assigned to bus"],
-        [field: 'baseKv', 		datatype: double,
-            description: "Bus base voltage, entered in kV"],
-        [field: 'zone',			datatype: int,
-            description: "Zone the load is assigned"]
-    ]
-
-    def generatorObjectDef = [
-        [field: 'busNumber',	datatype: int,
-            description: 'Bus number where generator is connected'],
-        [field: 'machineId',	datatype: String,
-            description: 'Alphanumeric machine id.  Used to distinguish between differnet machines on same bus'],
-        [field: 'pGen',			datatype: double,
-            description: 'Generator active power (MW)'],
-        [field: 'qGen',			datatype: double,
-            description: 'Generator reactive power (MVar)'],
-        [field: 'qMax',			datatype: double,
-            description: 'Maximum generator reactive power output (MVar)'],
-        [field: 'qMin',			datatype: double,
-            description: 'Minimum generator reactive power output (MVar)'],
-        [field: 'vSetPoint',	datatype: double,
-            description: 'Voltage setpoint; entered in pu'],
-        [field: 'iRegBusNumber',datatype: double,
-            description: 'Bus number of a remote type 1 or 2 bus whose voltage is to be regulated by this plant to the value specified by vSetPoint'],
-        [field: 'mBase',		datatype: double,
-            description: 'Total MVA base of the units represented by this machine; entered in MVA.'],
-        [field: 'zSource',		datatype: double,
-            description: 'Complex impedance, in pu on mBase base. '],
-        [field: 'zTran',		datatype: double,
-            description: 'Step-up transformer impedance; entered in pu on mBase base. '],
-        [field: 'rTran',		datatype: double,
-            description: 'Active components of Step-up transformer impedance, in pu on mBase base'],
-        [field: 'xTran',		datatype: double,
-            description: 'Reactive components of Step-up transformer impedance, in pu on mBase base'],
-        [field: 'gTap',			datatype: double,
-            description: 'Step-up transformer off-nominal turns ratio; entered in pu'],
-        [field: 'status',		datatype: int,
-            description: 'Initial machine status 1) in-service 0) out of service'],
-        [field: 'rmPcnt',		datatype: double,
-            description: 'Percent of the total Mvar required to hold the voltage at the bus controlled by bus that are to be contributed by the generation. It must be positive'],
-        [field: 'pMax',			datatype: double,
-            description: 'Maximum generator active power output; entered in MW'],
-        [field: 'pMin',			datatype: double,
-            description: 'Minimum generator active power output; entered in MW']
-    ]
-
-    def maps = [
-        buses: busObjectDef,
-        generators: generatorObjectDef
-    ]
+    createTempCards(tempDir, "C:/Projects/gridpack/IEEE14.raw", cards.clone())
+    def model = createObjects(tempDir, cards)
 
 
-    def model = createObjects(tempDir, cards, maps)
 
-    model.buses.each{
-        println it.name
-    }
+//	['buses',
+//                    'generators',
+//                    'branches',
+//                    'transformer_adjustment',
+//                    'area',
+//                    'two_terminal_dc',
+//                    'switched_shunts',
+//                    'impedance_correction',
+//                    'multi_terminal_dc',
+//                    'multi_section_line',
+//                    'zone',
+//                    'inter_area_transfer',
+//                    'owner',
+//                    'facts_device']
 
-    model.generators.each{
-        println it.busNumber
-    }
+//    def tempDir = "C:/temp/data"
+//    createCards(tempDir, "C:/Projects/gridpack/IEEE14.raw", cards.clone())
+//
+//    def busObjectDef = [
+//        [field: 'busNumber', outFormat: '%7d', datatype: int,
+//            description: "Bus numbers 1 to 999999"],
+//        [field: 'busType', outFormat: "'%2d'", datatype: int,
+//            description: "Bus Type 1) load 2) generator 3) swing 4) isolated"],
+//        [field: 'pLoad',		datatype: double,
+//            description: "Active power component of constant power in MW"],
+//        [field: 'qLoad',		datatype: double,
+//            description: "Reactive power component of constant power in MVar"],
+//        [field: 'gShunt',		datatype: double,
+//            description: "Active component of the shunt admittance to ground, entered in MW"],
+//        [field: 'bShunt',		datatype: double,
+//            description: "Reactive component of shunt admittance to ground, entered in Mvar (positive for cpacitor negative for reactor)"],
+//        [field: 'area',			datatype: int,
+//            description: "Area the load is assigned"],
+//        [field: 'vMag',			datatype: double,
+//            description: "Bus voltage magnitude, in per unit volatge"],
+//        [field: 'vAng',			datatype: double,
+//            description: "Bus voltage phase angle, in degrees"],
+//        [field: 'name',			datatype: String,
+//            description: "Alpha-numeric identifier assigned to bus"],
+//        [field: 'baseKv', 		datatype: double,
+//            description: "Bus base voltage, entered in kV"],
+//        [field: 'zone',			datatype: int,
+//            description: "Zone the load is assigned"]
+//    ]
+//
+//    def generatorObjectDef = [
+//        [field: 'busNumber',	datatype: int,
+//            description: 'Bus number where generator is connected'],
+//        [field: 'machineId',	datatype: String,
+//            description: 'Alphanumeric machine id.  Used to distinguish between differnet machines on same bus'],
+//        [field: 'pGen',			datatype: double,
+//            description: 'Generator active power (MW)'],
+//        [field: 'qGen',			datatype: double,
+//            description: 'Generator reactive power (MVar)'],
+//        [field: 'qMax',			datatype: double,
+//            description: 'Maximum generator reactive power output (MVar)'],
+//        [field: 'qMin',			datatype: double,
+//            description: 'Minimum generator reactive power output (MVar)'],
+//        [field: 'vSetPoint',	datatype: double,
+//            description: 'Voltage setpoint; entered in pu'],
+//        [field: 'iRegBusNumber',datatype: double,
+//            description: 'Bus number of a remote type 1 or 2 bus whose voltage is to be regulated by this plant to the value specified by vSetPoint'],
+//        [field: 'mBase',		datatype: double,
+//            description: 'Total MVA base of the units represented by this machine; entered in MVA.'],
+//        [field: 'zSource',		datatype: double,
+//            description: 'Complex impedance, in pu on mBase base. '],
+//        [field: 'zTran',		datatype: double,
+//            description: 'Step-up transformer impedance; entered in pu on mBase base. '],
+//        [field: 'rTran',		datatype: double,
+//            description: 'Active components of Step-up transformer impedance, in pu on mBase base'],
+//        [field: 'xTran',		datatype: double,
+//            description: 'Reactive components of Step-up transformer impedance, in pu on mBase base'],
+//        [field: 'gTap',			datatype: double,
+//            description: 'Step-up transformer off-nominal turns ratio; entered in pu'],
+//        [field: 'status',		datatype: int,
+//            description: 'Initial machine status 1) in-service 0) out of service'],
+//        [field: 'rmPcnt',		datatype: double,
+//            description: 'Percent of the total Mvar required to hold the voltage at the bus controlled by bus that are to be contributed by the generation. It must be positive'],
+//        [field: 'pMax',			datatype: double,
+//            description: 'Maximum generator active power output; entered in MW'],
+//        [field: 'pMin',			datatype: double,
+//            description: 'Minimum generator active power output; entered in MW']
+//    ]
+//
+//    def maps = [
+//        buses: busObjectDef,
+//        generators: generatorObjectDef
+//    ]
+//
+//
+//    def model = createObjects(tempDir, cards, maps)
+//
+//    model.buses.each{
+//        println it.name
+//    }
+//
+//    model.generators.each{
+//        println it.busNumber
+//    }
 
 }
