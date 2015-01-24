@@ -4,20 +4,45 @@ class PsseParser {
 
     ParserResultLog resultLog
     def model
+    def modelValid = false
 
     ParserResultLog parse(File defConfig, File tempDir, File inputFile){
         def config = new ConfigSlurper().parse(defConfig.text)
         def cards = config.cards
         resultLog = new ParserResultLog()
-        createTempCards(tempDir, inputFile, cards.clone())
+        createTempCards(tempDir, inputFile, cards)
         model = createObjects(tempDir, cards)
-        resultLog = new ParserResultLog()
+        validateModel(cards)
+        resultLog
+    }
+
+    /**
+     * Validates the model based upon whether a validator has been specified
+     * in the definition file.
+     *
+     * @param cards
+     * @return
+     */
+    private validateModel(List cards){
+        cards.each{ card ->
+            if (card?.validator){
+                // Each object of type ${card.name}
+                model[card.name].each{ obj ->obj
+                    // All validators get the object to validate and the model
+                    card.validator(obj, model).each { message ->
+                        resultLog.error(card.name, 0, message+obj)
+                    }
+                }
+            }
+        }
     }
 
     /**
      * Create the busbranch model from the raw input file.
      *
-     * @param inDir
+     * @param inDir - A directory of cards.  Must contain a file named ${card.name}.card
+     * 					for each psse section that is represented in the cards
+     * 					list.
      * @param cards - A list of objects with a name and column definition attribute
      * @return
      */
@@ -51,6 +76,7 @@ class PsseParser {
                             obj."${objDef[i]['field']}" = item.replace("'", "").trim()
                         }
                     }
+
                     objMap[card.name] << obj
                 }
             }
@@ -65,12 +91,17 @@ class PsseParser {
      * sectionCard.  This function puts the first 3 lines in a header.card file
      * in the same directory as the other cards.
      *
-     * @param tempDir
-     * @param rawFile
-     * @param sectionCard
+     * NOTE This function will pop a card from the sectionCards list for each
+     * section.  If there is not enough section cards then an error is thrown.
+     *
+     * @param tempDir - A directory for temp storage of cards to process.
+     * @param rawFile - A base psse file to process.
+     * @param cards - A processing list of cards to process.
      * @return
      */
-    private createTempCards(File tempDir, File rawFile, List sectionCard ){
+    private createTempCards(File tempDir, File rawFile, List cards ){
+        // Clone the list so we don't modify the passed list.
+        List sectionCards = cards.clone()
         def inputFile = rawFile
         int lineNum = 0
         String header = ""
@@ -90,12 +121,12 @@ class PsseParser {
 
             if (currentCard == -1){
                 writer.close()
-                currentCard = sectionCard.remove(0)
+                currentCard = sectionCards.remove(0)
                 writer = new FileWriter("${tempDir}/${currentCard.name}.card")
             }
 
             if (line.startsWith('0')){
-                currentCard = sectionCard.remove(0)
+                currentCard = sectionCards.remove(0)
                 writer.close()
                 writer = new FileWriter("${tempDir}/${currentCard.name}.card")
             }
@@ -106,118 +137,3 @@ class PsseParser {
         writer.close()
     }
 }
-
-//static void main(def args){
-//
-//    def file = "src/main/java/pnnl/goss/powergrid/parsers/Psse23Definitions.groovy"
-//    def config = new ConfigSlurper().parse(new File(file).text)
-//
-//    def tempDir = "C:/temp/data"
-//    def cards = config.cards
-//
-//    createTempCards(tempDir, "C:/Projects/gridpack/IEEE14.raw", cards.clone())
-//    def model = createObjects(tempDir, cards)
-//
-//
-//
-////	['buses',
-////                    'generators',
-////                    'branches',
-////                    'transformer_adjustment',
-////                    'area',
-////                    'two_terminal_dc',
-////                    'switched_shunts',
-////                    'impedance_correction',
-////                    'multi_terminal_dc',
-////                    'multi_section_line',
-////                    'zone',
-////                    'inter_area_transfer',
-////                    'owner',
-////                    'facts_device']
-//
-////    def tempDir = "C:/temp/data"
-////    createCards(tempDir, "C:/Projects/gridpack/IEEE14.raw", cards.clone())
-////
-////    def busObjectDef = [
-////        [field: 'busNumber', outFormat: '%7d', datatype: int,
-////            description: "Bus numbers 1 to 999999"],
-////        [field: 'busType', outFormat: "'%2d'", datatype: int,
-////            description: "Bus Type 1) load 2) generator 3) swing 4) isolated"],
-////        [field: 'pLoad',		datatype: double,
-////            description: "Active power component of constant power in MW"],
-////        [field: 'qLoad',		datatype: double,
-////            description: "Reactive power component of constant power in MVar"],
-////        [field: 'gShunt',		datatype: double,
-////            description: "Active component of the shunt admittance to ground, entered in MW"],
-////        [field: 'bShunt',		datatype: double,
-////            description: "Reactive component of shunt admittance to ground, entered in Mvar (positive for cpacitor negative for reactor)"],
-////        [field: 'area',			datatype: int,
-////            description: "Area the load is assigned"],
-////        [field: 'vMag',			datatype: double,
-////            description: "Bus voltage magnitude, in per unit volatge"],
-////        [field: 'vAng',			datatype: double,
-////            description: "Bus voltage phase angle, in degrees"],
-////        [field: 'name',			datatype: String,
-////            description: "Alpha-numeric identifier assigned to bus"],
-////        [field: 'baseKv', 		datatype: double,
-////            description: "Bus base voltage, entered in kV"],
-////        [field: 'zone',			datatype: int,
-////            description: "Zone the load is assigned"]
-////    ]
-////
-////    def generatorObjectDef = [
-////        [field: 'busNumber',	datatype: int,
-////            description: 'Bus number where generator is connected'],
-////        [field: 'machineId',	datatype: String,
-////            description: 'Alphanumeric machine id.  Used to distinguish between differnet machines on same bus'],
-////        [field: 'pGen',			datatype: double,
-////            description: 'Generator active power (MW)'],
-////        [field: 'qGen',			datatype: double,
-////            description: 'Generator reactive power (MVar)'],
-////        [field: 'qMax',			datatype: double,
-////            description: 'Maximum generator reactive power output (MVar)'],
-////        [field: 'qMin',			datatype: double,
-////            description: 'Minimum generator reactive power output (MVar)'],
-////        [field: 'vSetPoint',	datatype: double,
-////            description: 'Voltage setpoint; entered in pu'],
-////        [field: 'iRegBusNumber',datatype: double,
-////            description: 'Bus number of a remote type 1 or 2 bus whose voltage is to be regulated by this plant to the value specified by vSetPoint'],
-////        [field: 'mBase',		datatype: double,
-////            description: 'Total MVA base of the units represented by this machine; entered in MVA.'],
-////        [field: 'zSource',		datatype: double,
-////            description: 'Complex impedance, in pu on mBase base. '],
-////        [field: 'zTran',		datatype: double,
-////            description: 'Step-up transformer impedance; entered in pu on mBase base. '],
-////        [field: 'rTran',		datatype: double,
-////            description: 'Active components of Step-up transformer impedance, in pu on mBase base'],
-////        [field: 'xTran',		datatype: double,
-////            description: 'Reactive components of Step-up transformer impedance, in pu on mBase base'],
-////        [field: 'gTap',			datatype: double,
-////            description: 'Step-up transformer off-nominal turns ratio; entered in pu'],
-////        [field: 'status',		datatype: int,
-////            description: 'Initial machine status 1) in-service 0) out of service'],
-////        [field: 'rmPcnt',		datatype: double,
-////            description: 'Percent of the total Mvar required to hold the voltage at the bus controlled by bus that are to be contributed by the generation. It must be positive'],
-////        [field: 'pMax',			datatype: double,
-////            description: 'Maximum generator active power output; entered in MW'],
-////        [field: 'pMin',			datatype: double,
-////            description: 'Minimum generator active power output; entered in MW']
-////    ]
-////
-////    def maps = [
-////        buses: busObjectDef,
-////        generators: generatorObjectDef
-////    ]
-////
-////
-////    def model = createObjects(tempDir, cards, maps)
-////
-////    model.buses.each{
-////        println it.name
-////    }
-////
-////    model.generators.each{
-////        println it.busNumber
-////    }
-//
-//}

@@ -1,5 +1,6 @@
 package pnnl.goss.powergrid.server.impl
 
+import pnnl.goss.powergrid.parsers.ParserResultLog
 import pnnl.goss.powergrid.parsers.PsseParser;
 import spock.lang.Specification
 
@@ -26,7 +27,7 @@ class PsseParserSpecs extends Specification {
         assert rawFile.exists()
 
         when: "parse invoked"
-        def results = parser.parse(definitionFile, tempDir, rawFile)
+        ParserResultLog results = parser.parse(definitionFile, tempDir, rawFile)
 
         then:
         assert results != null
@@ -39,6 +40,7 @@ class PsseParserSpecs extends Specification {
         assert model.areas.size() == 1
         assert model.zones.size() == 1
         assert model.owners.size() == 1
+        assert results.errors.size() == 0
     }
 
     def setup(){

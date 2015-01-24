@@ -148,11 +148,38 @@ def ownerColumnsDef = [
     [field: 'name', datatype: String, description: '']
 ]
 
+/**
+ * Validator of branch object.
+ *
+ * Requires that branch elements are in the buses object.
+ */
+def branchValidator = { branch, model ->
+    def hasFrom = false
+    def hasTo = false
+    def buses = model.buses
+    def messages = []
+
+    buses.each{ bus1 ->
+        if (bus1.busNumber == branch.fromBus) {
+            hasFrom = true
+        }
+        if (bus1.busNumber == branch.toBus) {
+            hasTo = true
+        }
+    }
+    if (!(hasFrom && hasTo)){
+        messages << "Bus number is not found in buses"
+    }
+    else{
+        messages
+    }
+}
+
 // Cards are ordered and are managed based upon the column def
 cards = [
     [name: 'buses', columns: busColumnsDef],
     [name: 'generators', columns: generatorColumnsDef],
-    [name: 'branches', columns: branchColumnsDef],
+    [name: 'branches', columns: branchColumnsDef, validator: branchValidator],
     [name: 'transformer_adjustments', columns: transformerAdjustmentColumnsDef],
     [name: 'areas', columns: areaColumnsDef],
     [name: 'two_terminal_dc'],
