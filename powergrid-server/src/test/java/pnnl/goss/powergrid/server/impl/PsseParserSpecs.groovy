@@ -31,6 +31,7 @@ class PsseParserSpecs extends Specification {
 
         then:
         assert results != null
+        assert results.report.size() > 0
         assert parser.modelValid
 
         def model = parser.model
@@ -44,6 +45,10 @@ class PsseParserSpecs extends Specification {
         assert model.owners.size() == 1
 
         assert results.errors.size() == 0
+
+        results.report.each{
+            println it
+        }
     }
 
     def setup(){

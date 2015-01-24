@@ -28,6 +28,7 @@ class PsseParser {
     private validateModel(List cards){
         cards.each{ card ->
             if (card?.validator){
+                resultLog.debug("validating ${card.name}")
                 // Each object of type ${card.name}
                 model[card.name].each{ obj ->obj
                     // All validators get the object to validate and the model
@@ -52,10 +53,11 @@ class PsseParser {
         def objMap = [:]
 
         cards.each { card ->
-            println card.name
 
             // Only deal with the cards that have the object meta data defined.
             if (card?.columns){
+
+                resultLog.debug("Creating ${card.name}")
 
                 def objDef = card.columns
 
