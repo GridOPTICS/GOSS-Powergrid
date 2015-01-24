@@ -44,10 +44,16 @@
 */
 package pnnl.goss.powergrid.server;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -55,6 +61,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+
+import pnnl.goss.powergrid.PowergridCreationReport;
 import pnnl.goss.powergrid.PowergridModel;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 
@@ -98,4 +107,12 @@ public interface PowergridService {
             @PathParam(value = "powergridName") String powergridName,
             @PathParam(value = "timestep") String timestep);
 
+
+    @POST
+    @Path("/create")  //Your Path or URL to call this service
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Multipart(value = "root", type = "application/octet-stream")
+    public PowergridCreationReport createModelFromFile(@Multipart(value = "file", type = "application/octet-stream") File file);
+
+    //public String handleUpload(@FormParam("file") FileInputStream uploadedInputStream);
 }

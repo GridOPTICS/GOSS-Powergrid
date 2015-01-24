@@ -44,6 +44,12 @@
 */
 package pnnl.goss.powergrid.server.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 import javax.jms.JMSException;
@@ -59,37 +65,24 @@ import pnnl.goss.core.ClientFactory;
 import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Response;
-import pnnl.goss.core.server.GossDataServices;
-import pnnl.goss.core.server.GossRequestHandlerRegistrationService;
+import pnnl.goss.powergrid.PowergridCreationReport;
 import pnnl.goss.powergrid.PowergridModel;
 import pnnl.goss.powergrid.collections.PowergridList;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.parsers.PsseParser;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.server.PowergridService;
 import pnnl.goss.powergrid.server.WebDataException;
-import pnnl.goss.powergrid.server.handlers.RequestPowergridHandler;
 
 public class PowergridServiceImpl implements PowergridService {
 
     private static Logger log = LoggerFactory.getLogger(PowergridServiceImpl.class);
 
     private ClientFactory gossClientFactory;
-    private GossDataServices dataServices;
-    private GossRequestHandlerRegistrationService registrationServices;
 
     public PowergridServiceImpl(){
         log.debug("Constructing");
-    }
-
-    public void setRegistrationHandlerService(GossRequestHandlerRegistrationService service){
-        log.debug("Setting registration services");
-        registrationServices = service;
-    }
-
-    public void setDataServices(GossDataServices dataServices){
-        log.debug("Setting dataServices");
-        this.dataServices = dataServices;
     }
 
     public void setClientFactory(ClientFactory client){
@@ -156,4 +149,101 @@ public class PowergridServiceImpl implements PowergridService {
             }
         }
     }
+
+
+
+    private void saveToFile(InputStream uploadedInputStream,
+            String uploadedFileLocation) {
+
+        try {
+            OutputStream out = null;
+            int read = 0;
+            byte[] bytes = new byte[1024];
+
+            out = new FileOutputStream(new File(uploadedFileLocation));
+            while ((read = uploadedInputStream.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+
+    }
+
+    //@Override
+    public String handleUpload(FileInputStream uploadedInputStream) {
+        saveToFile(uploadedInputStream, "c:/temp/data.txt");
+        return "Success";
+    }
+
+    @Override
+    public PowergridCreationReport createModelFromFile(File file) {
+        log.debug("Got file: " + file.getAbsolutePath());
+        PowergridCreationReport result;
+        try {
+            File tempDir = createTempDir("pgc");
+            PsseParser parser = new PsseParser();
+            File config = new File("src/main/java/pnnl/goss/powergrid/parsers/Psse23Definitions.groovy");
+            result = parser.parse(config, tempDir, file);
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            throw new WebDataException(e.getMessage());
+        }
+
+        return result;
+    }
+
+    /**
+     * Creates a new and empty directory in the default temp directory using the
+     * given prefix. This methods uses {@link File#createTempFile} to create a
+     * new tmp file, deletes it and creates a directory for it instead.
+     *
+     * @param prefix The prefix string to be used in generating the diretory's
+     * name; must be at least three characters long.
+     * @return A newly-created empty directory.
+     * @throws IOException If no directory could be created.
+     */
+    private static File createTempDir(String prefix)
+      throws IOException
+    {
+      String tmpDirStr = System.getProperty("java.io.tmpdir");
+      if (tmpDirStr == null) {
+        throw new IOException(
+          "System property 'java.io.tmpdir' does not specify a tmp dir");
+      }
+
+      File tmpDir = new File(tmpDirStr);
+      if (!tmpDir.exists()) {
+        boolean created = tmpDir.mkdirs();
+        if (!created) {
+          throw new IOException("Unable to create tmp dir " + tmpDir);
+        }
+      }
+
+      File resultDir = null;
+      int suffix = (int)System.currentTimeMillis();
+      int failureCount = 0;
+      do {
+        resultDir = new File(tmpDir, prefix + suffix % 10000);
+        suffix++;
+        failureCount++;
+      }
+      while (resultDir.exists() && failureCount < 50);
+
+      if (resultDir.exists()) {
+        throw new IOException(failureCount +
+          " attempts to generate a non-existent directory name failed, giving up");
+      }
+      boolean created = resultDir.mkdir();
+      if (!created) {
+        throw new IOException("Failed to create tmp directory");
+      }
+
+      return resultDir;
+    }
+
 }
