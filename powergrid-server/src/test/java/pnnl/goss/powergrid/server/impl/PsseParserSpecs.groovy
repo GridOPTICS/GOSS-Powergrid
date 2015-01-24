@@ -16,7 +16,7 @@ class PsseParserSpecs extends Specification {
     File tempDir
     PsseParser parser
 
-    def "parsing pti23 file"() {
+    def "parsing pti23 IEEE14 file"() {
         def rawFile = new File("C:/Projects/gridpack/IEEE14.raw")
         println definitionFile.getAbsolutePath()
         expect:
@@ -30,8 +30,15 @@ class PsseParserSpecs extends Specification {
 
         then:
         assert results != null
-        assert parser.model != null
-        assert parser.model.buses.size() == 14
+        def model = parser.model
+        assert model != null
+        assert model.buses.size() == 14
+        assert model.generators.size() == 5
+        assert model.branches.size() == 20
+        assert model.transformer_adjustments.size() == 0
+        assert model.areas.size() == 1
+        assert model.zones.size() == 1
+        assert model.owners.size() == 1
     }
 
     def setup(){

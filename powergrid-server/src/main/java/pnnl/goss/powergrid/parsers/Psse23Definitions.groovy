@@ -72,21 +72,97 @@ generatorColumnsDef = [
         description: 'Minimum generator active power output; entered in MW']
 ]
 
+branchColumnsDef = [
+    [field: 'fromBus', datatype: int, description: ''],
+    [field: 'toBus', datatype: int, description: ''],
+    [field: 'ckt', datatype: String, description: ''],
+    [field: 'r', datatype: double, description: ''],
+    [field: 'x', datatype: double, description: ''],
+    [field: 'b', datatype: double, description: ''],
+    [field: 'ratingA', datatype: double, description: ''],
+    [field: 'ratingB', datatype: double, description: ''],
+    [field: 'ratingC', datatype: double, description: ''],
+    [field: 'ratio', datatype: double, description: ''],
+    [field: 'angle', datatype: double, description: ''],
+    [field: 'shuntG1', datatype: double, description: ''],
+    [field: 'shuntB1', datatype: double, description: ''],
+    [field: 'shuntG2', datatype: double, description: ''],
+    [field: 'shuntB2', datatype: double, description: ''],
+    [field: 'status', datatype: int, description: ''],
+]
+
+transformerAdjustmentColumnsDef = [
+    [field: 'fromBus', datatype: int, description: ''],
+    [field: 'toBus', datatype: int, description: ''],
+    [field: 'ckt', datatype: String, description: ''],
+    [field: 'control', datatype: int, description: ''],
+    [field: 'rma', datatype: double, description: ''],
+    [field: 'rmi', datatype: double, description: ''],
+    [field: 'rma', datatype: double, description: ''],
+    [field: 'vma', datatype: double, description: ''],
+    [field: 'vmi', datatype: double, description: ''],
+    [field: 'step', datatype: double, description: ''],
+    [field: 'table', datatype: int, description: '']
+]
+
+areaColumnsDef = [
+    [field: 'areaNumber', datatype: int, description: ''],
+    [field: 'isw', datatype: int, description: ''],
+    [field: 'pDesired', datatype: float, description: ''],
+    [field: 'pTolerance', datatype: float, description: ''],
+    [field: 'name', datatype: String, description: ''],
+]
+
+switchedShuntColumnsDef = [
+    [field: 'busNumber', datatype: int, description: ''],
+    [field: 'controlMode', datatype: int, description: ''],
+    [field: 'vswHi', datatype: double, description: ''],
+    [field: 'vswLo', datatype: double, description: ''],
+    [field: 'swRem', datatype: int, description: ''],
+    [field: 'bInit', datatype: int, description: ''],
+    [field: 'n1', datatype: int, description: ''],
+    [field: 'b1', datatype: double, description: ''],
+    [field: 'n2', datatype: int, description: ''],
+    [field: 'b2', datatype: double, description: ''],
+    [field: 'n3', datatype: int, description: ''],
+    [field: 'b3', datatype: double, description: ''],
+    [field: 'n4', datatype: int, description: ''],
+    [field: 'b4', datatype: double, description: ''],
+    [field: 'n5', datatype: int, description: ''],
+    [field: 'b5', datatype: double, description: ''],
+    [field: 'n6', datatype: int, description: ''],
+    [field: 'b6', datatype: double, description: ''],
+    [field: 'n7', datatype: int, description: ''],
+    [field: 'b7', datatype: double, description: ''],
+    [field: 'n8', datatype: int, description: ''],
+    [field: 'b8', datatype: double, description: '']
+]
+
+def zoneColumnsDef = [
+    [field: 'zoneNumber', datatype: int, description: ''],
+    [field: 'name', datatype: String, description: '']
+]
+
+def ownerColumnsDef = [
+    [field: 'ownerNumber', datatype: int, description: ''],
+    [field: 'name', datatype: String, description: '']
+]
+
 // Cards are ordered and are managed based upon the column def
 cards = [
     [name: 'buses', columns: busColumnsDef],
     [name: 'generators', columns: generatorColumnsDef],
-    [name: 'branches'],
-    [name: 'transformer_adjustment'],
-    [name: 'area'],
+    [name: 'branches', columns: branchColumnsDef],
+    [name: 'transformer_adjustments', columns: transformerAdjustmentColumnsDef],
+    [name: 'areas', columns: areaColumnsDef],
     [name: 'two_terminal_dc'],
     [name: 'switched_shunts'],
-    [name: 'impedance_correction'],
+    [name: 'impedance_corrections'],
     [name: 'multi_terminal_dc'],
     [name: 'multi_section_line'],
-    [name: 'zone'],
-    [name: 'inter_area_transfer'],
-    [name: 'owner'],
+    [name: 'zones', columns: zoneColumnsDef],
+    [name: 'inter_area_transfers'],
+    [name: 'owners', columns: ownerColumnsDef],
     [name: 'facts_device']
 
 ]
