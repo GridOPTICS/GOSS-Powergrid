@@ -1,4 +1,4 @@
-package pnnl.goss.powergrid
+package pnnl.goss.powergrid.parsers
 
 /**
  * Create the busbranch model from the raw input file.
