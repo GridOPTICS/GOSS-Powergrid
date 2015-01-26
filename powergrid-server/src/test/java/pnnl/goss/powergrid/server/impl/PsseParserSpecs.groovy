@@ -18,7 +18,7 @@ class PsseParserSpecs extends Specification {
     PsseParser parser
 
     def "parsing pti23 IEEE14 file"() {
-        def rawFile = new File("C:/Projects/gridpack/IEEE14.raw")
+        def rawFile = new File("src/test/resources/IEEE14.raw")
         println definitionFile.getAbsolutePath()
         expect:
         assert definitionFile.exists()
