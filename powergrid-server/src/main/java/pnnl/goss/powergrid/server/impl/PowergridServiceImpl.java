@@ -50,6 +50,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.jms.JMSException;
@@ -66,9 +67,11 @@ import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Response;
 import pnnl.goss.powergrid.PowergridCreationReport;
-import pnnl.goss.powergrid.PowergridModel;
+import pnnl.goss.powergrid.models.PowergridModel;
 import pnnl.goss.powergrid.collections.PowergridList;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.entities.PowergridModelEntity;
+import pnnl.goss.powergrid.parsers.ResultLog;
 import pnnl.goss.powergrid.parsers.PsseParser;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
@@ -180,21 +183,47 @@ public class PowergridServiceImpl implements PowergridService {
     }
 
     @Override
-    public PowergridCreationReport createModelFromFile(File file) {
+    public PowergridCreationReport createModelFromFile(
+            String name,
+            File file) {
         log.debug("Got file: " + file.getAbsolutePath());
-        PowergridCreationReport result;
+
+        PowergridCreationReportImpl powergridReport = new PowergridCreationReportImpl();
         try {
             File tempDir = createTempDir("pgc");
             PsseParser parser = new PsseParser();
             File config = new File("src/main/java/pnnl/goss/powergrid/parsers/Psse23Definitions.groovy");
-            result = parser.parse(config, tempDir, file);
+            ResultLog resultLog = parser.parse(config, tempDir, file);
+
+            for(String item: resultLog.getLog()){
+                powergridReport.addToReport(item);
+            }
+
+            if (resultLog.getSuccessful()){
+                // Set success = false so that we know whether the next step
+                // is successful.
+                resultLog.setSuccessful(false);
+
+                PowergridBuilder builder = new PowergridBuilder();
+                HashMap<String, String> props = new HashMap<>();
+                props.put("powergridName", name);
+                PowergridModelEntity model = builder.createFromParser(parser,
+                        props);
+
+                PowergridPersist persist = new PowergridPersist("mysqlPU");
+                persist.persist(model, resultLog);
+                powergridReport.setSuccessful(resultLog.getSuccessful());
+
+            }
+
+            //persist.persist(powergrid);
         } catch (IOException e) {
             e.printStackTrace();
 
             throw new WebDataException(e.getMessage());
         }
 
-        return result;
+        return (PowergridCreationReport) powergridReport;
     }
 
     /**
