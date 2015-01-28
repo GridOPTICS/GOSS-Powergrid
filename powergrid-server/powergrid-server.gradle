@@ -5,10 +5,14 @@ dependencies {
 
     compile "pnnl.goss:goss-core-server:${gossCoreVersion}"
 
-    compile "com.impetus.kundera.core:kundera-core:$kunderaVersion"
-    compile "com.impetus.kundera.client:kundera-cassandra:$kunderaVersion"
-    compile "com.impetus.kundera.client:kundera-rdbms:$kunderaVersion"
-    compile "mysql:mysql-connector-java:$mysqlVersion"
+    compile "com.impetus.kundera.client:kundera-cassandra:${kunderaVersion}"
+    compile "com.impetus.kundera.client:kundera-cassandra-pelops:${kunderaVersion}"
+    compile "com.impetus.kundera.client:kundera-rdbms:${kunderaVersion}"
+    compile "mysql:mysql-connector-java:${mysqlVersion}"
+    compile "org.apache.cxf:cxf-rt-frontend-jaxws:${cxfVersion}"
+    compile "org.apache.cxf:cxf-rt-rs-client:${cxfVersion}"
+
+    //compile "org.apache.camel:camel-core:2.14.1"
 }
 
 jar{
