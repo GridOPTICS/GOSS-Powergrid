@@ -2,19 +2,22 @@ package pnnl.goss.powergrid.parsers
 
 class PsseParser {
 
-    ParserResultLog resultLog
+    ResultLog resultLog
     def model
+    def configuration
     boolean modelValid = false
 
-    ParserResultLog parse(File defConfig, File tempDir, File inputFile){
+    ResultLog parse(File defConfig, File tempDir, File inputFile){
         def config = new ConfigSlurper().parse(defConfig.text)
+        configuration  = config
         def cards = config.cards
-        resultLog = new ParserResultLog()
+        resultLog = new ResultLog()
         createTempCards(tempDir, inputFile, cards)
         model = createObjects(tempDir, cards)
         validateModel(cards)
         // True if no errors
         modelValid = resultLog.errors.size() == 0
+        resultLog.successful = modelValid
         resultLog
     }
 
