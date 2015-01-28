@@ -13,7 +13,11 @@ buildscript {
 // Things that this project (root) and all subprojects have in common.
 allprojects {
     repositories {
-        maven{url "http://dl.bintray.com/gridoptics/goss" }
+        maven{
+            url "http://dl.bintray.com/gridoptics/goss"
+            url "https://oss.sonatype.org/content/repositories/releases"
+            url "http://kundera.googlecode.com/svn/maven2/maven-missing-resources"
+        }
         mavenLocal()
         jcenter()
     }
