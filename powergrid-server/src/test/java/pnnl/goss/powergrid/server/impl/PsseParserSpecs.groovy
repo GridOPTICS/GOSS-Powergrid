@@ -1,6 +1,6 @@
 package pnnl.goss.powergrid.server.impl
 
-import pnnl.goss.powergrid.parsers.ParserResultLog
+import pnnl.goss.powergrid.parsers.ResultLog
 import pnnl.goss.powergrid.parsers.PsseParser;
 import spock.lang.Specification
 
@@ -11,7 +11,7 @@ class PsseParserSpecs extends Specification {
     )
 
     File tempDirContainer = new File(
-        "C:/temp/data"
+        "build/temp"
     )
 
     File tempDir
@@ -27,11 +27,11 @@ class PsseParserSpecs extends Specification {
         assert rawFile.exists()
 
         when: "parse invoked"
-        ParserResultLog results = parser.parse(definitionFile, tempDir, rawFile)
+        ResultLog results = parser.parse(definitionFile, tempDir, rawFile)
 
         then:
         assert results != null
-        assert results.report.size() > 0
+        assert results.log.size() > 0
         assert parser.modelValid
 
         def model = parser.model
@@ -46,7 +46,7 @@ class PsseParserSpecs extends Specification {
 
         assert results.errors.size() == 0
 
-        results.report.each{
+        results.log.each{
             println it
         }
     }
