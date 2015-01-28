@@ -3,6 +3,8 @@ package pnnl.goss.powergrid.entities
 import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Column
+import javax.persistence.OneToMany;
+import javax.persistence.CascadeType;
 
 @Entity
 class PowergridModelEntity {
@@ -24,12 +26,12 @@ class PowergridModelEntity {
      * User entered data about the characteristics of the model.  This is not
      * a required field.
      */
-
     String characteristics
 
     /**
      * A list of buses that belong to this powergrid.
      */
-    //List<BusEntity> busEntities;
+    @OneToMany (cascade=[CascadeType.ALL])
+    List<BusEntity> busEntities;
 
 }
