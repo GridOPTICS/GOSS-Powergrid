@@ -1,5 +1,7 @@
 package pnnl.goss.powergrid.parsers
 
+import org.apache.commons.io.IOUtils;
+
 class PsseParser {
 
     ResultLog resultLog
@@ -8,7 +10,16 @@ class PsseParser {
     boolean modelValid = false
 
     ResultLog parse(File defConfig, File tempDir, File inputFile){
-        def config = new ConfigSlurper().parse(defConfig.text)
+        def config = null
+        if (defConfig.exists()){
+            config = new ConfigSlurper().parse(defConfig.text)
+        } else {
+            //String pathInJar = defConfig.path.replace("src/main/java/, """)
+            // TODO REPLACE THIS SOONEST!
+            String text = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("pnnl/goss/powergrid/parsers/Psse23Definitions.groovy"))
+            config = new ConfigSlurper().parse(text)
+        }
         configuration  = config
         def cards = config.cards
         resultLog = new ResultLog()

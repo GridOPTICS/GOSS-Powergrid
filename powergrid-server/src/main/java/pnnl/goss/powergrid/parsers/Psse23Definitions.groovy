@@ -48,7 +48,7 @@ generatorColumnsDef = [
         description: 'Minimum generator reactive power output (MVar)'],
     [field: 'vSetPoint', datatype: double,
         description: 'Voltage setpoint; entered in pu'],
-    [field: 'iRegBusNumber',datatype: double,
+    [field: 'iRegBusNumber',datatype: int,
         description: 'Bus number of a remote type 1 or 2 bus whose voltage is to be regulated by this plant to the value specified by vSetPoint'],
     [field: 'mBase', datatype: double,
         description: 'Total MVA base of the units represented by this machine; entered in MVA.'],
@@ -98,7 +98,6 @@ transformerAdjustmentColumnsDef = [
     [field: 'control', datatype: int, description: ''],
     [field: 'rma', datatype: double, description: ''],
     [field: 'rmi', datatype: double, description: ''],
-    [field: 'rma', datatype: double, description: ''],
     [field: 'vma', datatype: double, description: ''],
     [field: 'vmi', datatype: double, description: ''],
     [field: 'step', datatype: double, description: ''],
@@ -108,8 +107,8 @@ transformerAdjustmentColumnsDef = [
 areaColumnsDef = [
     [field: 'areaNumber', datatype: int, description: ''],
     [field: 'isw', datatype: int, description: ''],
-    [field: 'pDesired', datatype: float, description: ''],
-    [field: 'pTolerance', datatype: float, description: ''],
+    [field: 'pDesired', datatype: double, description: ''],
+    [field: 'pTolerance', datatype: double, description: ''],
     [field: 'name', datatype: String, description: ''],
 ]
 
