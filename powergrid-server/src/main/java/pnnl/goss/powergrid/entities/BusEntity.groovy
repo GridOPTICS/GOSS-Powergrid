@@ -1,12 +1,19 @@
 package pnnl.goss.powergrid.entities
 
 import javax.persistence.Column
+import javax.persistence.JoinColumn
 import javax.persistence.Entity
 import javax.persistence.Id
+import javax.persistence.OneToMany
+import javax.persistence.ManyToOne
+import javax.persistence.CascadeType
+import javax.persistence.FetchType
+
 
 @Entity
 class BusEntity {
     @Id
+    @Column(name="bus_mrid")
     String mrid
     String name
     String busName
@@ -27,5 +34,14 @@ class BusEntity {
     int zoneId
     double va
     double vm
-    int fileOrder
+
+//    @ManyToOne(fetch=FetchType.LAZY)
+//    @JoinColumn(name="mrid")
+//    PowergridModelEntity powergridModel
+
+//    @OneToMany (cascade=[CascadeType.ALL])
+//    List<GeneratorEntity> generators
+
+    // The numbered order that this entity was located in the original file.
+    int importOrder
 }
