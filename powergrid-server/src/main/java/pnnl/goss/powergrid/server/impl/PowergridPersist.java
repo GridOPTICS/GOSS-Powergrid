@@ -1,11 +1,15 @@
 package pnnl.goss.powergrid.server.impl;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import javax.persistence.Query;
 
 import pnnl.goss.powergrid.dao.PowergridDao;
 import pnnl.goss.powergrid.datamodel.AlertContext;
@@ -20,7 +24,14 @@ import pnnl.goss.powergrid.datamodel.Substation;
 import pnnl.goss.powergrid.datamodel.SwitchedShunt;
 import pnnl.goss.powergrid.datamodel.Transformer;
 import pnnl.goss.powergrid.datamodel.Zone;
+import pnnl.goss.powergrid.entities.AreaEntity;
+import pnnl.goss.powergrid.entities.BusEntity;
+import pnnl.goss.powergrid.entities.GeneratorEntity;
+import pnnl.goss.powergrid.entities.LineEntity;
+import pnnl.goss.powergrid.entities.OwnerEntity;
 import pnnl.goss.powergrid.entities.PowergridModelEntity;
+import pnnl.goss.powergrid.entities.TransformerEntity;
+import pnnl.goss.powergrid.entities.ZoneEntity;
 import pnnl.goss.powergrid.models.PowergridModel;
 import pnnl.goss.powergrid.parsers.ResultLog;
 
@@ -29,32 +40,67 @@ public class PowergridPersist implements PowergridDao {
     /**
      * The connenction to be used for retrieval/storage of entity data.
      */
-    String persistenceUnit;
-
-    EntityManagerFactory emf;
-
     EntityManager em;
 
-    public PowergridPersist(String persistenceUnit){
-        this.persistenceUnit = persistenceUnit;
-        if (emf == null)
-        {
-            emf = Persistence.createEntityManagerFactory(this.persistenceUnit);
-        }
+    public PowergridPersist(EntityManager manager){
+        em = manager;
+    }
+
+//    public PowergridPersist(String persistenceUnit){
+////        this.persistenceUnit = persistenceUnit;
+////        if (emf == null)
+////        {
+////            emf = Persistence.createEntityManagerFactory(this.persistenceUnit);
+////        }
+//    }
+
+    public PowergridModelEntity retrieve(String powergridName){
+        Query q= em.createQuery("Select p from PowergridModelEntity p"); // where p.powergridName = :powergridName");
+        //q.setParameter("powergridName", powergridName);
+        List<PowergridModelEntity> results = (List<PowergridModelEntity>)q.getResultList();
+
+        return results.get(0);
+
     }
 
     public void persist(PowergridModelEntity model, ResultLog log){
-        em = emf.createEntityManager();
-
 //        for(BusEntity ent: model.getBusEntities()){
 //            em.persist(ent);
 //        }
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
         em.persist(model);
-        if(em != null){
-            em.close();
-            em = null;
-            log.setSuccessful(true);
+        for(BusEntity b: model.getBusEntities()){
+            em.persist(b);
         }
+
+        for(GeneratorEntity g: model.getGeneratorEntities()){
+            em.persist(g);
+        }
+
+        for(LineEntity entity: model.getLineEntities()){
+            em.persist(entity);
+        }
+
+        for(TransformerEntity entity: model.getTransformerEntities()){
+            em.persist(entity);
+        }
+
+        for(ZoneEntity entity: model.getZoneEntities()){
+            em.persist(entity);
+        }
+
+        for(AreaEntity entity: model.getAreaEntities()){
+            em.persist(entity);
+        }
+
+        for(OwnerEntity entity: model.getOwnerEntities()){
+            em.persist(entity);
+        }
+
+        tx.commit();
+        em.flush();
+        log.setSuccessful(true);
     }
 
     @Override
@@ -77,7 +123,7 @@ public class PowergridPersist implements PowergridDao {
 
     public Object get(Class<?> entityClass, String id)
     {
-        EntityManager em = emf.createEntityManager();
+        //EntityManager em = emf.createEntityManager();
         Object p = em.find(entityClass, id);
         return p;
     }
