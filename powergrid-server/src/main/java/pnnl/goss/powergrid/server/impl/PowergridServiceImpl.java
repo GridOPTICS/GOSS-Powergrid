@@ -235,32 +235,6 @@ public class PowergridServiceImpl implements PowergridService {
             File config = new File("src/main/java/pnnl/goss/powergrid/parsers/Psse23Definitions.groovy");
             ResultLog resultLog = parser.parse(config, tempDir, file);
 
-//            for(String item: resultLog.getLog()){
-//                powergridReport.addToReport(item);
-//            }
-
-//            PowergridBuilder builder = new PowergridBuilder();
-//            HashMap<String, String> props = new HashMap<>();
-//            props.put("powergridName", name);
-//
-//            PowergridModelEntity entity = builder.createFromParser(parser, resultLog, props);
-//
-//            //PowergridModelEntity entity = new PowergridModelEntity();
-//            EntityManager em = factory.createEntityManager();
-//            em.persist(entity);
-
-//            FromToEntity efromTo = new FromToEntity();
-//            efromTo.setCkt("hello");
-//            efromTo.setFromBusMrid("Blah From");
-//            efromTo.setToBusMrid("Hey man To!");
-//            LineEntity eline = new LineEntity();
-//            eline.setFromToBuses(efromTo);
-//            eline.setStatus(1);
-//            eline.setMrid("Woot an id!");
-//            em.persist(eline);
-//            em.flush();
-            //em.close();
-            //PowergridBuilder builder = new PowergridBuilder();
             if (resultLog.getSuccessful()){
 //                // Set success = false so that we know whether the next step
 //                // is successful.
