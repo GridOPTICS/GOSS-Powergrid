@@ -58,8 +58,8 @@ import javax.ws.rs.core.MediaType;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
 import pnnl.goss.powergrid.PowergridCreationReport;
-import pnnl.goss.powergrid.models.PowergridModel;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.models.PowergridModel;
 
 @Path("/")
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -106,9 +106,9 @@ public interface PowergridService {
     @Path("/create")  //Your Path or URL to call this service
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Multipart(value = "root", type = "application/octet-stream")
-    @Produces({MediaType.TEXT_HTML})
-    public PowergridCreationReport createModelFromFile(
-            @PathParam(value = "name") String name,
+    @Produces({MediaType.TEXT_PLAIN})
+    public String createModelFromFile(
+            @PathParam(value = "powergrid_name") String name,
             @Multipart(value = "file", type = "application/octet-stream") File file);
 
     //public String handleUpload(@FormParam("file") FileInputStream uploadedInputStream);
