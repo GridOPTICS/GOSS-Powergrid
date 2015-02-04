@@ -58,7 +58,6 @@ import pnnl.goss.core.Response;
 import pnnl.goss.core.server.AbstractRequestHandler;
 import pnnl.goss.core.server.annotations.RequestHandler;
 import pnnl.goss.core.server.annotations.RequestItem;
-import pnnl.goss.powergrid.PowergridModel;
 import pnnl.goss.powergrid.collections.PowergridList;
 import pnnl.goss.powergrid.dao.PowergridDao;
 import pnnl.goss.powergrid.dao.PowergridDaoMySql;
@@ -83,33 +82,34 @@ public class RequestPowergridHandler extends AbstractRequestHandler {
     private DataResponse getPowergridModleAtTimestepResponse(PowergridDao dao, String powergridName, Timestamp timestep) {
         Powergrid grid = dao.getPowergridByName(powergridName);
         DataResponse response = new DataResponse();
-        if (grid.isSetPowergridId()) {
-            PowergridModel model = dao.getPowergridModelAtTime(grid.getPowergridId(), timestep);
-            response.setData(model);
-        } else {
-            response.setData(new DataError("Powergrid not found!"));
-        }
+        // TODO Fix Me!
+//        if (grid.isSetPowergridId()) {
+//            PowergridModel model = dao.getPowergridModelAtTime(grid.getPowergridId(), timestep);
+//            response.setData(model);
+//        } else {
+//            response.setData(new DataError("Powergrid not found!"));
+//        }
 
         return response;
     }
 
     private DataResponse getPowergridModelResponse(PowergridDao dao, RequestPowergrid request) {
         Powergrid grid = null;
-
+        // TODO Fix Me
         // Determine how the user requested the data.
-        if (request.getPowergridName() != null && !request.getPowergridName().isEmpty())
-        {
-            grid = dao.getPowergridByName(request.getPowergridName());
-        }
-
+//        if (request.getPowergridName() != null && !request.getPowergridName().isEmpty())
+//        {
+//            grid = dao.getPowergridByName(request.getPowergridName());
+//        }
+//
         DataResponse response = new DataResponse();
-
-        if (grid != null && grid.isSetPowergridId()) {
-            PowergridModel model = dao.getPowergridModel(grid.getPowergridId());
-            response.setData(model);
-        } else {
-            response.setData(new DataError("Powergrid not found!"));
-        }
+//
+//        if (grid != null && grid.isSetPowergridId()) {
+//            PowergridModel model = dao.getPowergridModel(grid.getPowergridId());
+//            response.setData(model);
+//        } else {
+//            response.setData(new DataError("Powergrid not found!"));
+//        }
 
         return response;
 
@@ -135,12 +135,6 @@ public class RequestPowergridHandler extends AbstractRequestHandler {
 
     public DataResponse getResponse(Request request) {
         DataResponse response = null;
-
-        // All of the requests must stem from RequestPowergrid.
-        if (!(request instanceof RequestPowergrid)){
-            response = new DataResponse(new DataError("Unkown request: " + request.getClass().getName()));
-            return response;
-        }
 
         RequestPowergrid requestPowergrid = (RequestPowergrid)request;
         log.debug("using datasource: " + PowergridServerActivator.getPowergridDsKey());
@@ -176,7 +170,8 @@ public class RequestPowergridHandler extends AbstractRequestHandler {
             response = getAvailablePowergrids(dao);
         } else if (request instanceof RequestPowergridTimeStepValues) {
             response = new DataResponse(new DataError("RequestPowergridTimeStepValues not implemented yet!"));
-        } else{
+        }
+        else{
             response = getPowergridModelResponse(dao, (RequestPowergrid) request);
         }
 
@@ -204,5 +199,6 @@ public class RequestPowergridHandler extends AbstractRequestHandler {
 
         return response;
     }
+
 
 }
