@@ -14,7 +14,7 @@ class GeneratorEntity {
     @Id
     @Column(name="generator_mrid")
     String mrid
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity=BusEntity.class)
+    @ManyToOne(targetEntity=BusEntity.class)
     @JoinColumn(name="bus_mrid")
     BusEntity parentBus
     String machineId

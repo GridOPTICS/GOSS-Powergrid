@@ -50,10 +50,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.jms.JMSException;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
@@ -67,25 +72,47 @@ import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Response;
 import pnnl.goss.powergrid.PowergridCreationReport;
-import pnnl.goss.powergrid.models.PowergridModel;
 import pnnl.goss.powergrid.collections.PowergridList;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.entities.FromToEntity;
+import pnnl.goss.powergrid.entities.LineEntity;
 import pnnl.goss.powergrid.entities.PowergridModelEntity;
 import pnnl.goss.powergrid.parsers.ResultLog;
 import pnnl.goss.powergrid.parsers.PsseParser;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
+import pnnl.goss.powergrid.models.PowergridModel;
 import pnnl.goss.powergrid.server.PowergridService;
 import pnnl.goss.powergrid.server.WebDataException;
+
 
 public class PowergridServiceImpl implements PowergridService {
 
     private static Logger log = LoggerFactory.getLogger(PowergridServiceImpl.class);
 
     private ClientFactory gossClientFactory;
+    private String persistenceUnit = "mysqlPU";
+    //@PersistenceUnit(unitName="recipe")
+    private EntityManagerFactory factory;
 
     public PowergridServiceImpl(){
         log.debug("Constructing");
+    }
+    public void setEntityManagerFactory(EntityManagerFactory factory) {
+        log.debug("Setting factory!");
+        this.factory = factory;
+    }
+
+//    public void setEntityManager(EntityManagerFactory emf){
+//        entityManagementFactory = emf;
+//    }
+//
+//    public PowergridServiceImpl(EntityManagerFactory emf){
+//        this.entityManagementFactory = emf;
+//    }
+
+    public void setPersistenceUnit(String persistenceUnit){
+        this.persistenceUnit = persistenceUnit;
     }
 
     public void setClientFactory(ClientFactory client){
@@ -118,22 +145,32 @@ public class PowergridServiceImpl implements PowergridService {
     }
 
     public PowergridModel getPowergridModel(String powergridName) {
-        Client client = gossClientFactory.create(PROTOCOL.OPENWIRE);
-        Response response = null;
+        EntityManager em = factory.createEntityManager();
 
-        try {
-            response = (Response) client.getResponse(new RequestPowergrid(powergridName));
-        } catch (JMSException e) {
-            log.error(e.getMessage(), e);
-            throw new WebDataException(e.getMessage());
-        }
-        finally{
-            client.close();
-        }
-        throwDataError(response);
+        //EntityManager manager = entityManagementFactory.createEntityManager();
+        PowergridPersist persist = new PowergridPersist(em);
+        PowergridModelEntity entity = persist.retrieve(powergridName);
+        em.close();
 
-        DataResponse dataResponse= (DataResponse)response;
-        return (PowergridModel)dataResponse.getData();
+        return null;
+
+
+//        Client client = gossClientFactory.create(PROTOCOL.OPENWIRE);
+//        Response response = null;
+//
+//        try {
+//            response = (Response) client.getResponse(new RequestPowergrid(powergridName));
+//        } catch (JMSException e) {
+//            log.error(e.getMessage(), e);
+//            throw new WebDataException(e.getMessage());
+//        }
+//        finally{
+//            client.close();
+//        }
+//        throwDataError(response);
+//
+//        DataResponse dataResponse= (DataResponse)response;
+//        return (PowergridModel)dataResponse.getData();
     }
 
     public PowergridModel getPowergridModelAt(String powergridName, String timestep) {
@@ -183,47 +220,94 @@ public class PowergridServiceImpl implements PowergridService {
     }
 
     @Override
-    public PowergridCreationReport createModelFromFile(
-            String name,
-            File file) {
+//    @XmlElementWrapper(name="CreationReport")
+//    @XmlElement(name="PowergridCreationReport", type=PowergridCreationReport.class)
+    public String createModelFromFile(String name, File file) {
         log.debug("Got file: " + file.getAbsolutePath());
 
-        PowergridCreationReportImpl powergridReport = new PowergridCreationReportImpl();
+        //PowergridCreationReport powergridReport = new PowergridCreationReport();
+        List<String> results = new ArrayList<String>();
+        boolean successful = false;
+        PowergridCreationReport powergridReport = null;
         try {
             File tempDir = createTempDir("pgc");
             PsseParser parser = new PsseParser();
             File config = new File("src/main/java/pnnl/goss/powergrid/parsers/Psse23Definitions.groovy");
             ResultLog resultLog = parser.parse(config, tempDir, file);
 
-            for(String item: resultLog.getLog()){
-                powergridReport.addToReport(item);
-            }
+//            for(String item: resultLog.getLog()){
+//                powergridReport.addToReport(item);
+//            }
 
+//            PowergridBuilder builder = new PowergridBuilder();
+//            HashMap<String, String> props = new HashMap<>();
+//            props.put("powergridName", name);
+//
+//            PowergridModelEntity entity = builder.createFromParser(parser, resultLog, props);
+//
+//            //PowergridModelEntity entity = new PowergridModelEntity();
+//            EntityManager em = factory.createEntityManager();
+//            em.persist(entity);
+
+//            FromToEntity efromTo = new FromToEntity();
+//            efromTo.setCkt("hello");
+//            efromTo.setFromBusMrid("Blah From");
+//            efromTo.setToBusMrid("Hey man To!");
+//            LineEntity eline = new LineEntity();
+//            eline.setFromToBuses(efromTo);
+//            eline.setStatus(1);
+//            eline.setMrid("Woot an id!");
+//            em.persist(eline);
+//            em.flush();
+            //em.close();
+            //PowergridBuilder builder = new PowergridBuilder();
             if (resultLog.getSuccessful()){
-                // Set success = false so that we know whether the next step
-                // is successful.
+//                // Set success = false so that we know whether the next step
+//                // is successful.
                 resultLog.setSuccessful(false);
 
                 PowergridBuilder builder = new PowergridBuilder();
                 HashMap<String, String> props = new HashMap<>();
                 props.put("powergridName", name);
                 PowergridModelEntity model = builder.createFromParser(parser,
-                        props);
+                        resultLog, props);
+//
+                EntityManager manager = factory.createEntityManager();
 
-                PowergridPersist persist = new PowergridPersist("mysqlPU");
+                PowergridPersist persist = new PowergridPersist(manager);
                 persist.persist(model, resultLog);
-                powergridReport.setSuccessful(resultLog.getSuccessful());
+                manager.close();
+                if (!resultLog.getSuccessful()){
+                    throw new Exception("Failed with mysqlPU");
+                }
+////
+////                persist = new PowergridPersist("cassandra_pu");
+////                persist.persist(model, resultLog);
+////                powergridReport.setSuccessful(resultLog.getSuccessful());
+//
+//            }
 
+//            if(builder != null){
+//                log.debug("Build != null!");
             }
+
+
+            powergridReport = new PowergridCreationReport(resultLog.getLog(), resultLog.getSuccessful());
 
             //persist.persist(powergrid);
         } catch (IOException e) {
             e.printStackTrace();
+            log.error("Exception thrown: ", e);
 
+            throw new WebDataException(e.getMessage());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            log.error("Exception thrown: ", e);
+            e.printStackTrace();
             throw new WebDataException(e.getMessage());
         }
 
-        return (PowergridCreationReport) powergridReport;
+        return powergridReport.toString();
     }
 
     /**
@@ -231,48 +315,48 @@ public class PowergridServiceImpl implements PowergridService {
      * given prefix. This methods uses {@link File#createTempFile} to create a
      * new tmp file, deletes it and creates a directory for it instead.
      *
-     * @param prefix The prefix string to be used in generating the diretory's
-     * name; must be at least three characters long.
+     * @param prefix
+     *            The prefix string to be used in generating the diretory's
+     *            name; must be at least three characters long.
      * @return A newly-created empty directory.
-     * @throws IOException If no directory could be created.
+     * @throws IOException
+     *             If no directory could be created.
      */
-    private static File createTempDir(String prefix)
-      throws IOException
-    {
-      String tmpDirStr = System.getProperty("java.io.tmpdir");
-      if (tmpDirStr == null) {
-        throw new IOException(
-          "System property 'java.io.tmpdir' does not specify a tmp dir");
-      }
-
-      File tmpDir = new File(tmpDirStr);
-      if (!tmpDir.exists()) {
-        boolean created = tmpDir.mkdirs();
-        if (!created) {
-          throw new IOException("Unable to create tmp dir " + tmpDir);
+    private static File createTempDir(String prefix) throws IOException {
+        String tmpDirStr = System.getProperty("java.io.tmpdir");
+        if (tmpDirStr == null) {
+            throw new IOException(
+                    "System property 'java.io.tmpdir' does not specify a tmp dir");
         }
-      }
 
-      File resultDir = null;
-      int suffix = (int)System.currentTimeMillis();
-      int failureCount = 0;
-      do {
-        resultDir = new File(tmpDir, prefix + suffix % 10000);
-        suffix++;
-        failureCount++;
-      }
-      while (resultDir.exists() && failureCount < 50);
+        File tmpDir = new File(tmpDirStr);
+        if (!tmpDir.exists()) {
+            boolean created = tmpDir.mkdirs();
+            if (!created) {
+                throw new IOException("Unable to create tmp dir " + tmpDir);
+            }
+        }
 
-      if (resultDir.exists()) {
-        throw new IOException(failureCount +
-          " attempts to generate a non-existent directory name failed, giving up");
-      }
-      boolean created = resultDir.mkdir();
-      if (!created) {
-        throw new IOException("Failed to create tmp directory");
-      }
+        File resultDir = null;
+        int suffix = (int) System.currentTimeMillis();
+        int failureCount = 0;
+        do {
+            resultDir = new File(tmpDir, prefix + suffix % 10000);
+            suffix++;
+            failureCount++;
+        } while (resultDir.exists() && failureCount < 50);
 
-      return resultDir;
+        if (resultDir.exists()) {
+            throw new IOException(
+                    failureCount
+                            + " attempts to generate a non-existent directory name failed, giving up");
+        }
+        boolean created = resultDir.mkdir();
+        if (!created) {
+            throw new IOException("Failed to create tmp directory");
+        }
+
+        return resultDir;
     }
 
 }

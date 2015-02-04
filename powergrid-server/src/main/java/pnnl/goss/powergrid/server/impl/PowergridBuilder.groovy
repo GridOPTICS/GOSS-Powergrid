@@ -10,17 +10,19 @@ import pnnl.goss.powergrid.entities.OwnerEntity
 import pnnl.goss.powergrid.entities.PowergridModelEntity;
 import pnnl.goss.powergrid.entities.TransformerEntity
 import pnnl.goss.powergrid.entities.ZoneEntity
-import pnnl.goss.powergrid.models.PowergridModel;
+//import pnnl.goss.powergrid.models.PowergridModel;
 import pnnl.goss.powergrid.parsers.PsseParser
 import pnnl.goss.powergrid.parsers.ResultLog;
-import pnnl.goss.powergrid.topology.bb.impl.BbBusImpl
-
+//import pnnl.goss.powergrid.topology.bb.impl.BbBusImpl
+//
 class PowergridBuilder {
-
-    ResultLog log
 
     String myRandomString(){
         randomUUID().toString()
+    }
+
+    PowergridBuilder() {
+
     }
 
     PowergridModelEntity createFromParser(PsseParser parser, ResultLog log, def attr){
@@ -33,9 +35,8 @@ class PowergridBuilder {
         }
 
         if (powergridModel.mrid == null){
-            powergridModel.mrid = randomUUID()
+            powergridModel.mrid = randomUUID().toString()
         }
-
         createBuses(powergridModel, parser.model.buses, parser.model)
         createGenerators(powergridModel, parser.model.generators)
         createLines(powergridModel, parser.model.branches)
@@ -44,10 +45,15 @@ class PowergridBuilder {
         createAreas(powergridModel, parser.model.areas)
         createOwners(powergridModel, parser.model.owners)
 
-        powergridModel
+        return powergridModel
     }
 
 
+//
+
+//    }
+//
+//
     private PowergridModelEntity createBuses(PowergridModelEntity powergridEntity,
         List parsedBuses, def parsedModel){
 

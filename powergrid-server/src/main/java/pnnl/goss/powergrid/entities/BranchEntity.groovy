@@ -1,5 +1,5 @@
-package pnnl.goss.powergrid.entities
-
-class BranchEntity {
-
-}
+//package pnnl.goss.powergrid.entities
+//
+//class BranchEntity1 {
+//
+//}

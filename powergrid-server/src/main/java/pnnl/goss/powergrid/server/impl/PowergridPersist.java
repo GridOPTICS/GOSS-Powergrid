@@ -1,14 +1,10 @@
 package pnnl.goss.powergrid.server.impl;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
 import javax.persistence.Query;
 
 import pnnl.goss.powergrid.dao.PowergridDao;
@@ -46,14 +42,6 @@ public class PowergridPersist implements PowergridDao {
         em = manager;
     }
 
-//    public PowergridPersist(String persistenceUnit){
-////        this.persistenceUnit = persistenceUnit;
-////        if (emf == null)
-////        {
-////            emf = Persistence.createEntityManagerFactory(this.persistenceUnit);
-////        }
-//    }
-
     public PowergridModelEntity retrieve(String powergridName){
         Query q= em.createQuery("Select p from PowergridModelEntity p"); // where p.powergridName = :powergridName");
         //q.setParameter("powergridName", powergridName);
@@ -64,42 +52,44 @@ public class PowergridPersist implements PowergridDao {
     }
 
     public void persist(PowergridModelEntity model, ResultLog log){
-//        for(BusEntity ent: model.getBusEntities()){
-//            em.persist(ent);
-//        }
-        EntityTransaction tx = em.getTransaction();
-        tx.begin();
+
         em.persist(model);
+
+        log.debug("Persisting: "+model.getBusEntities().size()+" Buses.");
         for(BusEntity b: model.getBusEntities()){
             em.persist(b);
         }
 
+        log.debug("Persisting: "+model.getBusEntities().size()+" Generators.");
         for(GeneratorEntity g: model.getGeneratorEntities()){
             em.persist(g);
         }
 
+        log.debug("Persisting: "+model.getLineEntities().size()+" Lines.");
         for(LineEntity entity: model.getLineEntities()){
             em.persist(entity);
         }
 
+        log.debug("Persisting: "+model.getTransformerEntities().size()+" Transformers.");
         for(TransformerEntity entity: model.getTransformerEntities()){
             em.persist(entity);
         }
 
+        log.debug("Persisting: "+model.getZoneEntities().size()+" Zones.");
         for(ZoneEntity entity: model.getZoneEntities()){
             em.persist(entity);
         }
 
+        log.debug("Persisting: "+model.getAreaEntities().size()+" Areas.");
         for(AreaEntity entity: model.getAreaEntities()){
             em.persist(entity);
         }
 
+        log.debug("Persisting: "+model.getOwnerEntities().size()+" Owners.");
         for(OwnerEntity entity: model.getOwnerEntities()){
             em.persist(entity);
         }
 
-        tx.commit();
-        em.flush();
         log.setSuccessful(true);
     }
 

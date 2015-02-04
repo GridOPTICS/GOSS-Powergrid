@@ -7,7 +7,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.CascadeType;
 
-import pnnl.goss.powergrid.models.BbPowergrid;
 import pnnl.goss.powergrid.models.PowergridModel;
 
 @Entity
@@ -39,8 +38,8 @@ class PowergridModelEntity {
      */
     @OneToMany (targetEntity=BusEntity.class)
     //@JoinColumn(name="bus_mrid")
-    List<BusEntity> busEntities;
-
+    List<BusEntity> busEntities
+//
     @OneToMany (targetEntity=GeneratorEntity.class)
     List<GeneratorEntity> generatorEntities;
 
@@ -62,22 +61,21 @@ class PowergridModelEntity {
 
     BusEntity getBusByBusNumber(int busNumber){
         BusEntity entity = busEntities.find { b ->b.busNumber == busNumber}
-        println "Returning ${entity.name}"
         entity
     }
 
 
-    void from(PowergridModel powergrid){
-        mrid = powergrid.mrid
-        powergridName = powergrid.name
-        timeStep = powergrid.timeStep
-
-    }
-
-    void to(PowergridModel powergrid) {
-        powergrid.mrid = mrid
-        powergrid.name = powergridName
-//        powergrid.timeStep = timeStep
-    }
-
+//    void from(PowergridModel powergrid){
+//        mrid = powergrid.mrid
+//        powergridName = powergrid.name
+//        timeStep = powergrid.timeStep
+//
+//    }
+//
+//    void to(PowergridModel powergrid) {
+//        powergrid.mrid = mrid
+//        powergrid.name = powergridName
+////        powergrid.timeStep = timeStep
+//    }
+//
 }

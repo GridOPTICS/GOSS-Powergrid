@@ -1,10 +1,11 @@
 package pnnl.goss.powergrid.parsers
 
+import java.io.Serializable;
 import java.util.List;
 
 import pnnl.goss.powergrid.PowergridCreationReport;
 
-class ResultLog {
+class ResultLog implements Serializable {
     def debugEnabled = true
 
     def warnings = []
