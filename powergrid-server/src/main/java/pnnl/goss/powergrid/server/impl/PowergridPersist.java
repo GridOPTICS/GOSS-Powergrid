@@ -1,6 +1,8 @@
 package pnnl.goss.powergrid.server.impl;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -42,14 +44,31 @@ public class PowergridPersist implements PowergridDao {
         em = manager;
     }
 
-    public PowergridModelEntity retrieve(String powergridName){
-        Query q= em.createQuery("Select p from PowergridModelEntity p"); // where p.powergridName = :powergridName");
-        //q.setParameter("powergridName", powergridName);
-        List<PowergridModelEntity> results = (List<PowergridModelEntity>)q.getResultList();
+    public PowergridModelEntity retrieve(String powergridMrid){
+        Query q= em.createQuery("Select p from PowergridModelEntity p where p.mrid= :mrid"); // where p.powergridName = :powergridName");
+        q.setParameter("mrid", powergridMrid);
 
-        return results.get(0);
+        PowergridModelEntity entity = (PowergridModelEntity)q.getSingleResult();
 
+        System.out.println(entity.getBusEntities().size());
+
+        return entity;
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Powergrid> getAvailablePowergrids() {
+        Query q= em.createQuery("Select p from PowergridModelEntity p");
+        List<Powergrid> powergrids = new ArrayList<Powergrid>();
+
+        for(PowergridModelEntity entity: (List<PowergridModelEntity>)q.getResultList()){
+            powergrids.add(EntityToModelConverter.toPowergrid(entity));
+        }
+
+        return powergrids;
+    }
+
+
 
     public void persist(PowergridModelEntity model, ResultLog log){
 
@@ -57,38 +76,43 @@ public class PowergridPersist implements PowergridDao {
 
         log.debug("Persisting: "+model.getBusEntities().size()+" Buses.");
         for(BusEntity b: model.getBusEntities()){
+            b.setPowergridModel(model);
             em.persist(b);
         }
 
         log.debug("Persisting: "+model.getBusEntities().size()+" Generators.");
         for(GeneratorEntity g: model.getGeneratorEntities()){
+            g.setPowergridModel(model);
             em.persist(g);
         }
 
         log.debug("Persisting: "+model.getLineEntities().size()+" Lines.");
         for(LineEntity entity: model.getLineEntities()){
+            entity.setPowergridModel(model);
             em.persist(entity);
         }
 
-        log.debug("Persisting: "+model.getTransformerEntities().size()+" Transformers.");
-        for(TransformerEntity entity: model.getTransformerEntities()){
-            em.persist(entity);
-        }
+//        log.debug("Persisting: "+model.getTransformerEntities().size()+" Transformers.");
+//        for(TransformerEntity entity: model.getTransformerEntities()){
+//            em.persist(entity);
+//        }
 
         log.debug("Persisting: "+model.getZoneEntities().size()+" Zones.");
         for(ZoneEntity entity: model.getZoneEntities()){
+            entity.setPowergridModel(model);
             em.persist(entity);
         }
 
         log.debug("Persisting: "+model.getAreaEntities().size()+" Areas.");
         for(AreaEntity entity: model.getAreaEntities()){
+            entity.setPowergridModel(model);
             em.persist(entity);
         }
 
-        log.debug("Persisting: "+model.getOwnerEntities().size()+" Owners.");
-        for(OwnerEntity entity: model.getOwnerEntities()){
-            em.persist(entity);
-        }
+//        log.debug("Persisting: "+model.getOwnerEntities().size()+" Owners.");
+//        for(OwnerEntity entity: model.getOwnerEntities()){
+//            em.persist(entity);
+//        }
 
         log.setSuccessful(true);
     }
@@ -161,11 +185,6 @@ public class PowergridPersist implements PowergridDao {
         return null;
     }
 
-    @Override
-    public List<Powergrid> getAvailablePowergrids() {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
     @Override
     public List<Timestamp> getTimeSteps(int powergridId) {
