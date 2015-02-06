@@ -59,11 +59,12 @@ import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
 import pnnl.goss.powergrid.PowergridCreationReport;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.entities.Junk;
 import pnnl.goss.powergrid.models.PowergridModel;
 
 @Path("/")
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-public interface PowergridService {
+public interface PowergridServiceREST {
 
     /**
      * Returns a list of Powergrid objects that are available.  The properties
@@ -76,6 +77,12 @@ public interface PowergridService {
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public List<Powergrid> getPowergrids();
 
+
+//    @GET
+//    @Path("/")
+//    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+//    public Junk getJunk();
+
     /**
      * Returns the powergrid model for the
      *
@@ -83,10 +90,10 @@ public interface PowergridService {
      * @return
      */
     @GET
-    @Path("/{powergridName}")
+    @Path("/{powergridMrid}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public PowergridModel getPowergridModel(
-            @PathParam(value = "powergridName") String powergridName);
+            @PathParam(value = "powergridMrid") String powergridMrid);
 
     /**
      * Retrieves a powergridmodel with the values updated for a particular timestep.
@@ -108,7 +115,7 @@ public interface PowergridService {
     @Multipart(value = "root", type = "application/octet-stream")
     @Produces({MediaType.TEXT_PLAIN})
     public String createModelFromFile(
-            @PathParam(value = "powergrid_name") String name,
+            @Multipart(value = "powergridName", type="text/plain") String powergridName,
             @Multipart(value = "file", type = "application/octet-stream") File file);
 
     //public String handleUpload(@FormParam("file") FileInputStream uploadedInputStream);
