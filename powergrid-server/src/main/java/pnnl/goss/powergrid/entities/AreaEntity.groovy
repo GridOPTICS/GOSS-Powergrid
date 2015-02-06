@@ -22,4 +22,9 @@ class AreaEntity {
     double pTolerance
     int importOrder
 
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="powergridmodel_mrid")
+    PowergridModelEntity powergridModel
+
+
 }

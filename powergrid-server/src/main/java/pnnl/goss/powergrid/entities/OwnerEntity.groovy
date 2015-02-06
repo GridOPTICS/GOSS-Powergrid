@@ -13,11 +13,15 @@ import javax.persistence.FetchType
 class OwnerEntity {
 
     @Id
-    @Column(name="zone_mrid")
+    @Column(name="owner_mrid")
     String mrid
     String name
     int ownerNumber
     int importOrder
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="powergridmodel_mrid")
+	PowergridModelEntity powergridModel
 
 }
 

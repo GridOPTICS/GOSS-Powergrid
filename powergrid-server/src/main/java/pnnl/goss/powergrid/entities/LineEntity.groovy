@@ -37,6 +37,10 @@ class LineEntity {
     double shuntB2
     int status
     int importOrder
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="powergridmodel_mrid")
+	PowergridModelEntity powergridModel
 }
 //	"branchId",
 //	"powergridId",
