@@ -4,7 +4,7 @@ import javax.persistence.Embeddable
 import javax.persistence.Column
 
 @Embeddable
-class TimestepKeyEntity {
+class TimestepKeyEntity implements Serializable {
 
     /**
      * A unique entity in the system.
