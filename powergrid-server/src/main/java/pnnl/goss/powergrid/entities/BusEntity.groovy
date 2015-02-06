@@ -35,9 +35,9 @@ class BusEntity {
     double va
     double vm
 
-//    @ManyToOne(fetch=FetchType.LAZY)
-//    @JoinColumn(name="mrid")
-//    PowergridModelEntity powergridModel
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="powergridmodel_mrid")
+    PowergridModelEntity powergridModel
 
 //    @OneToMany (cascade=[CascadeType.ALL])
 //    List<GeneratorEntity> generators
