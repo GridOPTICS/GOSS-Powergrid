@@ -11,7 +11,9 @@ dependencies {
 jar {
     manifest {
         instruction 'Import-Package', 'javax.xml.bind',
-                                        'javax.xml.bind.annotation'
+                                        'javax.xml.bind.annotation',
+                                        'javax.xml.datatype',
+                                        'groovy.lang'
         instruction 'Export-Package', 'pnnl.goss.powergrid',
                                         'pnnl.goss.powergrid.models',
                                         'pnnl.goss.powergrid.collections',
