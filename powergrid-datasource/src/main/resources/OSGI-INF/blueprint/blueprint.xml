@@ -114,7 +114,7 @@ http://aries.apache.org/xmlns/jpa/v1.0.0 http://aries.apache.org/xmlns/jpa/v1.0.
 
     <service id="xaDataSource" ref="poolingDataSource" interface="javax.sql.DataSource">
         <service-properties>
-            <entry key="osgi.jndi.service.name" value="jdbc/derbyds"/>
+            <entry key="osgi.jndi.service.name" value="jdbc/powergridMysql"/>
         </service-properties>
     </service>
 
