@@ -1,55 +1,48 @@
 package pnnl.goss.powergrid.models;
 
-import java.util.Collection;
+import java.util.Date;
 
-public interface PowergridModel {
+import javax.xml.bind.annotation.XmlRootElement;
 
-    Bus getBus(int busNumber);
+import pnnl.goss.powergrid.datamodel.Powergrid;
 
-    Collection<Bus> getBuses();
+@XmlRootElement(name="PowergridModel")
+public class PowergridModel extends BaseModel {
 
-    Substation getSubstation(int id);
+    /**
+     * The current instances of a powergrid that this model is representing.
+     */
+    private Powergrid powergrid;
 
-    Substation getSubstation(Bus bus);
+    /**
+     * The timestep that this powergrid represents.
+     */
+    private Date timestep = null;
 
-//    Transformer getTransformer(int id);
-//
-//    Load getLoad(int id);
-//
-//    Machine getMachine(int id);
-//
-//    SwitchedShunt getSwitchedShunt(int id);
-//
-//    Branch getBranch(int id);
-//
-//    Bus getBus(int busNumber);
-//
+    public PowergridModel(){
 
-//
-//    AlertContext getAlertContext();
-//
-//    List<Line> getLines();
-//
-//    List<Transformer> getTransformers();
-//
-//    List<Zone> getZones();
-//
-//    List<Area> getAreas();
-//
-//    Powergrid getPowergrid();
-//
-//    List<Branch> getBranches();
-//
-//    List<Substation> getSubstations();
-//
-//    List<Load> getLoads();
-//
-//    List<Machine> getMachines();
-//
-//    List<SwitchedShunt> getSwitchedShunts();
-//
-//    List<Bus> getBuses();
-//
-//    List<Alert> getAlerts();
+    }
+
+    public PowergridModel(Powergrid powergrid, Date timestep){
+        this.powergrid = powergrid;
+        this.timestep = timestep;
+    }
+
+    public Powergrid getPowergrid() {
+        return powergrid;
+    }
+
+    public void setPowergrid(Powergrid powergrid) {
+        this.powergrid = powergrid;
+    }
+
+    public Date getTimestep() {
+        return timestep;
+    }
+
+    public void setTimestep(Date timestep) {
+        this.timestep = timestep;
+    }
+
 
 }
