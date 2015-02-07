@@ -113,8 +113,8 @@ public interface PowergridServiceREST {
     @Path("/create")  //Your Path or URL to call this service
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Multipart(value = "root", type = "application/octet-stream")
-    @Produces({MediaType.TEXT_PLAIN})
-    public String createModelFromFile(
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public PowergridCreationReport createModelFromFile(
             @Multipart(value = "powergridName", type="text/plain") String powergridName,
             @Multipart(value = "file", type = "application/octet-stream") File file);
 
