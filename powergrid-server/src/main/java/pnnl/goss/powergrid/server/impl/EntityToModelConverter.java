@@ -7,6 +7,7 @@ import pnnl.goss.powergrid.datamodel.Area;
 import pnnl.goss.powergrid.datamodel.Branch;
 import pnnl.goss.powergrid.datamodel.Bus;
 import pnnl.goss.powergrid.datamodel.Line;
+import pnnl.goss.powergrid.datamodel.Load;
 import pnnl.goss.powergrid.datamodel.Machine;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.SwitchedShunt;
@@ -42,12 +43,22 @@ public class EntityToModelConverter {
         model.setBuses(toBusList(entity.getBusEntities()));
         model.setMachines(toMachineList(entity.getGeneratorEntities()));
         model.setAreas(toAreaList(entity.getAreaEntities()));
+        //model.setLoads(toLoadList(entity));
 
         model.setZones(toZoneList(entity.getZoneEntities()));
         //model.setTransformers(transformers);
-        model.setSwitchedShunts(toSwitchedShuntList(entity.getSwitchedShuntEntities()));
+
 
         populateTransmissionElements(entity, model, entity.getBranchEntities(), entity.getTransformerEntities());
+
+        if (entity.getModelFileType() != null &&
+                entity.getModelFileType().equals("Psse23")){
+            model.setLoads(toLoadsFromBuses(entity.getBusEntities()));
+            model.setSwitchedShunts(toSwitchedShuntsFromBuses(entity.getBusEntities()));
+        }
+        else{
+            model.setSwitchedShunts(toSwitchedShuntList(entity.getSwitchedShuntEntities()));
+        }
 
         //model.setBranches(toBranchList(entity.getLineEntities(), entity.getTransformerEntities()));
         //model.setLines(toLineList(entity.getLineEntities()));
@@ -55,6 +66,51 @@ public class EntityToModelConverter {
 
         return model;
     }
+
+
+
+    public static List<SwitchedShunt> toSwitchedShuntsFromBuses(
+            List<BusEntity> busEntities) {
+        List<SwitchedShunt> modelList = new ArrayList<SwitchedShunt>();
+
+        if (busEntities != null){
+            for (int i=0; i< busEntities.size(); i++){
+                BusEntity bus = busEntities.get(i);
+                if (bus.getBShunt() != 0){
+                    SwitchedShunt shunt = new SwitchedShunt();
+                    shunt.setBinit(bus.getBShunt());
+                    shunt.setBshunt(bus.getBShunt());
+                    shunt.setBusNumber(bus.getBusNumber());
+                    //shunt.setMrid(value);
+                    modelList.add(shunt);
+                }
+            }
+        }
+        return modelList;
+    }
+
+
+
+    public static List<Load> toLoadsFromBuses(List<BusEntity> busEntities) {
+        List<Load> modelList = new ArrayList<Load>();
+
+        if (busEntities != null){
+            for (int i=0; i< busEntities.size(); i++){
+                BusEntity bus = busEntities.get(i);
+                if (bus.getPLoad() != 0 || bus.getQLoad() != 0){
+                    Load load = new Load();
+                    load.setPload(bus.getPLoad());
+                    load.setQload(load.getQload());
+                    load.setBusNumber(bus.getBusNumber());
+                    modelList.add(load);
+                }
+            }
+
+        }
+        return modelList;
+    }
+
+
 
     private static void populateTransmissionElements(PowergridModelEntity powerModelEntity,
             PowergridModel model,
@@ -132,6 +188,7 @@ public class EntityToModelConverter {
         model.setTransformers(transformers);
 
     }
+
 
 
     public static List<Branch> toBranchList(List<BranchEntity> lineEntities,

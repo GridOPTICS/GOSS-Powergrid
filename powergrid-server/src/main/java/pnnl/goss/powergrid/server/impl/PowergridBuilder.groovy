@@ -18,6 +18,8 @@ import pnnl.goss.powergrid.parsers.ResultLog;
 //
 class PowergridBuilder {
 
+    PsseParser parser
+
     String myRandomString(){
         randomUUID().toString()
     }
@@ -27,7 +29,7 @@ class PowergridBuilder {
     }
 
     PowergridModelEntity createFromParser(PsseParser parser, ResultLog log, def attr){
-
+        this.parser = parser
         println parser.configuration
         PowergridModelEntity powergridModel = new PowergridModelEntity();
 
@@ -38,6 +40,10 @@ class PowergridBuilder {
         if (powergridModel.mrid == null){
             powergridModel.mrid = randomUUID().toString()
         }
+
+        powergridModel.setModelFileType(parser.configuration.fileType)
+        powergridModel.setModelImportDate(new Date())
+
         createBuses(powergridModel, parser.model.buses, parser.model)
         createGenerators(powergridModel, parser.model.generators)
         createBranches(powergridModel, parser.model.branches)

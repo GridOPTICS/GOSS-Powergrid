@@ -36,6 +36,7 @@ class PsseParserSpecs extends Specification {
 
         def model = parser.model
         assert model != null
+        assert parser.configuration.fileType == "Psse23"
         assert model.buses.size() == 14
         assert model.generators.size() == 5
         assert model.branches.size() == 20
