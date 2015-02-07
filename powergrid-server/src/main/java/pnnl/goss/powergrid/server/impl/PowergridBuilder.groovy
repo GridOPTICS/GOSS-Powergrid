@@ -5,9 +5,10 @@ import pnnl.goss.powergrid.entities.AreaEntity
 import pnnl.goss.powergrid.entities.BusEntity
 import pnnl.goss.powergrid.entities.FromToEntity;
 import pnnl.goss.powergrid.entities.GeneratorEntity
-import pnnl.goss.powergrid.entities.LineEntity
+import pnnl.goss.powergrid.entities.BranchEntity
 import pnnl.goss.powergrid.entities.OwnerEntity
 import pnnl.goss.powergrid.entities.PowergridModelEntity;
+import pnnl.goss.powergrid.entities.SwitchedShuntEntity
 import pnnl.goss.powergrid.entities.TransformerEntity
 import pnnl.goss.powergrid.entities.ZoneEntity
 //import pnnl.goss.powergrid.models.PowergridModel;
@@ -39,11 +40,12 @@ class PowergridBuilder {
         }
         createBuses(powergridModel, parser.model.buses, parser.model)
         createGenerators(powergridModel, parser.model.generators)
-        createLines(powergridModel, parser.model.branches)
+        createBranches(powergridModel, parser.model.branches)
         createTransformers(powergridModel, parser.model.transformer_adjustments)
         createZones(powergridModel, parser.model.zones)
         createAreas(powergridModel, parser.model.areas)
         createOwners(powergridModel, parser.model.owners)
+        createSwitchedShunts(powergridModel, parser.model.switched_shunts)
 
         return powergridModel
     }
@@ -85,6 +87,46 @@ class PowergridBuilder {
         powergridEntity
     }
 
+    private PowergridModelEntity createSwitchedShunts(PowergridModelEntity powergridEntity,
+        List parsedShunts) {
+
+        def entityShunts = []
+        parsedShunts.eachWithIndex { shunt, i ->
+            def entity = new SwitchedShuntEntity (
+                controlMode: shunt.controlMode,
+                vswHi: shunt.vswHi,
+                vswLo: shunt.vswLo,
+                swRem: shunt.swRem,
+                bInit: shunt.bInit,
+                n1: shunt.n1,
+                b1: shunt.b1,
+                n2: shunt.n2,
+                b2: shunt.b2,
+                n3: shunt.n3,
+                b3: shunt.b3,
+                n4: shunt.n4,
+                b4: shunt.b4,
+                n5: shunt.n5,
+                b5: shunt.b5,
+                n6: shunt.n6,
+                b6: shunt.b6,
+                n7: shunt.n7,
+                b7: shunt.b7,
+                n8: shunt.n8,
+                b8: shunt.b8,
+
+                importOrder: i
+            )
+
+            entityShunts << entity
+        }
+
+        powergridEntity.setSwitchedShuntEntities(entityShunts)
+        powergridEntity
+
+    }
+
+
     private PowergridModelEntity createGenerators(PowergridModelEntity powergridEntity,
         List parsedGenerators) {
 
@@ -121,17 +163,17 @@ class PowergridBuilder {
 
     }
 
-    private PowergridModelEntity createLines(PowergridModelEntity powergridEntity,
+    private PowergridModelEntity createBranches(PowergridModelEntity powergridEntity,
         List parsedLines){
 
-        List<LineEntity> entityLines = []
+        List<BranchEntity> entityLines = []
         parsedLines.eachWithIndex {line, i ->
             FromToEntity fromTo = new FromToEntity(
                     fromBusMrid: powergridEntity.getBusByBusNumber(line.fromBus).mrid,
                     toBusMrid: powergridEntity.getBusByBusNumber(line.toBus).mrid,
                     ckt: line.ckt
                 )
-            LineEntity entity= new LineEntity(
+            BranchEntity entity= new BranchEntity(
                 fromToBuses: fromTo,
                 //fromBus: powergridEntity.getBusByBusNumber(line.fromBus),
                 //toBus: powergridEntity.getBusByBusNumber(line.toBus),
@@ -154,7 +196,7 @@ class PowergridBuilder {
             entityLines << entity
         }
 
-        powergridEntity.setLineEntities(entityLines)
+        powergridEntity.setBranchEntities(entityLines)
         powergridEntity
 
     }
