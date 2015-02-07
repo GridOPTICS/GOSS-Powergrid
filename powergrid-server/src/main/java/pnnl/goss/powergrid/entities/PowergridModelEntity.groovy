@@ -31,6 +31,14 @@ class PowergridModelEntity {
      */
     String characteristics
 
+    /**
+     *
+     */
+    double SBase;
+
+    /**
+     * The timestep that this entity was created/recorded at.
+     */
     Date timeStep
 
     /**
@@ -43,8 +51,8 @@ class PowergridModelEntity {
     @OneToMany (targetEntity=GeneratorEntity.class)
     List<GeneratorEntity> generatorEntities;
 
-    @OneToMany (targetEntity=LineEntity.class)
-    List<LineEntity> lineEntities;
+    @OneToMany (targetEntity=BranchEntity.class)
+    List<BranchEntity> branchEntities;
 
     @OneToMany(targetEntity=TransformerEntity.class)
     List<TransformerEntity> transformerEntities
@@ -58,9 +66,17 @@ class PowergridModelEntity {
     @OneToMany(targetEntity=AreaEntity.class)
     List<AreaEntity> areaEntities
 
+    @OneToMany(targetEntity=SwitchedShuntEntity.class)
+    List<SwitchedShuntEntity> switchedShuntEntities
+
 
     BusEntity getBusByBusNumber(int busNumber){
         BusEntity entity = busEntities.find { b ->b.busNumber == busNumber}
+        entity
+    }
+
+    BusEntity getBusByMrid(String mrid){
+        BusEntity entity = busEntities.find { b ->b.mrid == mrid}
         entity
     }
 
