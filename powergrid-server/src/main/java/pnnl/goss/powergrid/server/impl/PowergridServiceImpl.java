@@ -59,6 +59,8 @@ import javax.jms.JMSException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import javax.persistence.Query;
+import javax.sql.DataSource;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
@@ -73,86 +75,112 @@ import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Response;
 import pnnl.goss.powergrid.PowergridCreationReport;
 import pnnl.goss.powergrid.collections.PowergridList;
+import pnnl.goss.powergrid.dao.PowergridDao;
+import pnnl.goss.powergrid.dao.PowergridDaoMySql;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.entities.FromToEntity;
-import pnnl.goss.powergrid.entities.LineEntity;
+import pnnl.goss.powergrid.entities.Junk;
+import pnnl.goss.powergrid.entities.BranchEntity;
 import pnnl.goss.powergrid.entities.PowergridModelEntity;
 import pnnl.goss.powergrid.parsers.ResultLog;
 import pnnl.goss.powergrid.parsers.PsseParser;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.models.PowergridModel;
-import pnnl.goss.powergrid.server.PowergridService;
+import pnnl.goss.powergrid.models.Stuff;
+import pnnl.goss.powergrid.server.PowergridServerActivator;
+import pnnl.goss.powergrid.server.PowergridServiceREST;
 import pnnl.goss.powergrid.server.WebDataException;
 
-
-public class PowergridServiceImpl implements PowergridService {
+// This class will be turning into a dao class rather than a rest class.
+public class PowergridServiceImpl implements PowergridServiceREST {
 
     private static Logger log = LoggerFactory.getLogger(PowergridServiceImpl.class);
 
     private ClientFactory gossClientFactory;
-    private String persistenceUnit = "mysqlPU";
-    //@PersistenceUnit(unitName="recipe")
+
+    /**
+     * Entity factory for getting information out of the database via the
+     * java persistence framework.
+     */
     private EntityManagerFactory factory;
 
     public PowergridServiceImpl(){
         log.debug("Constructing");
     }
+
+    /**
+     * Injection of the entity management factory so that we can create enitity
+     * managers from it to access database resources.
+     *
+     * @param An EntityManagerFactory factory
+     */
     public void setEntityManagerFactory(EntityManagerFactory factory) {
         log.debug("Setting factory!");
         this.factory = factory;
     }
 
-//    public void setEntityManager(EntityManagerFactory emf){
-//        entityManagementFactory = emf;
-//    }
-//
-//    public PowergridServiceImpl(EntityManagerFactory emf){
-//        this.entityManagementFactory = emf;
-//    }
-
-    public void setPersistenceUnit(String persistenceUnit){
-        this.persistenceUnit = persistenceUnit;
-    }
-
-    public void setClientFactory(ClientFactory client){
+    /**
+     * Injection of the client factory to allow us to use goss's request handler
+     * framework on the server side.
+     *
+     * @param A ClientFactory factory
+     */
+    public void setClientFactory(ClientFactory factory){
         log.debug("Setting client factory");
-        gossClientFactory = client;
+        gossClientFactory = factory;
     }
 
+    public Stuff getStuff(){
+        return new Stuff();
+    }
 
-    @XmlElementWrapper(name="Powergrids")
-    @XmlElement(name="Powergrid", type=Powergrid.class)
+//    @XmlElementWrapper(name="Powergrids")
+//    @XmlElement(name="Powergrid", type=Powergrid.class)
     public List<Powergrid> getPowergrids() {
 
-        Client client = gossClientFactory.create(PROTOCOL.OPENWIRE);
-        Response response = null;
+        EntityManager em = factory.createEntityManager();
+        PowergridPersist persist = new PowergridPersist(em);
+        List<Powergrid> powergrids = persist.getAvailablePowergrids();
+        em.close();
+        return powergrids;
 
-        try {
-            response = (Response) client.getResponse(new RequestPowergridList());
-        } catch (JMSException e) {
-            log.error(e.getMessage(), e);
-            throw new WebDataException(e.getMessage());
-        }
-        finally{
-            client.close();
-        }
-        throwDataError(response);
 
-        DataResponse dataResponse= (DataResponse)response;
-        PowergridList pgList = (PowergridList) dataResponse.getData();
-        return pgList.toList();
+//        PowergridDao dao = new PowergridDaoMySql();
+//        dao.getAvailablePowergrids()
+//
+//        Client client = gossClientFactory.create(PROTOCOL.OPENWIRE);
+//        Response response = null;
+//
+//        try {
+//            response = (Response) client.getResponse(new RequestPowergridList());
+//        } catch (JMSException e) {
+//            log.error(e.getMessage(), e);
+//            throw new WebDataException(e.getMessage());
+//        }
+//        finally{
+//            client.close();
+//        }
+//        throwDataError(response);
+//
+//        DataResponse dataResponse= (DataResponse)response;
+//        PowergridList pgList = (PowergridList) dataResponse.getData();
+//        return pgList.toList();
     }
 
-    public PowergridModel getPowergridModel(String powergridName) {
-        EntityManager em = factory.createEntityManager();
 
-        //EntityManager manager = entityManagementFactory.createEntityManager();
+
+
+
+    public PowergridModel getPowergridModel(String powergridMrid) {
+
+        EntityManager em = factory.createEntityManager();
         PowergridPersist persist = new PowergridPersist(em);
-        PowergridModelEntity entity = persist.retrieve(powergridName);
+        PowergridModelEntity model = persist.retrieve(powergridMrid);
+        PowergridModel pgModel = EntityToModelConverter.toPowergridModel(model);
         em.close();
 
-        return null;
+        return pgModel;
 
 
 //        Client client = gossClientFactory.create(PROTOCOL.OPENWIRE);
@@ -220,15 +248,14 @@ public class PowergridServiceImpl implements PowergridService {
     }
 
     @Override
-//    @XmlElementWrapper(name="CreationReport")
-//    @XmlElement(name="PowergridCreationReport", type=PowergridCreationReport.class)
-    public String createModelFromFile(String name, File file) {
+    public PowergridCreationReport createModelFromFile(String powergridName, File file) {
         log.debug("Got file: " + file.getAbsolutePath());
 
         //PowergridCreationReport powergridReport = new PowergridCreationReport();
         List<String> results = new ArrayList<String>();
         boolean successful = false;
         PowergridCreationReport powergridReport = null;
+        String modelMrid = null;
         try {
             File tempDir = createTempDir("pgc");
             PsseParser parser = new PsseParser();
@@ -242,10 +269,10 @@ public class PowergridServiceImpl implements PowergridService {
 
                 PowergridBuilder builder = new PowergridBuilder();
                 HashMap<String, String> props = new HashMap<>();
-                props.put("powergridName", name);
+                props.put("powergridName", powergridName);
                 PowergridModelEntity model = builder.createFromParser(parser,
                         resultLog, props);
-//
+
                 EntityManager manager = factory.createEntityManager();
 
                 PowergridPersist persist = new PowergridPersist(manager);
@@ -254,6 +281,7 @@ public class PowergridServiceImpl implements PowergridService {
                 if (!resultLog.getSuccessful()){
                     throw new Exception("Failed with mysqlPU");
                 }
+                modelMrid = model.getMrid();
 ////
 ////                persist = new PowergridPersist("cassandra_pu");
 ////                persist.persist(model, resultLog);
@@ -267,6 +295,7 @@ public class PowergridServiceImpl implements PowergridService {
 
 
             powergridReport = new PowergridCreationReport(resultLog.getLog(), resultLog.getSuccessful());
+            powergridReport.setPowergridMrid(modelMrid);
 
             //persist.persist(powergrid);
         } catch (IOException e) {
@@ -281,7 +310,7 @@ public class PowergridServiceImpl implements PowergridService {
             throw new WebDataException(e.getMessage());
         }
 
-        return powergridReport.toString();
+        return powergridReport;
     }
 
     /**
