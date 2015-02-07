@@ -1,4 +1,5 @@
 name = "Psse23 Column Definition File"
+fileType = "Psse23"
 description = """
 This configuration file was created with the help of the IEEE14 bus model
 and the information located at: https://www.ee.washington.edu/research/pstca/formats/pti.txt.

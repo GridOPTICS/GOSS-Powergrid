@@ -19,6 +19,10 @@ class PowergridModelEntity {
     @Column(name="powergridmodel_mrid")
     String mrid
 
+    Date modelImportDate
+
+    String modelFileType
+
     /**
      * A name that the user can use to lookup the powergrid from webservice.
      * The name does not need to be unique.
