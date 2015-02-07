@@ -18,4 +18,9 @@ class ZoneEntity {
     String name
     int zoneNumber
     int importOrder
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="powergridmodel_mrid")
+	PowergridModelEntity powergridModel
+
 }

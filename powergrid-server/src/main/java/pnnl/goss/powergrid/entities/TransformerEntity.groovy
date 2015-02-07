@@ -24,6 +24,11 @@ class TransformerEntity {
     double step
     int table
     int importOrder
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="powergridmodel_mrid")
+	PowergridModelEntity powergridModel
+
 
 }
 

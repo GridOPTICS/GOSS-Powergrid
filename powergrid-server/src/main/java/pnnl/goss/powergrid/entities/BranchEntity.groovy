@@ -11,18 +11,13 @@ import javax.persistence.CascadeType
 import javax.persistence.FetchType
 
 @Entity
-class LineEntity {
+class BranchEntity {
     @Id
-    @Column(name="line_mrid")
+    @Column(name="branch_mrid")
     String mrid
     @Embedded FromToEntity fromToBuses
-//    @ManyToOne(targetEntity=BusEntity.class, optional=false)
-//    @JoinColumn(name="bus_mrid", insertable=false, updatable=false)
-//    BusEntity fromBus
-//    @ManyToOne(targetEntity=BusEntity.class, optional=false)
-//    @JoinColumn(name="bus_mrid", insertable=false, updatable=false)
-//    BusEntity toBus
-//    String ckt
+
+    String ckt
     double r
     double x
     double b
@@ -37,10 +32,10 @@ class LineEntity {
     double shuntB2
     int status
     int importOrder
-	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="powergridmodel_mrid")
-	PowergridModelEntity powergridModel
+
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name="powergridmodel_mrid")
+    PowergridModelEntity powergridModel
 }
 //	"branchId",
 //	"powergridId",
