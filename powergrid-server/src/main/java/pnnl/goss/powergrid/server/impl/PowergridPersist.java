@@ -25,9 +25,10 @@ import pnnl.goss.powergrid.datamodel.Zone;
 import pnnl.goss.powergrid.entities.AreaEntity;
 import pnnl.goss.powergrid.entities.BusEntity;
 import pnnl.goss.powergrid.entities.GeneratorEntity;
-import pnnl.goss.powergrid.entities.LineEntity;
+import pnnl.goss.powergrid.entities.BranchEntity;
 import pnnl.goss.powergrid.entities.OwnerEntity;
 import pnnl.goss.powergrid.entities.PowergridModelEntity;
+import pnnl.goss.powergrid.entities.SwitchedShuntEntity;
 import pnnl.goss.powergrid.entities.TransformerEntity;
 import pnnl.goss.powergrid.entities.ZoneEntity;
 import pnnl.goss.powergrid.models.PowergridModel;
@@ -49,8 +50,6 @@ public class PowergridPersist implements PowergridDao {
         q.setParameter("mrid", powergridMrid);
 
         PowergridModelEntity entity = (PowergridModelEntity)q.getSingleResult();
-
-        System.out.println(entity.getBusEntities().size());
 
         return entity;
     }
@@ -80,22 +79,29 @@ public class PowergridPersist implements PowergridDao {
             em.persist(b);
         }
 
-        log.debug("Persisting: "+model.getBusEntities().size()+" Generators.");
+        log.debug("Persisting: "+model.getGeneratorEntities().size()+" Generators.");
         for(GeneratorEntity g: model.getGeneratorEntities()){
             g.setPowergridModel(model);
             em.persist(g);
         }
 
-        log.debug("Persisting: "+model.getLineEntities().size()+" Lines.");
-        for(LineEntity entity: model.getLineEntities()){
+        log.debug("Persisting: "+model.getSwitchedShuntEntities().size()+" Switched Shunts.");
+        for(SwitchedShuntEntity e: model.getSwitchedShuntEntities()){
+            e.setPowergridModel(model);
+            em.persist(e);
+        }
+
+        log.debug("Persisting: "+model.getBranchEntities().size()+" Lines.");
+        for(BranchEntity entity: model.getBranchEntities()){
             entity.setPowergridModel(model);
             em.persist(entity);
         }
 
-//        log.debug("Persisting: "+model.getTransformerEntities().size()+" Transformers.");
-//        for(TransformerEntity entity: model.getTransformerEntities()){
-//            em.persist(entity);
-//        }
+        log.debug("Persisting: "+model.getTransformerEntities().size()+" Transformers.");
+        for(TransformerEntity entity: model.getTransformerEntities()){
+            entity.setPowergridModel(model);
+            em.persist(entity);
+        }
 
         log.debug("Persisting: "+model.getZoneEntities().size()+" Zones.");
         for(ZoneEntity entity: model.getZoneEntities()){
@@ -109,10 +115,10 @@ public class PowergridPersist implements PowergridDao {
             em.persist(entity);
         }
 
-//        log.debug("Persisting: "+model.getOwnerEntities().size()+" Owners.");
-//        for(OwnerEntity entity: model.getOwnerEntities()){
-//            em.persist(entity);
-//        }
+        log.debug("Persisting: "+model.getOwnerEntities().size()+" Owners.");
+        for(OwnerEntity entity: model.getOwnerEntities()){
+            em.persist(entity);
+        }
 
         log.setSuccessful(true);
     }
