@@ -1,7 +1,7 @@
 Bundle-Version: 0.0.0.${tstamp}
 Export-Package:  \
+	pnnl.goss.powergrid.api,\
+	pnnl.goss.powergrid.api.topology,\
 	pnnl.goss.powergrid.datamodel,\
 	pnnl.goss.powergrid.requests,\
-	pnnl.goss.powergrid.api,\
-	pnnl.goss.powergrid.datamodel.collections,\
-	pnnl.goss.powergrid.api.topology
+	pnnl.goss.powergrid.datamodel.collections
