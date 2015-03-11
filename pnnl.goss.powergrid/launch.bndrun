@@ -8,6 +8,7 @@
 	ch.qos.logback.classic;version='[1.1.2,1.1.3)',\
 	ch.qos.logback.core;version='[1.1.2,1.1.3)',\
 	com.google.gson;version='[2.3.1,2.3.2)',\
+	com.mysql.jdbc;version='[5.1.34,5.1.35)',\
 	com.springsource.com.thoughtworks.xstream;version='[1.3.1,1.3.2)',\
 	com.springsource.javax.jms;version='[1.1.0,1.1.1)',\
 	com.springsource.org.apache.commons.logging;version='[1.1.1,1.1.2)',\
@@ -18,11 +19,14 @@
 	org.amdatu.configurator.api;version='[1.0.0,1.0.1)',\
 	org.amdatu.configurator.properties;version='[1.0.0,1.0.1)',\
 	org.amdatu.configurator.shell;version='[1.0.0,1.0.1)',\
+	org.amdatu.persistence2_1;version='[1.0.0,1.0.1)',\
 	org.amdatu.testing.configurator;version='[3.0.0,3.0.1)',\
+	org.amdatu.web.rest.jaxrs;version='[1.0.7,1.0.8)',\
 	org.apache.activemq.activemq-osgi;version='[5.11.1,5.11.2)',\
 	org.apache.activemq.shiro;version='[5.11.1,5.11.2)',\
 	org.apache.aries.blueprint;version='[1.1.0,1.1.1)',\
 	org.apache.aries.proxy.api;version='[1.0.0,1.0.1)',\
+	org.apache.aries.transaction.manager;version='[1.0.1,1.0.2)',\
 	org.apache.aries.util;version='[1.1.0,1.1.1)',\
 	org.apache.commons.pool;version='[1.5.4,1.5.5)',\
 	org.apache.felix.configadmin;version='[1.8.0,1.8.1)',\
@@ -56,6 +60,8 @@
 	pnnl.goss.core.goss-core-security;version='[2.0.0,2.0.1)',\
 	pnnl.goss.core.goss-core-server;version='[2.0.0,2.0.1)',\
 	pnnl.goss.core.goss-core-server-api;version='[2.0.0,2.0.1)',\
+	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
+	pnnl.goss.powergrid.goss-powergrid-server;version=latest,\
 	slf4j.api;version='[1.7.7,1.7.8)'
 
 -runrequires:  \
@@ -78,4 +84,6 @@
 	osgi.identity;filter:='(osgi.identity=org.amdatu.configurator.properties)',\
 	osgi.identity;filter:='(osgi.identity=org.h2)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.commons.pool)',\
-	osgi.identity;filter:='(osgi.identity=org.apache.servicemix.bundles.commons-dbcp)'
+	osgi.identity;filter:='(osgi.identity=org.apache.servicemix.bundles.commons-dbcp)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.goss-powergrid-api)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.goss-powergrid-server)'
