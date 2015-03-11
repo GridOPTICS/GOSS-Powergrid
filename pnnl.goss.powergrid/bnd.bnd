@@ -14,7 +14,8 @@
 	pnnl.goss.core.goss-core-server,\
 	javax.persistence,\
 	com.mysql.jdbc,\
-	javax.ws.rs.jsr311-api
+	javax.ws.rs.jsr311-api,\
+	pnnl.goss.core.security-propertyfile
 -sub:  \
 	*.bnd
 -runfw: org.apache.felix.framework;version='[4,5]'

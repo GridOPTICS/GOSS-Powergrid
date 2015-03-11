@@ -21,6 +21,7 @@
 	com.springsource.com.thoughtworks.xstream;version='[1.3.1,1.3.2)',\
 	com.springsource.javax.jms;version='[1.1.0,1.1.1)',\
 	com.springsource.org.apache.commons.logging;version='[1.1.1,1.1.2)',\
+	com.springsource.org.junit;version='[4.11.0,4.11.1)',\
 	com.springsource.org.xmlpull;version='[1.1.4,1.1.5)',\
 	javax.management.j2ee-api;version='[1.1.1,1.1.2)',\
 	javax.xml;version='[1.3.4,1.3.5)',\
@@ -68,8 +69,10 @@
 	pnnl.goss.core.goss-core-security;version='[2.0.0,2.0.1)',\
 	pnnl.goss.core.goss-core-server;version='[2.0.0,2.0.1)',\
 	pnnl.goss.core.goss-core-server-api;version='[2.0.0,2.0.1)',\
+	pnnl.goss.core.security-propertyfile;version='[2.0.0,2.0.1)',\
 	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
 	pnnl.goss.powergrid.goss-powergrid-server;version=latest,\
+	pnnl.goss.powergrid.itests;version=latest,\
 	slf4j.api;version='[1.7.7,1.7.8)'
 
 -runrequires:  \
@@ -97,4 +100,7 @@
 	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.goss-powergrid-server)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.runtime)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
-	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.security-propertyfile)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.itests)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)'
