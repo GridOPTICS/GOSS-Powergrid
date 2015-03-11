@@ -72,10 +72,9 @@ public class PowergridServerActivator implements BundleActivator, ManagedService
     private Hashtable<String, Object> properties = new Hashtable<>();
     private static String powergridDsKey;
 
-    private ServiceTracker<GossDataServices, Object> datasourceTracker;
     private BundleContext context;
-    private PowergridService powergridService;
-    private ServiceRegistration<PowergridService> powergridServiceRegistration;
+    private PowergridServiceREST powergridService;
+    private ServiceRegistration<PowergridServiceREST> powergridServiceRegistration;
 
     private ServiceTracker<GossRequestHandlerRegistrationService, Object> registrationServiceTracker;
 
@@ -101,52 +100,38 @@ public class PowergridServerActivator implements BundleActivator, ManagedService
 
     }
 
-//    private void registerServices(){
-//        if(datasourceTracker == null) return;
-//        powergridService = new PowergridServiceImpl(
-//                (GossDataServices) datasourceTracker.getService());
-//
-//        powergridServiceRegistration = context.registerService(PowergridService.class,
-//                powergridService, null);
-//    }
-//
-//    private void unregisterServices(){
-//
-//        powergridServiceRegistration.unregister();
-//        powergridService = null;
-//        powergridServiceRegistration = null;
-//
-//    }
-
-
     @Override
     public void start(BundleContext context) throws Exception {
         log.debug("Starting Bundle");
-        this.context = context;
-
-        Hashtable<String, Object> properties = new Hashtable<>();
-        properties.put(Constants.SERVICE_PID, CONFIG_PID);
-        context.registerService(ManagedService.class, this, properties);
-
-        registrationServiceTracker =
-                new ServiceTracker<GossRequestHandlerRegistrationService, Object>(context,
-                        GossRequestHandlerRegistrationService.class,  null);
-        registrationServiceTracker.open();
-        GossRequestHandlerRegistrationService regService = (GossRequestHandlerRegistrationService)
-                registrationServiceTracker.getService();
-
-        regService.addHandlerFromBundleContext(context);
+//        try{
+//            this.context = context;
+//
+//            Hashtable<String, Object> properties = new Hashtable<>();
+//            properties.put(Constants.SERVICE_PID, CONFIG_PID);
+//            context.registerService(ManagedService.class, this, properties);
+//
+//            registrationServiceTracker =
+//                    new ServiceTracker<GossRequestHandlerRegistrationService, Object>(context,
+//                            GossRequestHandlerRegistrationService.class,  null);
+//            registrationServiceTracker.open();
+//            GossRequestHandlerRegistrationService regService = (GossRequestHandlerRegistrationService)
+//                    registrationServiceTracker.getService();
+//
+//            regService.addHandlerFromBundleContext(context);
+//        }
+//        catch(Exception e){
+//            log.error("Staring bundle error!", e);
+//            throw e;
+//        }
     }
 
 
     @Override
     public void stop(BundleContext context) throws Exception {
         log.debug("Stoping Bundle");
-        GossRequestHandlerRegistrationService regService = (GossRequestHandlerRegistrationService)
-                registrationServiceTracker.getService();
-        registrationServiceTracker.close();
-        registrationServiceTracker = null;
-        datasourceTracker.close();
-        datasourceTracker = null;
+//        GossRequestHandlerRegistrationService regService = (GossRequestHandlerRegistrationService)
+//                registrationServiceTracker.getService();
+//        registrationServiceTracker.close();
+//        registrationServiceTracker = null;
     }
 }

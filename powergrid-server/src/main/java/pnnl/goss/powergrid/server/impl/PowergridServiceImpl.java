@@ -89,11 +89,12 @@ import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.models.PowergridModel;
 import pnnl.goss.powergrid.models.Stuff;
 import pnnl.goss.powergrid.server.PowergridServerActivator;
+import pnnl.goss.powergrid.server.PowergridService;
 import pnnl.goss.powergrid.server.PowergridServiceREST;
 import pnnl.goss.powergrid.server.WebDataException;
 
 // This class will be turning into a dao class rather than a rest class.
-public class PowergridServiceImpl implements PowergridServiceREST {
+public class PowergridServiceImpl implements PowergridServiceREST, PowergridService {
 
     private static Logger log = LoggerFactory.getLogger(PowergridServiceImpl.class);
 

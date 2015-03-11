@@ -1,0 +1,8 @@
+dependencies {
+    compile project(":powergrid-common")
+    compile project(":powergrid-server")
+
+    compile "pnnl.goss:goss-core:${gossCoreVersion}"
+    compile "javax:javaee-api:${javaxApiVersion}"
+    compile "com.impetus.kundera.core:kundera-core:${kunderaVersion}"
+}

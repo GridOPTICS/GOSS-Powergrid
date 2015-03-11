@@ -7,6 +7,21 @@ and the information located at: https://www.ee.washington.edu/research/pstca/for
 The assumption that it is accurate however that can not be guaranteed.
 """
 
+headerDef = [
+    rows: [
+        [
+            [field: 'ic', datatype: int, description: '0 for base case 1 for change data'],
+            [field: 'sbase', datatype: double, description: 'System base mva']
+        ],
+        [
+            [field: 'desc1', datatype: String]
+        ],
+        [
+            [field: 'desc2', datatype: String]
+        ]
+    ]
+]
+
 busColumnsDef = [
     [field: 'busNumber', outFormat: '%7d', datatype: int,
         description: "Bus numbers 1 to 999999"],
@@ -177,6 +192,7 @@ def branchValidator = { branch, model ->
 
 // Cards are ordered and are managed based upon the column def
 cards = [
+    [name: 'header', columns: headerDef],
     [name: 'buses', columns: busColumnsDef],
     [name: 'generators', columns: generatorColumnsDef],
     [name: 'branches', columns: branchColumnsDef, validator: branchValidator],

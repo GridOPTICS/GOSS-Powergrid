@@ -78,29 +78,89 @@ class PsseParser {
                 // prepare for the output of the current card's items.
                 objMap[card.name] = []
 
-                def cardFile = new File("${inDir}/${card.name}.card").readLines().each{ line ->
-                    def obj = new Expando()
-                    line.split(",").eachWithIndex { item, i ->
+                def obj = null
+                def hasRows = false
+                // number of rows before we add the object to the list of objects
+                def modCount = null
 
-                        // Dynamically  create properties on the object  based upon
-                        // the object's datatype and cast the value correctly.
-                        if (objDef[i].datatype == int){
-                            obj."${objDef[i]['field']}" = item.trim().toInteger()
-                        }
-                        else if(objDef[i].datatype == double){
-                            obj."${objDef[i]['field']}" = item.trim().toDouble()
-                        }
-                        else {
-                            obj."${objDef[i]['field']}" = item.replace("'", "").trim()
-                        }
+                if (objDef instanceof Map && objDef.containsKey('rows')) {
+                    modCount = objDef.rows.size()
+                    hasRows = true
+                }
+
+
+                def cardFile = new File("${inDir}/${card.name}.card").readLines().eachWithIndex{ line, lineNum ->
+
+                    if (modCount == null || lineNum.mod(modCount) == 0){
+                        obj = new Expando()
                     }
 
-                    objMap[card.name] << obj
+                    if (hasRows) {
+                        def rowNum = lineNum % modCount
+                        buildObjectFromLine (obj, line, objDef.rows[lineNum %  modCount])
+                    }
+                    else{
+                        buildObjectFromLine (obj, line, objDef)
+                    }
+
+                    if (modCount == null || lineNum.mod(modCount) > modCount - 2) {
+                        objMap[card.name] << obj
+                    }
                 }
             }
         }
 
         objMap
+    }
+
+    private buildObjectFromLine (def obj, String line, def columnDefs) {
+        def splitString = ','
+
+        if (line.split(",").size() == columnDefs.size()) {
+            splitString = ','
+        }
+        else if (line.split(/\s+/).size() == columnDefs.size()){
+            splitString = /\s+/
+        }
+        else {
+            println "Field definition difference detected expected: ${columnDefs.size()} found ${line.split(",").size()}"
+            resultLog.debug("Field definition difference detected expected: ${columnDefs.size()} found ${line.split(",").size()}")
+            splitString = ','
+        }
+        line.trim().split(splitString).eachWithIndex { item, i ->
+
+            if (i < columnDefs.size()) {
+                // Dynamically  create properties on the object  based upon
+                // the object's datatype and cast the value correctly.
+                if (columnDefs[i].datatype == int){
+                    try {
+                        obj."${columnDefs[i]['field']}" = item.replace("'", "").trim().toInteger()
+                    }
+                    catch (NumberFormatException ex){
+                        obj."${columnDefs[i]['field']}" = 0
+                        resultLog.debug("Number format exceeption on field ${i} should be int item: ${item}")
+                    }
+                }
+                else if(columnDefs[i].datatype == double){
+                    try {
+                        obj."${columnDefs[i]['field']}" = item.replace("'", "").trim().toDouble()
+                    }
+                    catch (NumberFormatException ex){
+                        obj."${columnDefs[i]['field']}" = 0.0
+                        resultLog.debug("Number format exceeption on field ${i} should be double item: ${item}")
+                    }
+                }
+                else {
+                    obj."${columnDefs[i]['field']}" = item.replace("'", "").trim()
+                }
+            }
+            else{
+                resultLog.debug("columndef not found for column ${i} on line\n'resultLog'")
+            }
+        }
+
+        obj
+
     }
 
 
@@ -125,7 +185,7 @@ class PsseParser {
         String header = ""
         def currentCard = -1
         def writer = new FileWriter("${tempDir}/header.card")
-
+        println "Writing to: ${tempDir}/header.card"
         inputFile.eachLine{ line ->
             if (lineNum < 3) {
                 writer.write("${line}\n")
@@ -139,13 +199,18 @@ class PsseParser {
 
             if (currentCard == -1){
                 writer.close()
+                // We remove 2 because we handle the header card specially and it
+                // is now in the list of cards.
                 currentCard = sectionCards.remove(0)
+                currentCard = sectionCards.remove(0)
+                println "Writing to: ${tempDir}/${currentCard.name}.card"
                 writer = new FileWriter("${tempDir}/${currentCard.name}.card")
             }
 
             if (line.startsWith('0')){
                 currentCard = sectionCards.remove(0)
                 writer.close()
+                println "Writing to: ${tempDir}/${currentCard.name}.card"
                 writer = new FileWriter("${tempDir}/${currentCard.name}.card")
             }
             else{

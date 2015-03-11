@@ -1,0 +1,53 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+    http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+    version="2.0">
+    <persistence-unit name="cassandra_pu">
+        <provider>com.impetus.kundera.KunderaPersistence</provider>
+        <properties>
+            <property name="kundera.ddl.auto.prepare" value="create" />
+            <property name="kundera.nodes" value="localhost" />
+            <property name="kundera.port" value="9160" />
+            <property name="kundera.keyspace" value="mykeyspace" />
+            <property name="kundera.dialect" value="cassandra" />
+            <property name="kundera.client.lookup.class"
+                value="com.impetus.client.cassandra.pelops.PelopsClientFactory" />
+            <!-- <property name="kundera.cache.provider.class" value="com.impetus.kundera.cache.ehcache.EhCacheProvider"/> -->
+            <!-- <property name="kundera.cache.config.resource" value="/ehcache-test.xml" /> -->
+        </properties>
+    </persistence-unit>
+    <persistence-unit name="mysqlPU">
+        <provider>com.impetus.kundera.KunderaPersistence</provider>
+        <class>pnnl.goss.powergrid.entities.BusEntity</class>
+        <class>pnnl.goss.powergrid.entities.BusTimestepEntity</class>
+        <class>pnnl.goss.powergrid.entities.LineEntity</class>
+        <class>pnnl.goss.powergrid.entities.PowergridModelEntity</class>
+        <class>pnnl.goss.powergrid.entities.FromToEntity</class>
+        <class>pnnl.goss.powergrid.entities.GeneratorEntity</class>
+        <class>pnnl.goss.powergrid.entities.LineEntity</class>
+        <class>pnnl.goss.powergrid.entities.AreaEntity</class>
+        <!--  <class>pnnl.goss.powergrid.entities.BranchEntity</class> -->
+        <class>pnnl.goss.powergrid.entities.OwnerEntity</class>
+        <class>pnnl.goss.powergrid.entities.TimestepKeyEntity</class>
+        <class>pnnl.goss.powergrid.entities.TransformerEntity</class>
+        <class>pnnl.goss.powergrid.entities.ZoneEntity</class>
+
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="create" />
+            <!-- <property name="hbm2ddl.auto" value="validate" /> -->
+            <property name="kundera.client.lookup.class" value="com.impetus.client.rdbms.RDBMSClientFactory" />
+
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
+            <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver" />
+            <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/testanotherrunner" />
+            <property name="hibernate.connection.username" value="root" />
+            <property name="hibernate.connection.password" value="Luckydog2004" />
+            <property name="hibernate.current_session_context_class"
+                value="org.hibernate.context.ThreadLocalSessionContext" />
+        </properties>
+    </persistence-unit>
+</persistence>

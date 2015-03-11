@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2014, Battelle Memorial Institute
+	Copyright (c) 2014, Battelle Memorial Institute
     All rights reserved.
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -11,7 +11,7 @@
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-
+     
     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -42,87 +42,67 @@
     operated by BATTELLE for the UNITED STATES DEPARTMENT OF ENERGY
     under Contract DE-AC05-76RL01830
 */
-package pnnl.goss.powergrid.server;
+package pnnl.goss.powergrid.server.models;
 
-import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import pnnl.goss.powergrid.datamodel.ContingencyBranchViolation;
+import pnnl.goss.powergrid.datamodel.ContingencyBusViolation;
 
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+public class ContingencyTimeStepModelValues implements Serializable {
 
-import pnnl.goss.powergrid.PowergridCreationReport;
-import pnnl.goss.powergrid.datamodel.Powergrid;
-import pnnl.goss.powergrid.entities.Junk;
-import pnnl.goss.powergrid.models.PowergridModel;
-import pnnl.goss.powergrid.models.Stuff;
+	private int contingencyId;
+	private int powergridId;
+	private List<ContingencyBusViolation> busViolations = new ArrayList<ContingencyBusViolation>();
+	private List<ContingencyBranchViolation> branchViolations = new ArrayList<ContingencyBranchViolation>();
+	
+	public ContingencyTimeStepModelValues(){
+		reset();
+	}
+	
+	public ContingencyTimeStepModelValues(int powergridId, int contingencyId){
+		this.contingencyId = contingencyId;
+		this.powergridId = powergridId;
+		reset();
+	}
+	
+	public void reset(){
+		busViolations.clear();
+		branchViolations.clear();
+	}
 
-@Path("/")
-@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-public interface PowergridServiceREST {
+	public int getContingencyId() {
+		return contingencyId;
+	}
 
-    /**
-     * Returns a list of Powergrid objects that are available.  The properties
-     * specified are used in the other service functions available.
-     * @param datasourceKey
-     * @return
-     */
-    @GET
-    @Path("/")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public List<Powergrid> getPowergrids();
+	public void setContingencyId(int contingencyId) {
+		this.contingencyId = contingencyId;
+	}
 
-    @GET
-    @Path("/stuff")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Stuff getStuff();
+	public int getPowergridId() {
+		return powergridId;
+	}
 
+	public void setPowergridId(int powergridId) {
+		this.powergridId = powergridId;
+	}
 
-//    @GET
-//    @Path("/")
-//    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-//    public Junk getJunk();
+	public List<ContingencyBusViolation> getBusViolations() {
+		return busViolations;
+	}
 
-    /**
-     * Returns the powergrid model for the
-     *
-     * @param powergridId
-     * @return
-     */
-    @GET
-    @Path("/{powergridMrid}")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public PowergridModel getPowergridModel(
-            @PathParam(value = "powergridMrid") String powergridMrid);
+	public void setBusViolations(List<ContingencyBusViolation> busViolations) {
+		this.busViolations = busViolations;
+	}
 
-    /**
-     * Retrieves a powergridmodel with the values updated for a particular timestep.
-     * @param powergridName
-     * @param timestep
-     * @return
-     */
-    @GET
-    @Path("/{powergridName}/{timestep}")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public PowergridModel getPowergridModelAt(
-            @PathParam(value = "powergridName") String powergridName,
-            @PathParam(value = "timestep") String timestep);
+	public List<ContingencyBranchViolation> getBranchViolations() {
+		return branchViolations;
+	}
 
-
-    @POST
-    @Path("/create")  //Your Path or URL to call this service
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Multipart(value = "root", type = "application/octet-stream")
-    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public PowergridCreationReport createModelFromFile(
-            @Multipart(value = "powergridName", type="text/plain") String powergridName,
-            @Multipart(value = "file", type = "application/octet-stream") File file);
-
-    //public String handleUpload(@FormParam("file") FileInputStream uploadedInputStream);
+	public void setBranchViolations(
+			List<ContingencyBranchViolation> branchViolations) {
+		this.branchViolations = branchViolations;
+	}
 }

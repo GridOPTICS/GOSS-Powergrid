@@ -42,8 +42,13 @@
     </bean>
 
 
+
+
+
     <!-- Reference the powergridService that is already in osgi. -->
-    <service id="powergridService" ref="powergridBean" interface="pnnl.goss.powergrid.server.PowergridServiceREST" />
+    <!--<service id="powergridServiceREST" ref="powergridBean" interface="pnnl.goss.powergrid.server.PowergridServiceREST" /> Reference the powergridService that is already in osgi. -->
+    <service id="powergridService" ref="powergridBean" interface="pnnl.goss.powergrid.server.PowergridService" />
+
 
     <!-- Reference to the client factory that is already in osgi. -->
     <reference id="clientFactoryServiceRef" interface="pnnl.goss.core.ClientFactory" />

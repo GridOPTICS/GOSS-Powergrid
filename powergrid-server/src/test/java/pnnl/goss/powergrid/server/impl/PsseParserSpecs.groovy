@@ -37,9 +37,23 @@ class PsseParserSpecs extends Specification {
         def model = parser.model
         assert model != null
         assert parser.configuration.fileType == "Psse23"
+
+        assert model.header.size() == 1
+        assert model.header[0].ic == 0
+        assert model.header[0].sbase == 100.0
+        assert model.header[0].desc1 == 'A'
+        assert model.header[0].desc2 == 'B'
         assert model.buses.size() == 14
         assert model.generators.size() == 5
         assert model.branches.size() == 20
+        def branch1 = model.branches[0]
+        assert branch1.r == 0.01938
+        assert branch1.x == 0.05917
+        assert branch1.b == 0.05280
+        assert branch1.status == 1
+        assert branch1.ckt == 'BL'
+        assert branch1.fromBus == 1
+        assert branch1.toBus == 2
         assert model.transformer_adjustments.size() == 0
         assert model.areas.size() == 1
         assert model.zones.size() == 1

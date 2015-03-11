@@ -2,13 +2,16 @@ package pnnl.goss.powergrid.models;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import pnnl.goss.powergrid.datamodel.Area;
 import pnnl.goss.powergrid.datamodel.Branch;
@@ -74,6 +77,9 @@ public class PowergridModel implements Serializable{
     @XmlElement(name="SwitchedShunt" )
     List<SwitchedShunt> switchedShunts = null;
 
+    @XmlTransient
+    Map<Integer, Bus> busMap = new HashMap<>();
+
 
     public List<SwitchedShunt> getSwitchedShunts() {
         return switchedShunts;
@@ -88,7 +94,14 @@ public class PowergridModel implements Serializable{
     }
 
     public void setBuses(List<Bus> buses){
+        for(Bus b: buses){
+            busMap.put(b.getBusNumber(), b);
+        }
         this.buses = buses;
+    }
+
+    public Bus getBus(int busNumber){
+        return busMap.get(busNumber);
     }
 
     public void setMachines(List<Machine> machineList) {

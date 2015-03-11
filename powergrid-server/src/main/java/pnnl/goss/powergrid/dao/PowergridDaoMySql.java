@@ -60,7 +60,6 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pnnl.goss.powergrid.PowergridModel;
 import pnnl.goss.powergrid.datamodel.AlertContext;
 import pnnl.goss.powergrid.datamodel.AlertContextItem;
 import pnnl.goss.powergrid.datamodel.AlertSeverity;
@@ -77,6 +76,7 @@ import pnnl.goss.powergrid.datamodel.Substation;
 import pnnl.goss.powergrid.datamodel.SwitchedShunt;
 import pnnl.goss.powergrid.datamodel.Transformer;
 import pnnl.goss.powergrid.datamodel.Zone;
+import pnnl.goss.powergrid.models.PowergridModel;
 import pnnl.goss.core.server.InvalidDatasourceException;
 
 public class PowergridDaoMySql implements PowergridDao {
@@ -249,41 +249,41 @@ public class PowergridDaoMySql implements PowergridDao {
         return grid;
     }
 
-    public PowergridModel getPowergridModelAtTime(int powergridId, Timestamp timestep) {
-        PowergridModel model = getPowergridModel(powergridId);
-        updateModelToTimestep(model, timestep);
-        return model;
-    }
+//    public PowergridModel getPowergridModelAtTime(int powergridId, Timestamp timestep) {
+//        PowergridModel model = getPowergridModel(powergridId);
+//        updateModelToTimestep(model, timestep);
+//        return model;
+//    }
 
     /**
      * Constructs a powergrid model out of the mysql database. The caller can
      * then use the powergrid model passed back as it's datasource.
      */
-    public PowergridModel getPowergridModel(int powergridId) {
-        PowergridModel model = new PowergridModel(alertContext);
-
-        model.setAreas(getAreas(powergridId));
-        model.setBranches(getBranches(powergridId));
-        model.setSubstations(getSubstations(powergridId));
-        try {
-            model.setBuses(getBuses(powergridId));
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
-        }
-        model.setLines(getLines(powergridId));
-        model.setLoads(getLoads(powergridId));
-        model.setMachines(getMachines(powergridId));
-        model.setPowergrid(getPowergridById(powergridId));
-
-
-        model.setSwitchedShunts(getSwitchedShunts(powergridId));
-        // model.setTimesteps(getTimeSteps(powergridId));
-        model.setTransformers(getTransformers(powergridId));
-        model.setZones(getZones(powergridId));
-
-        return model;
-    }
+//    public PowergridModel getPowergridModel(int powergridId) {
+//        PowergridModel model = new PowergridModel(alertContext);
+//
+//        model.setAreas(getAreas(powergridId));
+//        model.setBranches(getBranches(powergridId));
+//        model.setSubstations(getSubstations(powergridId));
+//        try {
+//            model.setBuses(getBuses(powergridId));
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//            e.printStackTrace();
+//        }
+//        model.setLines(getLines(powergridId));
+//        model.setLoads(getLoads(powergridId));
+//        model.setMachines(getMachines(powergridId));
+//        model.setPowergrid(getPowergridById(powergridId));
+//
+//
+//        model.setSwitchedShunts(getSwitchedShunts(powergridId));
+//        // model.setTimesteps(getTimeSteps(powergridId));
+//        model.setTransformers(getTransformers(powergridId));
+//        model.setZones(getZones(powergridId));
+//
+//        return model;
+//    }
 
     public List<Timestamp> getTimeSteps(int powergridId) {
         List<Timestamp> items = new ArrayList<Timestamp>();
@@ -379,7 +379,7 @@ public class PowergridDaoMySql implements PowergridDao {
                 branch.setIndexNum(rs.getInt(5));
                 branch.setR(rs.getDouble(6));
                 branch.setX(rs.getDouble(7));
-                branch.setRating(rs.getDouble(8));
+                //branch.setRating(rs.getDouble(8));
                 branch.setStatus(rs.getInt(9));
                 branch.setP(rs.getDouble("P"));
                 branch.setQ(rs.getDouble("Q"));
@@ -748,91 +748,91 @@ public class PowergridDaoMySql implements PowergridDao {
 
     }
 
-    private void updateModelToTimestep(PowergridModel model, Timestamp timestamp) {
-        // Build the sql using the databasename as a format parameter
-        String queryLine = "SELECT lts.LineId, lts.Status, lts.P as PFlow, lts.Q as QFlow from linetimesteps lts WHERE lts.PowergridId=? and lts.TimeStep=?";
-        String queryMachine = "SELECT mts.MachineId, mts.PGen, mts.QGen, mts.Status from machinetimesteps mts WHERE mts.PowergridId=? and mts.TimeStep=?";
-        String queryLoads = "SELECT lts.LoadId, lts.PLoad, lts.QLoad from loadtimesteps lts WHERE lts.PowergridId=? and lts.TimeStep=?";
-        String queryShunts = "SELECT sts.SwitchedShuntId, sts.Status from switchedshunttimesteps sts WHERE sts.PowergridId=? and sts.TimeStep=?";
-        try {
-            int powergridId = model.getPowergrid().getPowergridId();
-            String timestep = timestamp.toString();
-
-            // Prepare and execute results.
-            ResultSet rs = prepareAndExecute(queryLine, powergridId, timestep);
-            HashSet<Integer> doneLines = new HashSet<Integer>();
-            while (rs.next()) {
-                int lineId = rs.getInt("lts.LineId");
-
-                if (!doneLines.contains(lineId)) {
-                    Branch branch = model.getBranch(lineId);
-                    branch.setP(rs.getDouble("PFlow"));
-                    branch.setQ(rs.getDouble("QFlow"));
-                    branch.setStatus(rs.getInt("lts.Status"));
-                    doneLines.add(lineId);
-                }
-            }
-
-            // Prepare and execute results.
-            rs = prepareAndExecute(queryMachine, powergridId, timestep);
-            HashSet<Integer> doneMachines = new HashSet<Integer>();
-            while (rs.next()) {
-                int id = rs.getInt("mts.MachineId");
-
-                if (!doneMachines.contains(id)) {
-                    Machine item = model.getMachine(id);
-
-                    if (item == null){
-                        log.error("Machine is null can't update it! for id " + id);
-                        continue;
-                    }
-                    item.setPgen(rs.getDouble("mts.PGen"));
-                    item.setQgen(rs.getDouble("mts.QGen"));
-                    item.setStatus(rs.getInt("mts.Status"));
-
-                    doneMachines.add(id);
-                }
-            }
-
-            // Prepare and execute results.
-            rs = prepareAndExecute(queryLoads, powergridId, timestep);
-            HashSet<Integer> doneLoads = new HashSet<Integer>();
-            while (rs.next()) {
-                int id = rs.getInt("lts.LoadId");
-
-                if (!doneLoads.contains(id)) {
-                    Load item = model.getLoad(id);
-                    if (item == null){
-                        log.error("Load is null can't update it! for id " + id);
-                        continue;
-                    }
-                    item.setPload(rs.getDouble("lts.PLoad"));
-                    item.setQload(rs.getDouble("lts.QLoad"));
-
-                    doneLoads.add(id);
-                }
-            }
-
-            // Prepare and execute results.
-            rs = prepareAndExecute(queryShunts, powergridId, timestep);
-            HashSet<Integer> doneShunts = new HashSet<Integer>();
-            while (rs.next()) {
-                int id = rs.getInt("sts.SwitchedShuntId");
-
-                if (!doneShunts.contains(id)) {
-                    SwitchedShunt item = model.getSwitchedShunt(id);
-                    item.setStatus(rs.getInt("sts.Status"));
-
-                    doneShunts.add(id);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            // Null powergrid == something failed!
-            model = null;
-        }
-    }
+//    private void updateModelToTimestep(PowergridModel model, Timestamp timestamp) {
+//        // Build the sql using the databasename as a format parameter
+//        String queryLine = "SELECT lts.LineId, lts.Status, lts.P as PFlow, lts.Q as QFlow from linetimesteps lts WHERE lts.PowergridId=? and lts.TimeStep=?";
+//        String queryMachine = "SELECT mts.MachineId, mts.PGen, mts.QGen, mts.Status from machinetimesteps mts WHERE mts.PowergridId=? and mts.TimeStep=?";
+//        String queryLoads = "SELECT lts.LoadId, lts.PLoad, lts.QLoad from loadtimesteps lts WHERE lts.PowergridId=? and lts.TimeStep=?";
+//        String queryShunts = "SELECT sts.SwitchedShuntId, sts.Status from switchedshunttimesteps sts WHERE sts.PowergridId=? and sts.TimeStep=?";
+//        try {
+//            int powergridId = model.getPowergrid().getPowergridId();
+//            String timestep = timestamp.toString();
+//
+//            // Prepare and execute results.
+//            ResultSet rs = prepareAndExecute(queryLine, powergridId, timestep);
+//            HashSet<Integer> doneLines = new HashSet<Integer>();
+//            while (rs.next()) {
+//                int lineId = rs.getInt("lts.LineId");
+//
+//                if (!doneLines.contains(lineId)) {
+//                    Branch branch = model.getBranch(lineId);
+//                    branch.setP(rs.getDouble("PFlow"));
+//                    branch.setQ(rs.getDouble("QFlow"));
+//                    branch.setStatus(rs.getInt("lts.Status"));
+//                    doneLines.add(lineId);
+//                }
+//            }
+//
+//            // Prepare and execute results.
+//            rs = prepareAndExecute(queryMachine, powergridId, timestep);
+//            HashSet<Integer> doneMachines = new HashSet<Integer>();
+//            while (rs.next()) {
+//                int id = rs.getInt("mts.MachineId");
+//
+//                if (!doneMachines.contains(id)) {
+//                    Machine item = model.getMachine(id);
+//
+//                    if (item == null){
+//                        log.error("Machine is null can't update it! for id " + id);
+//                        continue;
+//                    }
+//                    item.setPgen(rs.getDouble("mts.PGen"));
+//                    item.setQgen(rs.getDouble("mts.QGen"));
+//                    item.setStatus(rs.getInt("mts.Status"));
+//
+//                    doneMachines.add(id);
+//                }
+//            }
+//
+//            // Prepare and execute results.
+//            rs = prepareAndExecute(queryLoads, powergridId, timestep);
+//            HashSet<Integer> doneLoads = new HashSet<Integer>();
+//            while (rs.next()) {
+//                int id = rs.getInt("lts.LoadId");
+//
+//                if (!doneLoads.contains(id)) {
+//                    Load item = model.getLoad(id);
+//                    if (item == null){
+//                        log.error("Load is null can't update it! for id " + id);
+//                        continue;
+//                    }
+//                    item.setPload(rs.getDouble("lts.PLoad"));
+//                    item.setQload(rs.getDouble("lts.QLoad"));
+//
+//                    doneLoads.add(id);
+//                }
+//            }
+//
+//            // Prepare and execute results.
+//            rs = prepareAndExecute(queryShunts, powergridId, timestep);
+//            HashSet<Integer> doneShunts = new HashSet<Integer>();
+//            while (rs.next()) {
+//                int id = rs.getInt("sts.SwitchedShuntId");
+//
+//                if (!doneShunts.contains(id)) {
+//                    SwitchedShunt item = model.getSwitchedShunt(id);
+//                    item.setStatus(rs.getInt("sts.Status"));
+//
+//                    doneShunts.add(id);
+//                }
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            // Null powergrid == something failed!
+//            model = null;
+//        }
+//    }
 
     private ResultSet prepareAndExecute(String query, int powergridId, String timestep) throws ParseException, SQLException, InvalidDatasourceException {
         PreparedStatement stmt = datasource.getConnection().prepareStatement(query);
@@ -843,14 +843,27 @@ public class PowergridDaoMySql implements PowergridDao {
 
     @Override
     public Powergrid getPowergridByMrid(String mrid) {
-        // TODO Auto-generated method stub
+        // TODO These are implemented in the comments above
         return null;
     }
 
     @Override
     public void persist(Powergrid powergrid) {
-        // TODO Auto-generated method stub
+        // TODO These are implemented in the comments above
 
+    }
+
+    @Override
+    public PowergridModel getPowergridModel(int powergridId) {
+        // TODO These are implemented in the comments above
+        return null;
+    }
+
+    @Override
+    public PowergridModel getPowergridModelAtTime(int powergridId,
+            Timestamp timestep) {
+        // // TODO These are implemented in the comments above
+        return null;
     }
 
 }

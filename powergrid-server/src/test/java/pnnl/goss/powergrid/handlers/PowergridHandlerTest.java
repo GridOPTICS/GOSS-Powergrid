@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2014, Battelle Memorial Institute
+    Copyright (c) 2014, Battelle Memorial Institute
     All rights reserved.
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -11,7 +11,7 @@
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-     
+
     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -52,12 +52,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 
+
+
 //Let's import Mockito statically so that the code looks clearer
 import static org.mockito.Mockito.*;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.server.GossDataServices;
-import pnnl.goss.powergrid.ContingencyModel;
-import pnnl.goss.powergrid.PowergridModel;
+import pnnl.goss.powergrid.models.ContingencyModel;
+import pnnl.goss.powergrid.models.PowergridModel;
 import pnnl.goss.powergrid.requests.RequestContingencyModel;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStep;
@@ -68,87 +70,87 @@ import pnnl.goss.powergrid.server.handlers.RequestPowergridHandler;
 
 public class PowergridHandlerTest {
 
-	
-	static final String dsKey = "northandsouth";
-	static final String databaseUri = "jdbc:mysql://localhost:3306/northandsouth";
-	static final String databaseUser = "root";
-	static final String databasePassword = "Luckydog2004";
-	
-	private GossDataServices _dataservice;
-	private Connection _connection;
-	
-	@Before
-	public void setup(){
-		_connection = mock(Connection.class);
-		_dataservice = mock(GossDataServices.class);
-	}
-	
-	@Test
-	public void canGetPowergridByName(){
-		
-	}
-	
-	public static void setupDatasource(){
-		try {
-			PowergridDataSources.instance().addConnection(dsKey,databaseUri, databaseUser, databasePassword, null);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public static void testRequestPowergridHandler(){
-		RequestPowergrid request = new RequestPowergrid("Greek-118");
-		RequestPowergridHandler handler = new RequestPowergridHandler();
-		PowergridModel model = (PowergridModel)((DataResponse)handler.handle(request)).getData();
-		
-		System.out.println("Powergrid: "+model.getPowergrid().getName()+" Number: "+model.getPowergrid().getPowergridId());
-		System.out.println("# Buses: "+ model.getBuses().size());
-		System.out.println("# Branches: "+ model.getBranches().size());
-		System.out.println("# Transformers: "+ model.getTransformers().size());
-		System.out.println("# Lines: "+ model.getLines().size());
-		System.out.println("# Substations: "+ model.getSubstations().size());
-		System.out.println("# Machines: "+ model.getMachines().size());
-		System.out.println("# Loads: "+ model.getLoads().size());
-		System.out.println("# SwitchedShunts: "+ model.getSwitchedShunts().size());
-	}
-	
-	public static void testRequestPowergridTimestepsHandler(){
-		RequestPowergridTimeStep request = new RequestPowergridTimeStep("Greek-118", Timestamp.valueOf("2013-08-01 00:00:00"));
-		RequestPowergridHandler handler = new RequestPowergridHandler();
-		
-		PowergridModel model = (PowergridModel)((DataResponse)handler.handle(request)).getData();
-		
-		//System.out.println("# Available Timesteps: "+model.getTimesteps().size());
-		//System.out.println("Current Timestamp: "+model.getCurrentTimestamp());
-	}
-	
-	public static void testRequestContingencyModelHandler(){
-		RequestContingencyModel request = new RequestContingencyModel("Greek-118");
-		RequestContingencyModelHandler handler = new RequestContingencyModelHandler();
-		ContingencyModel model = (ContingencyModel)((DataResponse)handler.handle(request)).getData();
-		
-		System.out.println("# Contingencies: "+ model.getContingencies().size());
-		/*
-		for (Contingency c: model.getContingencies()){
-			System.out.println("branches out: "+model.getBranchesOut(c).size());
-		}*/
-		
-	}
-	
-	public static void testRequestContingenciesHandler(){
-		
-	}
-	
-	public static void main(String[] args) {
-		setupDatasource();
-		
-		testRequestPowergridHandler();
-		System.out.println("\n\n");
-		testRequestPowergridTimestepsHandler();
-		System.out.println("\n\n");
-		testRequestContingencyModelHandler();
-		System.out.println("\n\n");
-	}
+
+    static final String dsKey = "northandsouth";
+    static final String databaseUri = "jdbc:mysql://localhost:3306/northandsouth";
+    static final String databaseUser = "root";
+    static final String databasePassword = "Luckydog2004";
+
+    private GossDataServices _dataservice;
+    private Connection _connection;
+
+    @Before
+    public void setup(){
+        _connection = mock(Connection.class);
+        _dataservice = mock(GossDataServices.class);
+    }
+
+    @Test
+    public void canGetPowergridByName(){
+
+    }
+
+    public static void setupDatasource(){
+        try {
+            PowergridDataSources.instance().addConnection(dsKey,databaseUri, databaseUser, databasePassword, null);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public static void testRequestPowergridHandler(){
+        RequestPowergrid request = new RequestPowergrid("Greek-118");
+        RequestPowergridHandler handler = new RequestPowergridHandler();
+        PowergridModel model = (PowergridModel)((DataResponse)handler.handle(request)).getData();
+// TODO repare these.
+//        System.out.println("Powergrid: "+model.getPowergrid().getName()+" Number: "+model.getPowergrid().getPowergridId());
+//        System.out.println("# Buses: "+ model.getBuses().size());
+//        System.out.println("# Branches: "+ model.getBranches().size());
+//        System.out.println("# Transformers: "+ model.getTransformers().size());
+//        System.out.println("# Lines: "+ model.getLines().size());
+//        System.out.println("# Substations: "+ model.getSubstations().size());
+//        System.out.println("# Machines: "+ model.getMachines().size());
+//        System.out.println("# Loads: "+ model.getLoads().size());
+//        System.out.println("# SwitchedShunts: "+ model.getSwitchedShunts().size());
+    }
+
+    public static void testRequestPowergridTimestepsHandler(){
+        RequestPowergridTimeStep request = new RequestPowergridTimeStep("Greek-118", Timestamp.valueOf("2013-08-01 00:00:00"));
+        RequestPowergridHandler handler = new RequestPowergridHandler();
+
+        PowergridModel model = (PowergridModel)((DataResponse)handler.handle(request)).getData();
+
+        //System.out.println("# Available Timesteps: "+model.getTimesteps().size());
+        //System.out.println("Current Timestamp: "+model.getCurrentTimestamp());
+    }
+
+    public static void testRequestContingencyModelHandler(){
+        RequestContingencyModel request = new RequestContingencyModel("Greek-118");
+        RequestContingencyModelHandler handler = new RequestContingencyModelHandler();
+        ContingencyModel model = (ContingencyModel)((DataResponse)handler.handle(request)).getData();
+
+        System.out.println("# Contingencies: "+ model.getContingencies().size());
+        /*
+        for (Contingency c: model.getContingencies()){
+            System.out.println("branches out: "+model.getBranchesOut(c).size());
+        }*/
+
+    }
+
+    public static void testRequestContingenciesHandler(){
+
+    }
+
+    public static void main(String[] args) {
+        setupDatasource();
+
+        testRequestPowergridHandler();
+        System.out.println("\n\n");
+        testRequestPowergridTimestepsHandler();
+        System.out.println("\n\n");
+        testRequestContingencyModelHandler();
+        System.out.println("\n\n");
+    }
 
 }

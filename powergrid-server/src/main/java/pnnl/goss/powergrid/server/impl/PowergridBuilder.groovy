@@ -181,11 +181,10 @@ class PowergridBuilder {
                 )
             BranchEntity entity= new BranchEntity(
                 fromToBuses: fromTo,
-                //fromBus: powergridEntity.getBusByBusNumber(line.fromBus),
-                //toBus: powergridEntity.getBusByBusNumber(line.toBus),
-                //ckt: line.ckt,
+                ckt: line.ckt,
                 r: line.r,
                 x: line.x,
+                b: line.b,
                 ratingA: line.ratingA,
                 ratingB: line.ratingB,
                 ratingC: line.ratingC,
@@ -221,7 +220,7 @@ class PowergridBuilder {
                 fromToBuses: fromTo,
                 //fromBus: powergridEntity.getBusByBusNumber(line.fromBus),
                 //toBus: powergridEntity.getBusByBusNumber(line.toBus),
-                //ckt: transformer.ckt,
+                ckt: transformer.ckt,
                 control: transformer.control,
                 rma: transformer.rma,
                 rmi: transformer.rmi,

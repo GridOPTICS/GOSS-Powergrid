@@ -113,6 +113,12 @@ subprojects {
             published javadocJar
         }
 
+        task copyToLib(type: Copy) {
+            // into "build/lib"
+            into "lib"
+            from configurations.runtime
+        }
+
         buildscript{
             repositories {
                 mavenLocal()

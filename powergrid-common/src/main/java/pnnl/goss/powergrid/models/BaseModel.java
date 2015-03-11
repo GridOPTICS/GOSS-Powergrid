@@ -1,11 +1,15 @@
 package pnnl.goss.powergrid.models;
 
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
 /**
  * The base class for all powergrid models and entities.
  *
  * @author Craig Allwardt
  *
  */
+@XmlType
 public abstract class BaseModel {
 
     protected String mrid;

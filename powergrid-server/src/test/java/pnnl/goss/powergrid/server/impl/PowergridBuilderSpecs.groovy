@@ -2,11 +2,13 @@ package pnnl.goss.powergrid.server.impl
 
 import java.io.File;
 
+import pnnl.goss.powergrid.entities.BranchEntity
 import pnnl.goss.powergrid.entities.PowergridModelEntity
 import pnnl.goss.powergrid.parsers.ResultLog
 import pnnl.goss.powergrid.parsers.PsseParser;
 import spock.lang.Specification
 
+import javax.enterprise.inject.Model;
 import javax.persistence.EntityManager
 import javax.persistence.EntityManagerFactory
 import javax.persistence.Persistence
@@ -23,10 +25,25 @@ class PowergridBuilderSpecs extends Specification {
         assert parser.modelValid
 
         PowergridBuilder builder = new PowergridBuilder()
+        ResultLog log = new ResultLog()
         when: "building a powergrid entity"
-        PowergridModelEntity powergridEntity = builder.createFromParser(parser)
+        PowergridModelEntity powergridEntity = builder.createFromParser(parser, log, [:])
         then:
         assert powergridEntity.busEntities.size()== 14
+        assert powergridEntity.branchEntities.size() == 20
+        assert powergridEntity.generatorEntities.size() == 5
+        assert powergridEntity.branchEntities.size() == 20
+        BranchEntity branch1 = powergridEntity.branchEntities[0]
+        assert branch1.r == 0.01938
+        assert branch1.x == 0.05917
+        assert branch1.b == 0.05280
+        assert branch1.status == 1
+        assert branch1.ckt == 'BL'
+
+        assert powergridEntity.transformerEntities.size() == 0
+        assert powergridEntity.areaEntities.size() == 1
+        assert powergridEntity.zoneEntities.size() == 1
+        assert powergridEntity.ownerEntities.size() == 1
     }
 
 //    def "persists to mysql"() {
