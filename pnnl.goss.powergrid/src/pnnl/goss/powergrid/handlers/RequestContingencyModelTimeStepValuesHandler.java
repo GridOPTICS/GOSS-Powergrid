@@ -62,6 +62,7 @@ import pnnl.goss.core.security.AuthorizationHandler;
 import pnnl.goss.core.security.AuthorizeAll;
 import pnnl.goss.core.server.DataSourcePooledJdbc;
 import pnnl.goss.core.server.DataSourceRegistry;
+import pnnl.goss.core.server.RequestHandler;
 import pnnl.goss.powergrid.api.ContingencyTimeStepModelValues;
 import pnnl.goss.powergrid.datamodel.ContingencyBranchViolation;
 import pnnl.goss.powergrid.datamodel.ContingencyBusViolation;
@@ -69,7 +70,7 @@ import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
 import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
 
 @Component
-public class RequestContingencyModelTimeStepValuesHandler implements pnnl.goss.core.server.RequestHandler {
+public class RequestContingencyModelTimeStepValuesHandler implements RequestHandler {
 
 	@ServiceDependency
 	private volatile DataSourceRegistry dsRegistry;
@@ -127,7 +128,7 @@ public class RequestContingencyModelTimeStepValuesHandler implements pnnl.goss.c
                 //Add Branch Voilations
                 String dbQuery = "select * from contingencybranchviolations where contingencyid ="+ctgRequest.getContingencyId()+" and powergridid ="+ctgRequest.getPowerGridId();
                 
-    			DataSourcePooledJdbc ds = (DataSourcePooledJdbc)dsRegistry.get(PowergridDataSources.class.getName());
+                PowergridDataSources ds = (PowergridDataSources)dsRegistry.get(PowergridDataSources.class.getName());
     			Connection connection = ds.getConnection();
                 
                 Statement stmt = connection.createStatement();

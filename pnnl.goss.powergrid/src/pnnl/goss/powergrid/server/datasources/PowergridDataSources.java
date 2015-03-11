@@ -46,6 +46,7 @@ package pnnl.goss.powergrid.server.datasources;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.HashMap;
@@ -63,6 +64,9 @@ import org.slf4j.LoggerFactory;
 
 
 
+
+
+import pnnl.goss.powergrid.api.PowergridModel;
 //import pnnl.goss.core.server.InvalidDatasourceException;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 
@@ -163,6 +167,49 @@ public class PowergridDataSources {
 		}
 		
 		return powergrids;
+	}
+	
+	
+	public PowergridModel getPowergridModelAtTime(int powergridId, Timestamp timestep){
+		PowergridDaoMySql dao = new PowergridDaoMySql();
+		for(String key:PowergridDataSources.datasources.keySet()){
+			dao.setDatasource(PowergridDataSources.datasources.get(key));
+			
+			PowergridModel model = dao.getPowergridModelAtTime(powergridId, timestep);
+			if(model!=null){
+				return model;
+			}
+			
+		}
+		return null;
+	}
+	
+	public Powergrid getPowergridByName(String name){
+		PowergridDaoMySql dao = new PowergridDaoMySql();
+		for(String key:PowergridDataSources.datasources.keySet()){
+			dao.setDatasource(PowergridDataSources.datasources.get(key));
+			
+			Powergrid powergrid = dao.getPowergridByName(name);
+			if(powergrid!=null){
+				return powergrid;
+			}
+			
+		}
+		return null;
+	}
+	
+	public PowergridModel getPowergridModel(int powergridId){
+		PowergridDaoMySql dao = new PowergridDaoMySql();
+		for(String key:PowergridDataSources.datasources.keySet()){
+			dao.setDatasource(PowergridDataSources.datasources.get(key));
+			
+			PowergridModel model = dao.getPowergridModel(powergridId);
+			if(model!=null){
+				return model;
+			}
+			
+		}
+		return null;
 	}
 	
 	public String getDefaultDatasourceKey(){

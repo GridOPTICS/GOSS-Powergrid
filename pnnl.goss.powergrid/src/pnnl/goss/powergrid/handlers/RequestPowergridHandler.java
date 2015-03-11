@@ -45,9 +45,13 @@
 package pnnl.goss.powergrid.handlers;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceDependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,36 +59,37 @@ import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.core.Response;
-import pnnl.goss.core.server.AbstractRequestHandler;
-import pnnl.goss.core.server.annotations.RequestHandler;
-import pnnl.goss.core.server.annotations.RequestItem;
-import pnnl.goss.powergrid.PowergridModel;
-import pnnl.goss.powergrid.collections.PowergridList;
-import pnnl.goss.powergrid.dao.PowergridDao;
-import pnnl.goss.powergrid.dao.PowergridDaoMySql;
+import pnnl.goss.core.security.AuthorizationHandler;
+import pnnl.goss.core.security.AuthorizeAll;
+import pnnl.goss.core.server.DataSourceRegistry;
+import pnnl.goss.core.server.RequestHandler;
+import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.datamodel.collections.PowergridList;
+import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStep;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStepValues;
-import pnnl.goss.powergrid.server.PowergridServerActivator;
+import pnnl.goss.powergrid.server.dao.PowergridDao;
+import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
 
-@RequestHandler(value = {
-        @RequestItem(value = RequestPowergrid.class),
-        @RequestItem(value = RequestPowergridTimeStep.class),
-        @RequestItem(value = RequestPowergridList.class),
-        @RequestItem(value = RequestPowergridTimeStepValues.class)
-})
-public class RequestPowergridHandler extends AbstractRequestHandler {
 
+
+@Component
+public class RequestPowergridHandler implements RequestHandler {
+
+	@ServiceDependency
+	private volatile DataSourceRegistry dsRegistry;
+	
     private static Logger log = LoggerFactory.getLogger(RequestPowergridHandler.class);
     private static PowergridList availablePowergrids = null;
 
-    private DataResponse getPowergridModleAtTimestepResponse(PowergridDao dao, String powergridName, Timestamp timestep) {
-        Powergrid grid = dao.getPowergridByName(powergridName);
+    private DataResponse getPowergridModleAtTimestepResponse(PowergridDataSources ds, String powergridName, Timestamp timestep) {
+        Powergrid grid = ds.getPowergridByName(powergridName);
         DataResponse response = new DataResponse();
         if (grid.isSetPowergridId()) {
-            PowergridModel model = dao.getPowergridModelAtTime(grid.getPowergridId(), timestep);
+            PowergridModel model = ds.getPowergridModelAtTime(grid.getPowergridId(), timestep);
             response.setData(model);
         } else {
             response.setData(new DataError("Powergrid not found!"));
@@ -93,19 +98,19 @@ public class RequestPowergridHandler extends AbstractRequestHandler {
         return response;
     }
 
-    private DataResponse getPowergridModelResponse(PowergridDao dao, RequestPowergrid request) {
+    private DataResponse getPowergridModelResponse(PowergridDataSources ds, RequestPowergrid request) {
         Powergrid grid = null;
 
         // Determine how the user requested the data.
         if (request.getPowergridName() != null && !request.getPowergridName().isEmpty())
         {
-            grid = dao.getPowergridByName(request.getPowergridName());
+            grid = ds.getPowergridByName(request.getPowergridName());
         }
 
         DataResponse response = new DataResponse();
 
         if (grid != null && grid.isSetPowergridId()) {
-            PowergridModel model = dao.getPowergridModel(grid.getPowergridId());
+            PowergridModel model = ds.getPowergridModel(grid.getPowergridId());
             response.setData(model);
         } else {
             response.setData(new DataError("Powergrid not found!"));
@@ -115,23 +120,24 @@ public class RequestPowergridHandler extends AbstractRequestHandler {
 
     }
 
-    private DataResponse getAvailablePowergrids(PowergridDao dao){
+    private DataResponse getAvailablePowergrids(PowergridDataSources ds){
         if (availablePowergrids == null){
-            availablePowergrids = new PowergridList(dao.getAvailablePowergrids());
+        	//Modified this to use ds instead of dao directly, is this right?
+            availablePowergrids = new PowergridList(ds.getAllPowergrids());
         }
         DataResponse response = new DataResponse(availablePowergrids);
         return response;
     }
 
-    private DataResponse getAllPowergrids(){
-        /*DataResponse response = new DataResponse();
-        PowergridListerImpl lister = new PowergridListerImpl();
-        PowergridList powergridList = new PowergridList(lister.getPowergrids());
-        response.setData(powergridList);
-        return response;
-        */
-        return null;
-    }
+//    private DataResponse getAllPowergrids(){
+//        /*DataResponse response = new DataResponse();
+//        PowergridListerImpl lister = new PowergridListerImpl();
+//        PowergridList powergridList = new PowergridList(lister.getPowergrids());
+//        response.setData(powergridList);
+//        return response;
+//        */
+//        return null;
+//    }
 
     public DataResponse getResponse(Request request) {
         DataResponse response = null;
@@ -143,13 +149,15 @@ public class RequestPowergridHandler extends AbstractRequestHandler {
         }
 
         RequestPowergrid requestPowergrid = (RequestPowergrid)request;
-        log.debug("using datasource: " + PowergridServerActivator.getPowergridDsKey());
+        log.debug("using datasource: " + PowergridDataSources.class.getName());
         // The dao uses a datasource rather than a connection so that it can have multiple
         // connections working together.
-        PowergridDao dao = new PowergridDaoMySql((DataSource) this.dataservices.getDataService(PowergridServerActivator.getPowergridDsKey()));
-
+//        PowergridDao dao = new PowergridDaoMySql((DataSource) this.dataservices.getDataService(PowergridServerActivator.getPowergridDsKey()));
+        PowergridDataSources ds = (PowergridDataSources)dsRegistry.get(PowergridDataSources.class.getName());
+        
+        
         if(requestPowergrid.getPowergridName()== null && request instanceof RequestPowergridList){
-            return getAvailablePowergrids(dao);
+            return getAvailablePowergrids(ds);
         }
 
         // Make sure there is a valid name.
@@ -170,14 +178,14 @@ public class RequestPowergridHandler extends AbstractRequestHandler {
 
         if (request instanceof RequestPowergridTimeStep) {
             RequestPowergridTimeStep pgRequest = (RequestPowergridTimeStep) request;
-            response = getPowergridModleAtTimestepResponse(dao, requestPowergrid.getPowergridName(), pgRequest.getTimestep());
+            response = getPowergridModleAtTimestepResponse(ds, requestPowergrid.getPowergridName(), pgRequest.getTimestep());
         } else if (request instanceof RequestPowergridList) {
             RequestPowergridList pgRequest = (RequestPowergridList) request;
-            response = getAvailablePowergrids(dao);
+            response = getAvailablePowergrids(ds);
         } else if (request instanceof RequestPowergridTimeStepValues) {
             response = new DataResponse(new DataError("RequestPowergridTimeStepValues not implemented yet!"));
         } else{
-            response = getPowergridModelResponse(dao, (RequestPowergrid) request);
+            response = getPowergridModelResponse(ds, (RequestPowergrid) request);
         }
 
         // A data response if there is an invalid request type.
@@ -205,4 +213,14 @@ public class RequestPowergridHandler extends AbstractRequestHandler {
         return response;
     }
 
+    
+    @Override
+	public Map<Class<? extends Request>, Class<? extends AuthorizationHandler>> getHandles() {
+		Map<Class<? extends Request>, Class<? extends AuthorizationHandler>> auths = new HashMap<>();
+		auths.put(RequestPowergrid.class, AuthorizeAll.class);
+		auths.put(RequestPowergridTimeStep.class, AuthorizeAll.class);
+		auths.put(RequestPowergridList.class, AuthorizeAll.class);
+		auths.put(RequestPowergridTimeStepValues.class, AuthorizeAll.class);
+		return auths;
+	}
 }
