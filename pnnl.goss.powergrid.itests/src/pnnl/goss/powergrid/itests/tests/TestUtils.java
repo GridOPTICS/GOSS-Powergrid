@@ -1,4 +1,4 @@
-package pnnl.goss.powergrid.itests;
+package pnnl.goss.powergrid.itests.tests;
 
 import java.io.BufferedReader;
 import java.io.IOException;

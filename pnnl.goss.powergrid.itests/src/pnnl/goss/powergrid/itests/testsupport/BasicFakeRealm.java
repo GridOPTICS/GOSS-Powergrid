@@ -1,4 +1,4 @@
-package pnnl.goss.powergrid.itests;
+package pnnl.goss.powergrid.itests.testsupport;
 
 import java.util.HashSet;
 import java.util.Map;

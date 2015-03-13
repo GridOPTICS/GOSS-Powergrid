@@ -1,4 +1,4 @@
-package pnnl.goss.powergrid.itests;
+package pnnl.goss.powergrid.itests.tests;
 
 import static org.amdatu.testing.configurator.TestConfigurator.cleanUp;
 import static org.amdatu.testing.configurator.TestConfigurator.configuration;

@@ -1,3 +1,4 @@
+package pnnl.goss.powergrid.itests.tests;
 //package pnnl.goss.fusion.itests;
 //
 //import static org.amdatu.testing.configurator.TestConfigurator.configuration;

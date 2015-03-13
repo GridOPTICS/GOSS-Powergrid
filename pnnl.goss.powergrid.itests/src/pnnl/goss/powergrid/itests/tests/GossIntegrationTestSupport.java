@@ -1,4 +1,4 @@
-package pnnl.goss.powergrid.itests;
+package pnnl.goss.powergrid.itests.tests;
 
 import static org.amdatu.testing.configurator.TestConfigurator.cleanUp;
 import static org.amdatu.testing.configurator.TestConfigurator.configuration;
@@ -14,6 +14,7 @@ import pnnl.goss.core.ClientFactory;
 import pnnl.goss.core.server.DataSourceObject;
 import pnnl.goss.core.server.DataSourceRegistry;
 import pnnl.goss.core.server.ServerControl;
+import pnnl.goss.powergrid.itests.testsupport.BasicFakeRealm;
 
 public class GossIntegrationTestSupport {
 	
