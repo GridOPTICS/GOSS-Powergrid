@@ -4,6 +4,8 @@
 
 -resolve.effective: active;skip:="osgi.service"
 
+
+
 -runproperties:  \
 	openwire.port=61616,\
 	broker-name=wunderbar,\
