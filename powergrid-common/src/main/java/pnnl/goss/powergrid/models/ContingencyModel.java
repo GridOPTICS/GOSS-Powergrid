@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2014, Battelle Memorial Institute
+    Copyright (c) 2014, Battelle Memorial Institute
     All rights reserved.
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -11,7 +11,7 @@
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-     
+
     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -42,7 +42,7 @@
     operated by BATTELLE for the UNITED STATES DEPARTMENT OF ENERGY
     under Contract DE-AC05-76RL01830
 */
-package pnnl.goss.powergrid;
+package pnnl.goss.powergrid.models;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -55,38 +55,38 @@ import pnnl.goss.powergrid.datamodel.ContingencyBranchOut;
 
 public class ContingencyModel implements Serializable{
 
-	private List<Contingency> contingencies;
-	private HashMap<Contingency, List<ContingencyBranchOut>> contingencyBranchesOut;
-	private List<Timestamp> timesteps;
-	
-	public ContingencyModel(){
-		reset();
-	}
-	
-	public void reset(){
-		contingencies = new ArrayList<Contingency>();
-		contingencyBranchesOut = new HashMap<Contingency, List<ContingencyBranchOut>>();
-		timesteps = new ArrayList<Timestamp>();
-	}
-	
-	public void addContingency(Contingency contingency, List<ContingencyBranchOut> branchesOut){
-		contingencies.add(contingency);
-		contingencyBranchesOut.put(contingency, branchesOut);
-	}
-	
-	public void setTimeSteps(List<Timestamp> timesteps){
-		this.timesteps = timesteps;
-	}
-	
-	public List<Timestamp> getTimeSteps(){
-		return this.timesteps;
-	}
-	
-	public List<ContingencyBranchOut> getBranchesOut(Contingency contingency){
-		return contingencyBranchesOut.get(contingency);
-	}
-	
-	public List<Contingency> getContingencies(){
-		return contingencies;
-	}	
+    private List<Contingency> contingencies;
+    private HashMap<Contingency, List<ContingencyBranchOut>> contingencyBranchesOut;
+    private List<Timestamp> timesteps;
+
+    public ContingencyModel(){
+        reset();
+    }
+
+    public void reset(){
+        contingencies = new ArrayList<Contingency>();
+        contingencyBranchesOut = new HashMap<Contingency, List<ContingencyBranchOut>>();
+        timesteps = new ArrayList<Timestamp>();
+    }
+
+    public void addContingency(Contingency contingency, List<ContingencyBranchOut> branchesOut){
+        contingencies.add(contingency);
+        contingencyBranchesOut.put(contingency, branchesOut);
+    }
+
+    public void setTimeSteps(List<Timestamp> timesteps){
+        this.timesteps = timesteps;
+    }
+
+    public List<Timestamp> getTimeSteps(){
+        return this.timesteps;
+    }
+
+    public List<ContingencyBranchOut> getBranchesOut(Contingency contingency){
+        return contingencyBranchesOut.get(contingency);
+    }
+
+    public List<Contingency> getContingencies(){
+        return contingencies;
+    }
 }

@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2014, Battelle Memorial Institute
+    Copyright (c) 2014, Battelle Memorial Institute
     All rights reserved.
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -11,7 +11,7 @@
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-     
+
     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -53,56 +53,56 @@ import pnnl.goss.powergrid.datamodel.ContingencyBusViolation;
 
 public class ContingencyTimeStepModelValues implements Serializable {
 
-	private int contingencyId;
-	private int powergridId;
-	private List<ContingencyBusViolation> busViolations = new ArrayList<ContingencyBusViolation>();
-	private List<ContingencyBranchViolation> branchViolations = new ArrayList<ContingencyBranchViolation>();
-	
-	public ContingencyTimeStepModelValues(){
-		reset();
-	}
-	
-	public ContingencyTimeStepModelValues(int powergridId, int contingencyId){
-		this.contingencyId = contingencyId;
-		this.powergridId = powergridId;
-		reset();
-	}
-	
-	public void reset(){
-		busViolations.clear();
-		branchViolations.clear();
-	}
+    private int contingencyId;
+    private int powergridId;
+    private List<ContingencyBusViolation> busViolations = new ArrayList<ContingencyBusViolation>();
+    private List<ContingencyBranchViolation> branchViolations = new ArrayList<ContingencyBranchViolation>();
 
-	public int getContingencyId() {
-		return contingencyId;
-	}
+    public ContingencyTimeStepModelValues(){
+        reset();
+    }
 
-	public void setContingencyId(int contingencyId) {
-		this.contingencyId = contingencyId;
-	}
+    public ContingencyTimeStepModelValues(int powergridId, int contingencyId){
+        this.contingencyId = contingencyId;
+        this.powergridId = powergridId;
+        reset();
+    }
 
-	public int getPowergridId() {
-		return powergridId;
-	}
+    public void reset(){
+        busViolations.clear();
+        branchViolations.clear();
+    }
 
-	public void setPowergridId(int powergridId) {
-		this.powergridId = powergridId;
-	}
+    public int getContingencyId() {
+        return contingencyId;
+    }
 
-	public List<ContingencyBusViolation> getBusViolations() {
-		return busViolations;
-	}
+    public void setContingencyId(int contingencyId) {
+        this.contingencyId = contingencyId;
+    }
 
-	public void setBusViolations(List<ContingencyBusViolation> busViolations) {
-		this.busViolations = busViolations;
-	}
+    public int getPowergridId() {
+        return powergridId;
+    }
 
-	public List<ContingencyBranchViolation> getBranchViolations() {
-		return branchViolations;
-	}
+    public void setPowergridId(int powergridId) {
+        this.powergridId = powergridId;
+    }
 
-	public void setBranchViolations(
-			List<ContingencyBranchViolation> branchViolations) {
-		this.branchViolations = branchViolations;
-	}
+    public List<ContingencyBusViolation> getBusViolations() {
+        return busViolations;
+    }
+
+    public void setBusViolations(List<ContingencyBusViolation> busViolations) {
+        this.busViolations = busViolations;
+    }
+
+    public List<ContingencyBranchViolation> getBranchViolations() {
+        return branchViolations;
+    }
+
+    public void setBranchViolations(
+            List<ContingencyBranchViolation> branchViolations) {
+        this.branchViolations = branchViolations;
+    }
 }

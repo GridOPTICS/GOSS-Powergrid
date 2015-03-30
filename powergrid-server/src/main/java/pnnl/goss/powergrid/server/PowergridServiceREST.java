@@ -44,23 +44,27 @@
 */
 package pnnl.goss.powergrid.server;
 
+import java.io.File;
 import java.util.List;
 
-import javax.ws.rs.DefaultValue;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
-import pnnl.goss.powergrid.PowergridModel;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+
+import pnnl.goss.powergrid.PowergridCreationReport;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.entities.Junk;
+import pnnl.goss.powergrid.models.PowergridModel;
 
 @Path("/")
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-public interface PowergridService {
+public interface PowergridServiceREST {
 
     /**
      * Returns a list of Powergrid objects that are available.  The properties
@@ -73,6 +77,12 @@ public interface PowergridService {
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public List<Powergrid> getPowergrids();
 
+
+//    @GET
+//    @Path("/")
+//    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+//    public Junk getJunk();
+
     /**
      * Returns the powergrid model for the
      *
@@ -80,10 +90,10 @@ public interface PowergridService {
      * @return
      */
     @GET
-    @Path("/{powergridName}")
+    @Path("/{powergridMrid}")
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public PowergridModel getPowergridModel(
-            @PathParam(value = "powergridName") String powergridName);
+            @PathParam(value = "powergridMrid") String powergridMrid);
 
     /**
      * Retrieves a powergridmodel with the values updated for a particular timestep.
@@ -98,4 +108,15 @@ public interface PowergridService {
             @PathParam(value = "powergridName") String powergridName,
             @PathParam(value = "timestep") String timestep);
 
+
+    @POST
+    @Path("/create")  //Your Path or URL to call this service
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Multipart(value = "root", type = "application/octet-stream")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public PowergridCreationReport createModelFromFile(
+            @Multipart(value = "powergridName", type="text/plain") String powergridName,
+            @Multipart(value = "file", type = "application/octet-stream") File file);
+
+    //public String handleUpload(@FormParam("file") FileInputStream uploadedInputStream);
 }
