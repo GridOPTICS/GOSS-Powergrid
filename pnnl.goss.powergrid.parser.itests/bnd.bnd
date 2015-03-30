@@ -1,0 +1,24 @@
+Bundle-Version: 0.0.0.${tstamp}
+
+-runfw: org.apache.felix.framework;version='[4.2.1,5)'
+-runee: JavaSE-1.8
+Test-Cases: ${classes;ANNOTATION;org.junit.Test}
+-buildpath:  \
+	../cnf/plugins/org.apache.felix.dependencymanager.annotation-3.2.0.jar;version=file,\
+	pnnl.goss.powergrid.parsers.parser-api;version=latest,\
+	osgi.cmpn;version=4.3,\
+	osgi.core;version=5.0,\
+	org.amdatu.testing.configurator;version=3.0,\
+	biz.aQute.junit;version=1.3,\
+	org.apache.felix.dependencymanager,\
+	org.apache.felix.dependencymanager.runtime,\
+	slf4j.api;version='[1.7.7,1.7.8)',\
+	slf4j.simple;version='[1.7.7,1.7.8)',\
+	org.apache.shiro.core,\
+	org.apache.httpcomponents.httpclient;version=4.2,\
+	pnnl.goss.core.runner;version=latest,\
+	org.apache.commons.io
+Private-Package:  \
+	pnnl.goss.powergrid.parser.itests
+	
+-include: ${workspace}/pnnl.goss.powergrid.parser.itests/parser-itests.bndrun	
