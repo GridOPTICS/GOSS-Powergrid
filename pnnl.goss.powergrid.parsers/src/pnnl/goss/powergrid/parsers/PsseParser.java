@@ -9,17 +9,9 @@ class PsseParser {
     def configuration
     boolean modelValid = false
 
-    ResultLog parse(File defConfig, File tempDir, File inputFile){
-        def config = null
-        if (defConfig.exists()){
-            config = new ConfigSlurper().parse(defConfig.text)
-        } else {
-            //String pathInJar = defConfig.path.replace("src/main/java/, """)
-            // TODO REPLACE THIS SOONEST!
-            String text = IOUtils.toString(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream("pnnl/goss/powergrid/parser/Psse23Definitions.groovy"))
-            config = new ConfigSlurper().parse(text)
-        }
+    ResultLog parse(String defConfig, File tempDir, String modelData){
+        def config = new ConfigSlurper().parse(defConfig)
+		
         configuration  = config
         def cards = config.cards
         resultLog = new ResultLog()
@@ -113,20 +105,19 @@ class PsseParser {
      * section.  If there is not enough section cards then an error is thrown.
      *
      * @param tempDir - A directory for temp storage of cards to process.
-     * @param rawFile - A base psse file to process.
+     * @param modelData - A psse file that has been read into a string.
      * @param cards - A processing list of cards to process.
      * @return
      */
-    private createTempCards(File tempDir, File rawFile, List cards ){
+    private createTempCards(File tempDir, String modelData, List cards ){
         // Clone the list so we don't modify the passed list.
         List sectionCards = cards.clone()
-        def inputFile = rawFile
         int lineNum = 0
         String header = ""
         def currentCard = -1
         def writer = new FileWriter("${tempDir}/header.card")
 
-        inputFile.eachLine{ line ->
+        modelData.eachLine{ line ->
             if (lineNum < 3) {
                 writer.write("${line}\n")
                 lineNum ++
