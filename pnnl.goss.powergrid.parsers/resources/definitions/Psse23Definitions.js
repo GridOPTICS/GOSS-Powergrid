@@ -8,8 +8,8 @@ var definition = {
 			.join(" \n")
 };
 
-function column(field, dataType, description, outputFormat) {
-	this.field = field;
+function column(fieldName, dataType, description, outputFormat) {
+	this.fieldName = fieldName;
 	this.outputFormat = outputFormat;
 	this.dataType = dataType;
 	this.description = description;
@@ -38,7 +38,7 @@ var busColumns = [
 		new column('zone', 'int', "Zone the load is assigned") ];
 
 for (var i = 0; i < busColumns.length; i++) {
-	print(busColumns[i].field);
+	print(busColumns[i].fieldName);
 }
 var generatorColumnsDef = [
 		new column('busNumber', 'int',

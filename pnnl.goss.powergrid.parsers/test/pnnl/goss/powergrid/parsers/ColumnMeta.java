@@ -7,7 +7,7 @@ import pnnl.goss.powergrid.parser.api.InvalidDataException;
 
 public class ColumnMeta {
 	
-	private String field;
+	private String fieldName;
 	private String outputFormat;
 	private String dataType;
 	private String description;
@@ -15,17 +15,17 @@ public class ColumnMeta {
 	public ColumnMeta() {}
 	public ColumnMeta(ColumnMeta meta){
 		// Copy ok because Strings are immutable
-		field = meta.field;
+		fieldName = meta.fieldName;
 		outputFormat = meta.outputFormat;
 		dataType = meta.dataType;
 		description = meta.description;
 	}
 	
-	public String getField() {
-		return field;
+	public String getFieldName() {
+		return fieldName;
 	}
-	public void setField(String field) {
-		this.field = field;
+	public void setFieldName(String field) {
+		this.fieldName = field;
 	}
 	public String getOutputFormat() {
 		return outputFormat;
