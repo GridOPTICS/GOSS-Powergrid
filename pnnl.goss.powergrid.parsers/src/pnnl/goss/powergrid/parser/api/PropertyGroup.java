@@ -5,6 +5,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * A PropertyGroup is analogous to an object's state. 
+ * 
+ * @author Craig Allwardt
+ *
+ */
 public class PropertyGroup implements Serializable, Iterable<Property> {
 
 	/**
