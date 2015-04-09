@@ -1,10 +1,9 @@
 package pnnl.goss.powergrid.parser.api;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ParserService {
-	
-	static String DEFINITION_PSSE_23="Psse23Definitions";
 	
 	/**
 	 * The parser is parser the passed data (pti file data, cim file data) and return
@@ -19,5 +18,12 @@ public interface ParserService {
 	 * @throws InvalidDataException 
 	 */
 	Map<String, PropertyGroup> parse(String parserDefinition, String dataToParse) throws InvalidDataException;
+	
+	/**
+	 * Lookup the available definition files and return them.
+	 * 
+	 * @return
+	 */
+	List<String> getAvailableDefinitions();
 
 }
