@@ -15,15 +15,22 @@ public class ColumnMetaGroup {
 		System.arraycopy(meta.columns, 0, columns, 0, meta.columns.length);
 	}
 	
+	public ColumnMeta getColumn(int indx){
+		return columns[indx];
+	}
+	
 	public String getName() {
 		return name;
 	}
+	
 	public void setName(String name) {
 		this.name = name;
 	}
 	public ColumnMeta[] getColumns() {
 		return columns;
 	}
+	
+	
 	public void setColumns(ColumnMeta[] columns) {
 		this.columns = columns;
 	}
