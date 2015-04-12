@@ -2,10 +2,11 @@ Bundle-Version: 0.0.0.${tstamp}
 -buildpath:  \
 	org.apache.commons.io,\
 	org.apache.openjpa,\
-	org.eclipse.persistence.jpa,\
-	org.eclipse.persistence.jpa.jpql,\
-	org.spockframework.spock-core,\
 	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
-	org.apache.felix.dependencymanager.annotation
+	org.apache.felix.dependencymanager.annotation,\
+	osgi.cmpn;version=4.3,\
+	osgi.core;version=4.3,\
+	com.google.gson,\
+	biz.aQute.junit
 -sub:  \
 	*.bnd
