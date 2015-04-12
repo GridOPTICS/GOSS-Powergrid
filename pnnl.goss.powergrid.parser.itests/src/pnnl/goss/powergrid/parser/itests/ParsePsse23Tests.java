@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.amdatu.testing.configurator.TestConfiguration;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,12 +29,13 @@ public class ParsePsse23Tests {
 	///private Logger log = LoggerFactory.getLogger(this.getClass());
 	private TestConfiguration testConfig;
 	private volatile ParserService parserService;
+	private String pti23Definition = "Psse23Definitions.js";
 	
 	@Before
 	public void before(){
-		testConfig = configure(this)
-				.add(serviceDependency().setService(ParserService.class));
-		testConfig.apply();
+//		testConfig = configure(this)
+//				.add(serviceDependency(ParserService.class));
+//		testConfig.apply();
 	}
 	
 	@After
@@ -44,7 +46,7 @@ public class ParsePsse23Tests {
 	@Test
 	public void wrongDefinitionTest(){
 		try {
-			parserService.parse("Invalid Definition", "This is bad data!");
+			parserService.parse("Invalid Definition", IOUtils.toInputStream("This is bad data"));
 			fail("Exception wasn't thrown properly");
 		} catch (InvalidDataException e) {
 			
@@ -53,15 +55,16 @@ public class ParsePsse23Tests {
 	
 	@Test
 	public void nullOrEmptyDataTest(){
+		
 		try {
-			parserService.parse(ParserService.DEFINITION_PSSE_23, null);
+			parserService.parse(pti23Definition, null);
 			fail("Exception wasn't thrown properly");
 		} catch (InvalidDataException e) {
 			
 		}
 		
 		try {
-			parserService.parse(ParserService.DEFINITION_PSSE_23, "");
+			parserService.parse(pti23Definition, IOUtils.toInputStream(""));
 			fail("Exception wasn't thrown properly");
 		} catch (InvalidDataException e) {
 			
@@ -70,25 +73,30 @@ public class ParsePsse23Tests {
 	
 	@Test
 	public void canParseIEEE14(){
-		File file = new File("resources/IEEE14.raw");
-		String data = null;
-		Map<String, PropertyGroup> propertyGroups = null;
-		
-		try {
-			data = FileUtils.readFileToString(file);
-		} catch (IOException e) {
-			fail(e.getMessage());
-			e.printStackTrace();
-		}
-		assertTrue(true);
-		assertNotNull(parserService);
-		try {
-			propertyGroups = parserService.parse(ParserService.DEFINITION_PSSE_23, data);
-		} catch (InvalidDataException e) {
-			fail(e.getMessage());
-			e.printStackTrace();
-		}
-		assertNotNull(propertyGroups);
+		fail();
+//		File file = new File("resources/IEEE14.raw");
+//		String data = null;
+//		Map<String, PropertyGroup> propertyGroups = null;
+//		
+//		try {
+//			data = FileUtils.readFileToString(file);
+//		} catch (IOException e) {
+//			fail(e.getMessage());
+//			e.printStackTrace();
+//		}
+//		assertTrue(true);
+//		assertNotNull(parserService);
+//		try {
+//			propertyGroups = parserService.parse(ParserService.DEFINITION_PSSE_23, data);
+//		} catch (InvalidDataException e) {
+//			fail(e.getMessage());
+//			e.printStackTrace();
+//		}
+//		assertNotNull(propertyGroups);
+//		
+//		for(String k: propertyGroups.keySet()){
+//			System.out.println(k);
+//		}
 	}
 
 }
