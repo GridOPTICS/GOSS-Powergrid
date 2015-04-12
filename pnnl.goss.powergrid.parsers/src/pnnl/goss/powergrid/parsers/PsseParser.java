@@ -10,15 +10,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.io.IOUtils;
 
 import pnnl.goss.powergrid.parser.api.Property;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
@@ -35,37 +29,52 @@ public class PsseParser {
 
     private int defaultInt = 0;
     private double defaultDouble = 0.0;
-    
-    public ResultLog parse(ColumnMetaGroup[] metaGroups, File tempDir, File modelDataFile) throws IOException{
+
+    public ResultLog parse(ColumnMetaGroup[] metaGroups, File tempDir, BufferedReader reader) throws IOException{
     	
     	if (!tempDir.isDirectory()){
     		throw new IOException("Invalid temp directory: " + tempDir.getPath());
     	}
-    	
-    	if (!modelDataFile.isFile()){
-    		throw new IOException("Invalid model data file: " + modelDataFile.getPath());
-    	}
-    	
+    	    	
     	this.metaGroups = metaGroups;
     	resultLog = new ResultLog();
     	
-    	createTempCards(tempDir, modelDataFile);
+    	createTempCards(tempDir, reader);
     	createObjects(tempDir);
     	
 		return resultLog;
-    	
-//    	this.metaGroups = metaGroups;
-//
-//        resultLog = new ResultLog();
-//        createTempCards(tempDir, modelData); 
-//        model = createObjects(tempDir);
-//        validateModel();
-//        
-//        // True if no errors
-//        modelValid = resultLog.errors.size() == 0
-//        resultLog.successful = modelValid
-//        resultLog
     }
+    
+//    public ResultLog parse(ColumnMetaGroup[] metaGroups, File tempDir, File modelDataFile) throws IOException{
+//    	
+//    	if (!tempDir.isDirectory()){
+//    		throw new IOException("Invalid temp directory: " + tempDir.getPath());
+//    	}
+//    	
+//    	if (!modelDataFile.isFile()){
+//    		throw new IOException("Invalid model data file: " + modelDataFile.getPath());
+//    	}
+//    	
+//    	this.metaGroups = metaGroups;
+//    	resultLog = new ResultLog();
+//    	
+//    	createTempCards(tempDir, modelDataFile);
+//    	createObjects(tempDir);
+//    	
+//		return resultLog;
+//    	
+////    	this.metaGroups = metaGroups;
+////
+////        resultLog = new ResultLog();
+////        createTempCards(tempDir, modelData); 
+////        model = createObjects(tempDir);
+////        validateModel();
+////        
+////        // True if no errors
+////        modelValid = resultLog.errors.size() == 0
+////        resultLog.successful = modelValid
+////        resultLog
+//    }
     
     public Map<String, List<PropertyGroup>> getDataModel(){
     	return resultMap;
@@ -180,7 +189,8 @@ public class PsseParser {
     				
     	 
     			} catch (IOException e) {
-    				e.printStackTrace();
+    				resultLog.warn("No data found for: " + card.getName());
+    				//e.printStackTrace();
     			} 
     			
     			resultMap.put(card.getName(), cardObjects);
@@ -195,9 +205,9 @@ public class PsseParser {
      * in the same directory as the other cards.
      *
      * @param tempDir 		- A directory for temp storage of cards to process.
-     * @param modelDataFile - A psse file that has been read into a string.
+     * @param reader - A psse file that has been read into a string.
      */
-    private void createTempCards(File tempDir, File modelDataFile){
+    private void createTempCards(File tempDir, BufferedReader reader){
         // Clone the list so we don't modify the passed list.
     	List<ColumnMetaGroup> cards = new ArrayList<>(Arrays.asList(this.metaGroups));
     	
@@ -205,57 +215,51 @@ public class PsseParser {
     	int lineNum = 0;
     	ColumnMetaGroup currentCard = null;
     	String line = null;
-    	
-    	try (BufferedReader reader = new BufferedReader(new FileReader(modelDataFile))){
-    		
-       	 
-    		try (BufferedWriter writer = new BufferedWriter(new FileWriter(output))){
-    			while ((line = reader.readLine()) != null) {
-    				writer.write(line+"\n");
-    				
-    				// The first three lines are header information.
-    				if (lineNum < 2){
-    					lineNum += 1;
-    					continue;
-    				}
-    				// Exit this while loop 
-    				break;
-    			}    			
-    		}
+    	 
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(output))){
+			while ((line = reader.readLine()) != null) {
+				writer.write(line+"\n");
+				
+				// The first three lines are header information.
+				if (lineNum < 2){
+					lineNum += 1;
+					continue;
+				}
+				// Exit this while loop 
+				break;
+			}    			
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		// increment to card 0.
+		currentCard = cards.remove(0);
+		
+		while(currentCard != null){
+			
+			output = new File(Paths.get(tempDir.toString(), currentCard.getName() + ".card").toString());
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter(output))){
+				
+				while ((line = reader.readLine()) != null) {
+					if (line.startsWith("0")){
+						currentCard = cards.remove(0);
+						break;  // exit out of the inner loop
+					}
+					
+					writer.write(line+"\n");    					
+    			}
+				// Should be last card and therefore return null.
+				if (cards.size() > 0){
+					currentCard = cards.remove(0);
+				}
+				else{
+					currentCard = null;
+				}    				
+			}
     		catch(IOException e){
     			e.printStackTrace();
     		}
-    		
-    		// increment to card 0.
-    		currentCard = cards.remove(0);
-    		
-    		while(currentCard != null){
-    			
-    			output = new File(Paths.get(tempDir.toString(), currentCard.getName() + ".card").toString());
-    			try (BufferedWriter writer = new BufferedWriter(new FileWriter(output))){
-    				
-    				while ((line = reader.readLine()) != null) {
-    					if (line.startsWith("0")){
-    						currentCard = cards.remove(0);
-    						break;  // exit out of the inner loop
-    					}
-    					
-    					writer.write(line+"\n");    					
-        			}
-    				// Should be last card and therefore return null.
-    				if (cards.size() > 0){
-    					currentCard = cards.remove(0);
-    				}
-    				else{
-    					currentCard = null;
-    				}    				
-    			}
-        		catch(IOException e){
-        			e.printStackTrace();
-        		}
-    		}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
     }
 }
