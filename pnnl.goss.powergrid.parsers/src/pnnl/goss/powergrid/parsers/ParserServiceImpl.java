@@ -22,7 +22,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
 import pnnl.goss.powergrid.parser.api.InvalidDataException;
-import pnnl.goss.powergrid.parser.api.ParserDefinition;
 import pnnl.goss.powergrid.parser.api.ParserService;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
 
