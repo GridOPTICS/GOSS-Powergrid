@@ -1,4 +1,4 @@
-package pnnl.goss.powergrid.parser.api;
+package pnnl.goss.powergrid.parsers;
 
 public class ParserDefinition {
 	
