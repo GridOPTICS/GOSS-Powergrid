@@ -149,8 +149,25 @@ public class PowergridDaoMySql implements PowergridDao {
     
     private List<Zone> insertZones(int powergridId, List<PropertyGroup> zonePropertyGroups){
     	List<Zone> zones = new ArrayList<>();
+    	String insert = "INSERT INTO zone("
+    			+"PowergridId,ZoneName,Mrid)"
+    			+"VALUES("+getInsertMark("?", 3)+");";
     	
-    	return zones;
+    	for(PropertyGroup pg: zonePropertyGroups){
+	    	try(Connection conn = datasource.getConnection()){
+	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
+	    			stmt.setInt(1, powergridId);
+	    			stmt.setString(2, pg.getProperty("name").asString());
+	    			stmt.setString(3, UUID.randomUUID().toString());
+	    			stmt.execute();
+	    		}
+	    	} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	
+    	return getZones(powergridId);
     }
     
     private List<Bus> insertBuses(int powergridId, List<PropertyGroup> busPropertyGroups){
@@ -855,7 +872,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
     public List<Zone> getZones(int powergridId) {
         List<Zone> items = new ArrayList<Zone>();
-        String dbQuery = "select * from zones where PowerGridId = " + powergridId;
+        String dbQuery = "select * from zone where PowerGridId = " + powergridId;
         ResultSet rs = null;
         Connection conn = null;
 
