@@ -50,10 +50,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import javax.naming.ConfigurationException;
 import javax.sql.DataSource;
@@ -78,6 +81,7 @@ import pnnl.goss.powergrid.datamodel.Substation;
 import pnnl.goss.powergrid.datamodel.SwitchedShunt;
 import pnnl.goss.powergrid.datamodel.Transformer;
 import pnnl.goss.powergrid.datamodel.Zone;
+import pnnl.goss.powergrid.parser.api.PropertyGroup;
 //import pnnl.goss.core.server.InvalidDatasourceException;
 
 public class PowergridDaoMySql implements PowergridDao {
@@ -86,6 +90,44 @@ public class PowergridDaoMySql implements PowergridDao {
     protected DataSource datasource;
     private final AlertContext alertContext;
     private PowergridTimingOptions powergridTimingOptions;
+        
+    
+    public String createPowergrid(String powergridName, Map<String, List<PropertyGroup>> data){
+    	
+    	String pgUUID = UUID.randomUUID().toString();
+    	int pgId = insertPowerGrid(pgUUID, powergridName);
+    	
+    	
+    	return pgUUID;
+    }
+    
+    private int insertPowerGrid(String uuid, String name){
+    	List<Powergrid> grids = getAvailablePowergrids();
+    	int maxPg = 0;
+    	for(Powergrid g: grids){
+    		if(g.getPowergridId() > maxPg){
+    			maxPg = g.getPowergridId();
+    		}
+    	}
+    	
+    	String insert = "INSERT INTO powergrid(PowergridId, Name,CoordinateSystem,Mrid) VALUES(?,?,?,?);";
+    	
+    	int pgId = maxPg + 1;
+    	try(Connection conn = datasource.getConnection()){
+    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
+    			stmt.setInt(1, pgId);
+    			stmt.setString(2, name);
+    			stmt.setString(3,  "");
+    			stmt.setString(4, uuid);
+    			stmt.execute();
+    		}
+    	} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	return pgId;
+    }
 
     public PowergridDaoMySql() {
         log.debug("Creating " + PowergridDaoMySql.class);
@@ -130,7 +172,7 @@ public class PowergridDaoMySql implements PowergridDao {
     public List<Powergrid> getAvailablePowergrids() {
         List<Powergrid> grids = new ArrayList<Powergrid>();
 
-        String dbQuery = "select pg.powergridId, pg.Name, a.mrid from powergrids pg inner join areas a on pg.Powergridid=a.PowergridId";
+        String dbQuery = "select pg.powergridId, pg.Name, a.mrid from powergrid pg inner join area a on pg.Powergridid=a.PowergridId";
         ResultSet rs = null;
         Connection conn = null;
         try {

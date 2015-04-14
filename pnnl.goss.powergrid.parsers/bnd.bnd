@@ -1,8 +1,6 @@
 Bundle-Version: 0.0.0.${tstamp}
 -buildpath:  \
 	org.apache.commons.io,\
-	org.apache.openjpa,\
-	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
 	org.apache.felix.dependencymanager.annotation,\
 	osgi.cmpn;version=4.3,\
 	osgi.core;version=4.3,\

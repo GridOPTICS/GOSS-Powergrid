@@ -2,20 +2,24 @@
 	../cnf/plugins/org.apache.felix.dependencymanager.annotation-3.2.0.jar;version=file,\
 	org.apache.felix.dependencymanager,\
 	org.apache.servicemix.bundles.commons-dbcp,\
-	osgi.core,\
-	osgi.cmpn,\
 	org.h2,\
-	osgi.enterprise,\
 	pnnl.goss.core.core-api,\
 	pnnl.goss.core.goss-core-server-api,\
 	slf4j.api,\
 	slf4j.simple,\
-	pnnl.goss.core.goss-core-security,\
 	pnnl.goss.core.goss-core-server,\
 	javax.persistence,\
 	com.mysql.jdbc,\
 	javax.ws.rs.jsr311-api,\
-	pnnl.goss.core.security-propertyfile
+	pnnl.goss.core.security-propertyfile,\
+	org.apache.commons.io,\
+	biz.aQute.junit;version=1.3,\
+	pnnl.goss.core.client-all,\
+	pnnl.goss.core.goss-core-security,\
+	osgi.cmpn;version=4.3,\
+	osgi.enterprise;version=5.0,\
+	osgi.core;version=5.0,\
+	org.apache.commons.pool
 -sub:  \
 	*.bnd
 -runfw: org.apache.felix.framework;version='[4,5]'
