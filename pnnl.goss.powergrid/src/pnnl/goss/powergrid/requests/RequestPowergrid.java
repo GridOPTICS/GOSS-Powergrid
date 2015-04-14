@@ -51,16 +51,17 @@ public class RequestPowergrid extends Request {
 	private static final long serialVersionUID = -2681838737290484689L;
 
 	String name = null;
+	String mrid = null;
 	
 	/**
-	 * Request a powergrid with the passed unique name associated with it.  The
+	 * Request a powergrid with the passed mrid associated with it.  The
 	 * server will manage the "where" this data is located in order to fulfill 
 	 * the request. 
 	 * 
-	 * @param name
+	 * @param mrid
 	 */
-	public RequestPowergrid(String name){
-		this.name = name;
+	public RequestPowergrid(String mrid){
+		this.name = mrid;
 	}
 	
 	/**
