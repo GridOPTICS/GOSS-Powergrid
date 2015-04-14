@@ -96,9 +96,69 @@ public class PowergridDaoMySql implements PowergridDao {
     	
     	String pgUUID = UUID.randomUUID().toString();
     	int pgId = insertPowerGrid(pgUUID, powergridName);
+    	List<Bus> buses = insertBuses(pgId, data.get("buses"));
     	
     	
     	return pgUUID;
+    }
+    
+    private String getInsertMark(String mark, int count){
+    	int i=0;
+    	String data = "";
+    	if (count > 0){
+    		data = mark;
+    		i++;
+    	}
+    	while(i<count){
+    		data += "," + mark;
+    		i++;
+    	}
+    	
+    	return data;
+    }
+    
+    private List<Bus> insertBuses(int powergridId, List<PropertyGroup> busPropertyGroups){
+    	List<Bus> buses = new ArrayList<>();
+    	String insert = "INSERT INTO bus(" 
+    			+"BusNumber,PowergridId,SubstationId,BusName,BaseKV,Code,Pl,Ql,Gl,Bl,AreaId,Va,Vm,ZoneId,Mrid)"
+    			+"VALUES("+ getInsertMark("?", 15)+");";
+    	
+		
+    	for(PropertyGroup pg: busPropertyGroups){
+    		String busUUID = UUID.randomUUID().toString();
+    		try(Connection conn = datasource.getConnection()){
+	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
+//	    			stmt.setInt(1, pg.getProperty("").asInt());
+//	    			stmt.setDouble(1, pg.getProperty("").asDouble());
+//	    			stmt.setString(1, pg.getProperty("").asString());
+	    			
+	    			stmt.setInt(1, pg.getProperty("busNumber").asInt());    			
+	    			stmt.setInt(2, powergridId);
+	    			stmt.setInt(3, 0);
+	    			stmt.setString(4, pg.getProperty("name").asString());
+	    			stmt.setDouble(5, pg.getProperty("baseKv").asDouble());
+	    			stmt.setInt(6, pg.getProperty("busType").asInt());
+	    			stmt.setDouble(7, pg.getProperty("pLoad").asDouble());
+	    			stmt.setDouble(8, pg.getProperty("qLoad").asDouble());
+	    			stmt.setDouble(9, pg.getProperty("gShunt").asDouble());
+	    			stmt.setDouble(10, pg.getProperty("bShunt").asDouble());
+	    			
+	    			stmt.setInt(11, pg.getProperty("area").asInt());
+	    			stmt.setDouble(12, pg.getProperty("vMag").asDouble());
+	    			stmt.setDouble(13, pg.getProperty("vAng").asDouble());
+	    			stmt.setInt(14, pg.getProperty("zone").asInt());
+	    			stmt.setString(15, busUUID);
+	    			
+	    			stmt.execute();
+	    		}
+	    	} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	
+    	return getBuses(powergridId);
+    	
     }
     
     private int insertPowerGrid(String uuid, String name){
@@ -451,7 +511,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
     public List<Bus> getBuses(int powergridId) {
         List<Bus> items = new ArrayList<Bus>();
-        String dbQuery = "select * from buses where PowerGridId = " + powergridId + " ORDER BY BusNumber";
+        String dbQuery = "select * from bus where PowerGridId = " + powergridId + " ORDER BY BusNumber";
 
         ResultSet rs = null;
         Connection conn = null;
@@ -471,6 +531,7 @@ public class PowergridDaoMySql implements PowergridDao {
                 bus.setCode(rs.getInt(6));
                 bus.setVa(rs.getDouble(7));
                 bus.setVm(rs.getDouble(8));
+                bus.setMrid(rs.getString("mrid"));
                 items.add(bus);
             }
         } catch (SQLException e) {
