@@ -96,6 +96,9 @@ public class PowergridDaoMySql implements PowergridDao {
     	
     	String pgUUID = UUID.randomUUID().toString();
     	int pgId = insertPowerGrid(pgUUID, powergridName);
+    	
+    	List<Area> areas = insertAreas(pgId, data.get("areas"));
+    	List<Zone> zones = insertZones(pgId, data.get("areas"));
     	List<Bus> buses = insertBuses(pgId, data.get("buses"));
     	
     	
@@ -115,6 +118,39 @@ public class PowergridDaoMySql implements PowergridDao {
     	}
     	
     	return data;
+    }
+    
+    private List<Area> insertAreas(int powergridId, List<PropertyGroup> areaPropertyGroups){
+    	List<Area> zones = new ArrayList<>();
+    	String insert = "INSERT INTO area("
+    			+"PowergridId,AreaName,AreaId,Isw,Pdes,Ptol,Mrid)"
+    			+"VALUES("+getInsertMark("?", 7)+");";
+    	
+    	for(PropertyGroup pg: areaPropertyGroups){
+	    	try(Connection conn = datasource.getConnection()){
+	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
+	    			stmt.setInt(1, powergridId);
+	    			stmt.setString(2, pg.getProperty("name").asString());
+	    			stmt.setInt(3,  pg.getProperty("areaNumber").asInt());
+	    			stmt.setInt(4,  pg.getProperty("isw").asInt());
+	    			stmt.setDouble(5, 0);
+	    			stmt.setDouble(6, pg.getProperty("pTolerance").asDouble());
+	    			stmt.setString(7, UUID.randomUUID().toString());
+	    			stmt.execute();
+	    		}
+	    	} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	
+    	return getAreas(powergridId);
+    }
+    
+    private List<Zone> insertZones(int powergridId, List<PropertyGroup> zonePropertyGroups){
+    	List<Zone> zones = new ArrayList<>();
+    	
+    	return zones;
     }
     
     private List<Bus> insertBuses(int powergridId, List<PropertyGroup> busPropertyGroups){
@@ -426,7 +462,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
     public List<Area> getAreas(int powergridId) {
         List<Area> items = new ArrayList<Area>();
-        String dbQuery = "select * from areas where PowerGridId = " + powergridId;
+        String dbQuery = "select * from area where PowerGridId = " + powergridId;
         ResultSet rs = null;
         Connection conn = null;
 
@@ -439,6 +475,9 @@ public class PowergridDaoMySql implements PowergridDao {
                 Area area = new Area();
                 area.setPowergridId(powergridId);
                 area.setAreaName(rs.getString(2));
+                area.setMrid(rs.getString("mrid"));
+                area.setPtol(rs.getDouble("Ptol"));
+                area.setIsw(rs.getInt("Isw"));
                 items.add(area);
             }
         } catch (SQLException e) {
