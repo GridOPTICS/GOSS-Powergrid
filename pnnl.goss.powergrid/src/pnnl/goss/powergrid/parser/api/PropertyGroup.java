@@ -3,7 +3,9 @@ package pnnl.goss.powergrid.parser.api;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A PropertyGroup is analogous to an object's state. 
@@ -22,6 +24,7 @@ public class PropertyGroup implements Serializable, Iterable<Property> {
 	 * Private list of properties that this container holds.
 	 */
 	private List<Property> propertyGroupList = new ArrayList<Property>();
+	private Map<String, Property> mappedProperty = new LinkedHashMap<>();
 	
 	/**
 	 * Group name
@@ -30,6 +33,7 @@ public class PropertyGroup implements Serializable, Iterable<Property> {
 	
 	public void addProperty(Property property){
 		propertyGroupList.add(property);
+		mappedProperty.put(property.getName(), property);
 	}
 
 	@Override
@@ -43,6 +47,10 @@ public class PropertyGroup implements Serializable, Iterable<Property> {
 
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
+	}
+	
+	public Property getProperty(String propertyName){
+		return mappedProperty.get(propertyName); 
 	}
 	
 	public List<String> getPropertyNames(){

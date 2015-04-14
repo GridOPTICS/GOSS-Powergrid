@@ -27,6 +27,18 @@ public class Property implements Serializable {
 	public String getName() {
 		return name;
 	}
+	
+	public int asInt(){
+		return (Integer) value;
+	}
+	
+	public double asDouble(){
+		return (Double) value;
+	}
+	
+	public String asString(){
+		return (String) value;
+	}
 
 	public Property setName(String name) {
 		this.name = name;
