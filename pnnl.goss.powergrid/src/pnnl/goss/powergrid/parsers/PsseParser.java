@@ -189,6 +189,7 @@ public class PsseParser {
     				
     	 
     			} catch (IOException e) {
+    				System.err.println("No data found for card: "+card.getName());
     				resultLog.warn("No data found for: " + card.getName());
     				//e.printStackTrace();
     			} 
@@ -214,6 +215,7 @@ public class PsseParser {
     	File output = new File(Paths.get(tempDir.toString(), "header.card").toString());
     	int lineNum = 0;
     	ColumnMetaGroup currentCard = null;
+    	boolean zeroLineFound = false;
     	String line = null;
     	 
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(output))){
@@ -243,12 +245,17 @@ public class PsseParser {
 				
 				while ((line = reader.readLine()) != null) {
 					if (line.startsWith("0")){
+						zeroLineFound = true;
 						currentCard = cards.remove(0);
 						break;  // exit out of the inner loop
 					}
 					
 					writer.write(line+"\n");    					
     			}
+				if (zeroLineFound){
+					zeroLineFound = false;
+					continue;
+				}
 				// Should be last card and therefore return null.
 				if (cards.size() > 0){
 					currentCard = cards.remove(0);
