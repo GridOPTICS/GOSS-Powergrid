@@ -100,6 +100,9 @@ public class PowergridDaoMySql implements PowergridDao {
     	List<Area> areas = insertAreas(pgId, data.get("areas"));
     	List<Zone> zones = insertZones(pgId, data.get("areas"));
     	List<Bus> buses = insertBuses(pgId, data.get("buses"));
+    	//List<Machine> machines = insertGenerators(pgId, data.get("generators"));
+    	//List<Branch> branches = insertBranches(pgId, data.get("branches"));
+    	//List<SwitchedShunt> shunts = insertSwitchedShunts(pgId, data.get("switched_shunts"));
     	
     	
     	return pgUUID;
@@ -118,6 +121,77 @@ public class PowergridDaoMySql implements PowergridDao {
     	}
     	
     	return data;
+    }
+    
+    private List<Machine> insertGenerators(int powergridId, List<PropertyGroup> generatorPropertyGroups){
+    	List<Machine> zones = new ArrayList<>();
+    	String insert = "INSERT INTO area("
+    			+"PowergridId,AreaName,AreaId,Isw,Pdes,Ptol,Mrid)"
+    			+"VALUES("+getInsertMark("?", 7)+");";
+    	
+    	for(PropertyGroup pg: generatorPropertyGroups){
+	    	try(Connection conn = datasource.getConnection()){
+	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
+	    			stmt.setInt(1, powergridId);
+	    			stmt.setString(2, pg.getProperty("name").asString());
+	    			stmt.setInt(3,  pg.getProperty("areaNumber").asInt());
+	    			stmt.setInt(4,  pg.getProperty("isw").asInt());
+	    			stmt.setDouble(5, 0);
+	    			stmt.setDouble(6, pg.getProperty("pTolerance").asDouble());
+	    			stmt.setString(7, UUID.randomUUID().toString());
+	    			stmt.execute();
+	    		}
+	    	} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	
+    	return getMachines(powergridId);
+    }
+    
+    private List<Branch> insertBranches(int powergridId, List<PropertyGroup> branchPropertyGroups){
+    	List<Branch> zones = new ArrayList<>();
+    	String insert = "INSERT INTO branch("
+    			+ "BranchId,PowergridId,FromBusNumber,ToBusNumber,IndexNum,Ckt,R,X," // 8 on this line
+    			+ "Rating,RateA,RateB,RateC,Status,P,Q,Mrid)"
+    			+"VALUES("+getInsertMark("?", 16)+");";
+    	int indx = 0;
+    	for(PropertyGroup pg: branchPropertyGroups){
+    		indx += 1;
+	    	try(Connection conn = datasource.getConnection()){
+	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
+	    			stmt.setInt(1, indx);
+	    			stmt.setInt(2, powergridId);
+	    			stmt.setInt(3,  pg.getProperty("fromBus").asInt());
+	    			stmt.setInt(4,  pg.getProperty("toBus").asInt());
+	    			stmt.setInt(5, 1);
+	    			stmt.setString(6, pg.getProperty("ckt").asString());
+	    			stmt.setDouble(7, pg.getProperty("r").asDouble());
+	    			stmt.setDouble(8, pg.getProperty("x").asDouble());
+	    			// also insert b?
+	    			stmt.setDouble(9, pg.getProperty("ratingA").asDouble());
+	    			stmt.setDouble(10, pg.getProperty("ratingB").asDouble());
+	    			stmt.setDouble(11, pg.getProperty("ratingC").asDouble());
+	    			// also insert ratio
+	    			stmt.setDouble(12, pg.getProperty("").asDouble());
+	    			stmt.setInt(13, pg.getProperty("").asInt());
+	    			stmt.setDouble(14, pg.getProperty("").asDouble());
+	    			stmt.setDouble(15, pg.getProperty("").asDouble());
+	    			
+	    			stmt.setString(16, UUID.randomUUID().toString());
+	    			stmt.execute();
+	    			// stmt.setInt(1, pg.getProperty("").asInt());
+//	    			stmt.setDouble(1, pg.getProperty("").asDouble());
+//	    			stmt.setString(1, pg.getProperty("").asString());
+	    		}
+	    	} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    	
+    	return getBranches(powergridId);
     }
     
     private List<Area> insertAreas(int powergridId, List<PropertyGroup> areaPropertyGroups){
