@@ -107,14 +107,14 @@ public class PowergridDataSources {
 	 */
 	private static String defaultDatasourceKey = null;
 	
-	/**
-	 * <p>
-	 * Private constructor for <code>PowergridDatasources</code>
-	 * </p>
-	 */
-	private PowergridDataSources(){
-		// private constructor.
-	}
+//	/**
+//	 * <p>
+//	 * Private constructor for <code>PowergridDatasources</code>
+//	 * </p>
+//	 */
+//	private PowergridDataSources(){
+//		// private constructor.
+//	}
 	
 	/**
 	 * <p>

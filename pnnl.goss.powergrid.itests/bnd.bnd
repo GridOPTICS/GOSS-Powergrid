@@ -20,17 +20,14 @@ Private-Package:  \
 	pnnl.goss.core.runner;version=latest,\
 	org.apache.activemq.activemq-osgi,\
 	com.springsource.javax.jms,\
-	pnnl.goss.core.core-api,\
-	pnnl.goss.core.goss-client,\
-	pnnl.goss.core.goss-core-commands,\
-	pnnl.goss.core.goss-core-exceptions,\
-	pnnl.goss.core.goss-core-security,\
-	pnnl.goss.core.goss-core-server,\
-	pnnl.goss.core.goss-core-server-api,\
-	pnnl.goss.core.security-propertyfile,\
 	org.amdatu.configurator.api,\
 	org.amdatu.configurator.autoconf,\
-	org.amdatu.configurator.properties
+	org.amdatu.configurator.properties,\
+	pnnl.goss.powergrid.parsers.parser-api;version=latest,\
+	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
+	pnnl.goss.core.core-api,\
+	pnnl.goss.core.goss-core-server-api,\
+	org.apache.commons.io
 
 Test-Cases: ${classes;ANNOTATION;org.junit.Test}
 
