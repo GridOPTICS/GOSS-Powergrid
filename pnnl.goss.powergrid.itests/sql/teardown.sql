@@ -1,0 +1,1 @@
+//DROP TABLE capacity_requirements;

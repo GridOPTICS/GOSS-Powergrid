@@ -1,0 +1,10 @@
+Bundle-Version: 0.0.0.${tstamp}
+-buildpath:  \
+	org.apache.commons.io,\
+	org.apache.felix.dependencymanager.annotation,\
+	osgi.cmpn;version=4.3,\
+	osgi.core;version=4.3,\
+	com.google.gson,\
+	biz.aQute.junit
+-sub:  \
+	*.bnd

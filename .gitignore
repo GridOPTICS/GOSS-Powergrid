@@ -2,8 +2,6 @@
 mvn-build
 build
 target
-.classpath
-.project
 bin
 log.txt
 *.pydevproject
@@ -16,7 +14,6 @@ tmp/
 *.swp
 *~.nib
 local.properties
-.settings/
 .loadpath
 
 # External tool builders
@@ -42,3 +39,14 @@ goss-karaf files/
 # output from resolver tool
 *resolvedPom.xml
 *pom.xml.orig
+powergrid-commands/.classpath,powergrid-commands/.project,powergrid-common/.classpath,powergrid-common/.project,powergrid-features/.classpath,powergrid-features/.project
+.classpath
+.project
+powergrid-commands/.classpath
+powergrid-commands/.project
+powergrid-common/.classpath
+powergrid-common/.project
+powergrid-features/.classpath
+powergrid-features/.project
+powergrid-server/.classpath
+powergrid-server/.project

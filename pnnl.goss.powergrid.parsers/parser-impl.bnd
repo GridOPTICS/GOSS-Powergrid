@@ -1,0 +1,6 @@
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package:  \
+	pnnl.goss.powergrid.parsers
+Include-Resource: \
+	resources/definitions/Psse23Definitions.js=resources/definitions/Psse23Definitions.js
+	
