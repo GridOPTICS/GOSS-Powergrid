@@ -1,0 +1,74 @@
+-runfw: org.apache.felix.framework;version='[4.4,5)'
+-runee: JavaSE-1.8
+-runsystemcapabilities: ${native_capability}
+-runsystempackages: sun.misc
+
+-resolve.effective: active;skip:="osgi.service"
+
+
+-runrequires:  \
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.goss-powergrid-api)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.goss-powergrid-server)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.parsers.parser-api)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.parsers.parser-impl)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.runner)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-client)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-core-server)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-core-server-api)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-core-server-registry)',\
+	osgi.identity;filter:='(osgi.identity=com.mysql.jdbc)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-core-security)',\
+	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.security-propertyfile)'
+-runbundles:  \
+	com.mysql.jdbc;version='[5.1.34,5.1.35)',\
+	com.springsource.org.xmlpull;version='[1.1.4,1.1.5)',\
+	org.amdatu.persistence2_1;version='[1.0.0,1.0.1)',\
+	org.amdatu.web.rest.jaxrs;version='[1.0.8,1.0.9)',\
+	org.apache.activemq.shiro,\
+	org.apache.commons.io;version='[2.4.0,2.4.1)',\
+	org.apache.felix.configadmin;version='[1.8.2,1.8.3)',\
+	org.apache.felix.dependencymanager;version='[4.0.1,4.0.2)',\
+	org.apache.felix.gogo.command;version='[0.14.0,0.14.1)',\
+	org.apache.felix.gogo.runtime;version='[0.16.2,0.16.3)',\
+	org.apache.felix.gogo.shell;version='[0.10.0,0.10.1)',\
+	org.apache.geronimo.specs.geronimo-jta_1.1_spec;version='[1.1.1,1.1.2)',\
+	org.apache.servicemix.bundles.commons-dbcp;version='[1.4.0,1.4.1)',\
+	org.apache.shiro.core;version='[1.2.3,1.2.4)',\
+	org.fusesource.stompjms.stompjms-client;version='[1.19.0,1.19.1)',\
+	osgi.residential;version='[4.3.0,4.3.1)',\
+	pnnl.goss.core.client-all;version=latest,\
+	pnnl.goss.core.goss-client;version=latest,\
+	pnnl.goss.core.goss-core-security;version=latest,\
+	pnnl.goss.core.goss-core-server;version=latest,\
+	pnnl.goss.core.goss-core-server-api;version=latest,\
+	pnnl.goss.core.goss-core-server-registry;version=latest,\
+	pnnl.goss.core.security-propertyfile;version=latest,\
+	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
+	pnnl.goss.powergrid.goss-powergrid-server;version=latest,\
+	pnnl.goss.powergrid.parsers.parser-api;version=latest,\
+	pnnl.goss.powergrid.parsers.parser-impl;version=latest,\
+	pnnl.goss.powergrid.runner;version=latest,\
+	xstream;version='[1.4.8,1.4.9)',\
+	osgi.cmpn,\
+	org.glassfish.javax.ejb,\
+	org.glassfish.main.transaction.javax.transaction,\
+	org.apache.felix.dependencymanager.runtime,\
+	org.apache.felix.dependencymanager.shell,\
+	org.amdatu.configurator.properties
+	
+
+# Include variables that will be configured during runtime and can be replaced
+# without modifying the configuration files.  If multiple configuration files
+# are listed the last one set is the one that is used.
+-include: \
+	runproperties.config
+
+#These are defined in runproperties.
+-runproperties: \
+	${activemq.props},\
+	${ssl.props},\
+	${system.props}
+	
+	

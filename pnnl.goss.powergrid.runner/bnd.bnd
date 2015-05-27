@@ -1,0 +1,7 @@
+Bundle-Version: 1.0.0.${tstamp}
+Export-Package:  \
+	pnnl.goss.powergrid.runner
+-buildpath:  \
+	biz.aQute.bnd.annotation,\
+	pnnl.goss.core.goss-core-server;version=latest,\
+	pnnl.goss.core.goss-core-server-api;version=latest
