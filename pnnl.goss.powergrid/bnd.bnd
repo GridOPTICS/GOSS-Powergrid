@@ -3,30 +3,32 @@
 	*.bnd
 -runfw: org.apache.felix.framework;version='[4,5]'
 -runee: JavaSE-1.8
--baseline: *
+
 -buildpath:  \
-	kundera,\
-	pnnl.goss.core.core-api,\
-	pnnl.goss.core.goss-core-server-registry,\
-	org.apache.felix.dependencymanager,\
-	org.apache.felix.dependencymanager.runtime,\
+	../cnf/plugins/org.apache.felix.dependencymanager.annotation-3.2.0.jar;version=file,\
+	pnnl.goss.core.core-api;version=latest,\
+	pnnl.goss.core.goss-core-server-registry;version=latest,\
 	org.apache.commons.io,\
 	org.apache.httpcomponents.httpclient,\
-	pnnl.goss.core.goss-core-server-api,\
-	pnnl.goss.core.goss-core-security,\
+	pnnl.goss.core.goss-core-server-api;version=latest,\
+	pnnl.goss.core.goss-core-security;version=latest,\
 	org.apache.servicemix.bundles.commons-dbcp,\
 	org.apache.commons.pool,\
 	osgi.cmpn;version=5.0,\
 	osgi.enterprise;version=5.0,\
 	osgi.residential;version=4.3,\
 	osgi.core;version=5.0,\
-	pnnl.goss.core.goss-client,\
-	org.apache.geronimo.components.geronimo-transaction,\
+	pnnl.goss.core.goss-client;version=latest,\
 	javax.persistence;version=2.1,\
 	com.google.gson,\
 	slf4j.api;version=1.7,\
 	slf4j.simple;version=1.7,\
-	org.apache.felix.dependencymanager.annotation,\
 	com.mysql.jdbc,\
 	javax.ws.rs.jsr311-api,\
-	biz.aQute.junit
+	biz.aQute.junit,\
+	org.apache.felix.dependencymanager.runtime,\
+	org.apache.felix.dependencymanager,\
+	org.apache.httpcomponents__httpclient,\
+	org.apache.geronimo.specs.geronimo-jpa_3.0_spec,\
+	org.amdatu.testing.configurator,\
+	com.google.guava;version=18.0
