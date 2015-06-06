@@ -1,10 +1,9 @@
--runfw: org.apache.felix.framework;version='[4.4,5)'
+-runfw: ${framework-runpath}
 -runee: JavaSE-1.8
 -runsystemcapabilities: ${native_capability}
 -runsystempackages: sun.misc
 
 -resolve.effective: active;skip:="osgi.service"
-
 
 -runrequires:  \
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
@@ -22,6 +21,13 @@
 	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-core-security)',\
 	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.security-propertyfile)'
 -runbundles:  \
+	${gogo-runpath},\
+	${osgi-runpath},\
+	${httpservice-runpath},\
+	${slf4j-runpath},\
+	${logservice-runpath},\
+	${configadmin-runpath},\
+	${dm-runpath},\
 	com.springsource.com.thoughtworks.xstream;version='[1.3.1,1.3.2)',\
 	com.springsource.org.xmlpull;version='[1.1.4,1.1.5)',\
 	com.mysql.jdbc;version='[5.1.34,5.1.35)',\
@@ -30,10 +36,10 @@
 	javax.management.j2ee-api;version='[1.1.1,1.1.2)',\
 	javax.xml;version='[1.3.4,1.3.5)',\
 	javax.xml.stream;version='[1.0.1,1.0.2)',\
-	org.amdatu.configurator.api;version='[1.0.0,1.0.1)',\
-	org.amdatu.configurator.autoconf;version='[1.0.0,1.0.1)',\
-	org.amdatu.configurator.properties;version='[1.0.0,1.0.1)',\
-	org.amdatu.configurator.shell;version='[1.0.0,1.0.1)',\
+	org.amdatu.configurator.api;version='[1.0.1,1.0.2)',\
+	org.amdatu.configurator.autoconf;version='[1.0.1,1.0.2)',\
+	org.amdatu.configurator.properties;version='[1.0.1,1.0.2)',\
+	org.amdatu.configurator.shell;version='[1.0.1,1.0.2)',\
 	org.apache.activemq.activemq-osgi;version='[5.11.1,5.11.2)',\
 	org.apache.activemq.shiro;version='[5.11.1,5.11.2)',\
 	org.apache.aries.blueprint;version='[1.1.0,1.1.1)',\
@@ -42,15 +48,6 @@
 	org.apache.commons.io;version='[2.4.0,2.4.1)',\
 	org.apache.commons.pool;version='[1.5.4,1.5.5)',\
 	org.apache.servicemix.bundles.commons-dbcp;version=1.4.0,\
-	org.apache.felix.configadmin;version='[1.8.0,1.8.1)',\
-	org.apache.felix.dependencymanager;version='[3.1.0,3.1.1)',\
-	org.apache.felix.dependencymanager;version='[4.0.1,4.0.2)',\
-	org.apache.felix.dependencymanager.runtime;version='[4.0.1,4.0.2)',\
-	org.apache.felix.dependencymanager.shell;version='[4.0.1,4.0.2)',\
-	org.apache.felix.gogo.command;version='[0.14.0,0.14.1)',\
-	org.apache.felix.gogo.runtime;version='[0.12.1,0.12.2)',\
-	org.apache.felix.gogo.shell;version='[0.10.0,0.10.1)',\
-	org.apache.felix.http.servlet-api,\
 	org.apache.geronimo.specs.geronimo-jta_1.1_spec;version='[1.1.1,1.1.2)',\
 	org.apache.servicemix.bundles.commons-dbcp;version='[1.4.0,1.4.1)',\
 	org.apache.shiro.core;version='[1.2.3,1.2.4)',\
@@ -63,9 +60,6 @@
 	org.objectweb.asm.all;version='[4.1.0,4.1.1)',\
 	org.ops4j.pax.logging.pax-logging-api;version='[1.7.0,1.7.1)',\
 	org.ops4j.pax.logging.pax-logging-service;version='[1.7.0,1.7.1)',\
-	osgi.cmpn;version='[5.0.0,5.0.1)',\
-	osgi.enterprise;version='[4.2.0,4.2.1)',\
-	osgi.residential;version='[4.3.0,4.3.1)',\
 	org.eclipse.jetty.aggregate.jetty-all-server;version=8.1.16,\
 	org.apache.geronimo.specs.geronimo-jms_1.1_spec;version=1.1.1,\
 	pnnl.goss.core.core-api;version=3.0.0,\
