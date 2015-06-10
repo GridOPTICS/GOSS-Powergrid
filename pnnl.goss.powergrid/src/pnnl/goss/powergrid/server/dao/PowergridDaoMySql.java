@@ -64,6 +64,8 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pnnl.goss.core.server.DataSourceObject;
+import pnnl.goss.core.server.DataSourcePooledJdbc;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.datamodel.AlertContext;
 import pnnl.goss.powergrid.datamodel.AlertContextItem;
@@ -82,14 +84,32 @@ import pnnl.goss.powergrid.datamodel.SwitchedShunt;
 import pnnl.goss.powergrid.datamodel.Transformer;
 import pnnl.goss.powergrid.datamodel.Zone;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
+import pnnl.goss.powergrid.server.datasources.PowergridDataSource;
 //import pnnl.goss.core.server.InvalidDatasourceException;
 
 public class PowergridDaoMySql implements PowergridDao {
 
     private static Logger log = LoggerFactory.getLogger(PowergridDaoMySql.class);
-    protected DataSource datasource;
+    protected DataSourcePooledJdbc pooledDatasource;
     private final AlertContext alertContext;
     private PowergridTimingOptions powergridTimingOptions;
+    
+    /**
+     * An internal function that will allow use to get connections from either the DataSource
+     * or DataSourceObject depending on how this object was instantiated.
+     * 
+     * @return java.sql.Connection
+     */
+    private Connection getConnection(){
+    	Connection conn = null;
+    	try {
+			conn = pooledDatasource.getConnection();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}    	
+    	return conn;
+    }
         
     
     public String createPowergrid(String powergridName, Map<String, List<PropertyGroup>> data){
@@ -130,7 +150,7 @@ public class PowergridDaoMySql implements PowergridDao {
     			+"VALUES("+getInsertMark("?", 7)+");";
     	
     	for(PropertyGroup pg: generatorPropertyGroups){
-	    	try(Connection conn = datasource.getConnection()){
+	    	try(Connection conn = getConnection()){
 	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
 	    			stmt.setInt(1, powergridId);
 	    			stmt.setString(2, pg.getProperty("name").asString());
@@ -159,7 +179,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	int indx = 0;
     	for(PropertyGroup pg: branchPropertyGroups){
     		indx += 1;
-	    	try(Connection conn = datasource.getConnection()){
+	    	try(Connection conn = getConnection()){
 	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
 	    			stmt.setInt(1, indx);
 	    			stmt.setInt(2, powergridId);
@@ -201,7 +221,7 @@ public class PowergridDaoMySql implements PowergridDao {
     			+"VALUES("+getInsertMark("?", 7)+");";
     	
     	for(PropertyGroup pg: areaPropertyGroups){
-	    	try(Connection conn = datasource.getConnection()){
+	    	try(Connection conn = getConnection()){
 	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
 	    			stmt.setInt(1, powergridId);
 	    			stmt.setString(2, pg.getProperty("name").asString());
@@ -228,7 +248,7 @@ public class PowergridDaoMySql implements PowergridDao {
     			+"VALUES("+getInsertMark("?", 3)+");";
     	
     	for(PropertyGroup pg: zonePropertyGroups){
-	    	try(Connection conn = datasource.getConnection()){
+	    	try(Connection conn = getConnection()){
 	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
 	    			stmt.setInt(1, powergridId);
 	    			stmt.setString(2, pg.getProperty("name").asString());
@@ -253,7 +273,7 @@ public class PowergridDaoMySql implements PowergridDao {
 		
     	for(PropertyGroup pg: busPropertyGroups){
     		String busUUID = UUID.randomUUID().toString();
-    		try(Connection conn = datasource.getConnection()){
+    		try(Connection conn = getConnection()){
 	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
 //	    			stmt.setInt(1, pg.getProperty("").asInt());
 //	    			stmt.setDouble(1, pg.getProperty("").asDouble());
@@ -300,7 +320,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	String insert = "INSERT INTO powergrid(PowergridId, Name,CoordinateSystem,Mrid) VALUES(?,?,?,?);";
     	
     	int pgId = maxPg + 1;
-    	try(Connection conn = datasource.getConnection()){
+    	try(Connection conn = getConnection()){
     		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
     			stmt.setInt(1, pgId);
     			stmt.setString(2, name);
@@ -322,13 +342,26 @@ public class PowergridDaoMySql implements PowergridDao {
         initializeAlertContext();
 
     }
-
-    public PowergridDaoMySql(DataSource datasource) {
-        log.debug("Creating " + PowergridDaoMySql.class);
-        this.datasource = datasource;
+    
+    /**
+     * The assumption is 
+     * @param datasource
+     */
+    public PowergridDaoMySql(DataSourcePooledJdbc datasource) {
+        log.debug("Creating " + PowergridDaoMySql.class + " with DataSourceObject.");
+        this.pooledDatasource = datasource;
+        //PowergridDataSource ds = (PowergridDataSource)datasource;
+        //this.datasource = ds.getDatasource();
         alertContext = new AlertContext();
         initializeAlertContext();
     }
+
+//    public PowergridDaoMySql(DataSource datasource) {
+//        log.debug("Creating " + PowergridDaoMySql.class);
+//        this.datasource = datasource;
+//        alertContext = new AlertContext();
+//        initializeAlertContext();
+//    }
 
     public AlertContext getAlertContext(int powergridId){
         return alertContext;
@@ -351,47 +384,25 @@ public class PowergridDaoMySql implements PowergridDao {
         alertContext.addContextElement(new AlertContextItem(AlertSeverity.SEVERITY_WARN, AlertType.ALERTTYPE_SUBSTATION, 0.05, "+- % nominal buses"));
     }
 
-    public void setDatasource(DataSource datasource){
-        log.debug("Setting new datasource");
-        this.datasource = datasource;
-    }
-
     public List<Powergrid> getAvailablePowergrids() {
         List<Powergrid> grids = new ArrayList<Powergrid>();
 
         String dbQuery = "select pg.powergridId, pg.Name, a.mrid from powergrid pg inner join area a on pg.Powergridid=a.PowergridId";
-        ResultSet rs = null;
-        Connection conn = null;
-        try {
-            conn = datasource.getConnection();
-            Statement stmt = datasource.getConnection().createStatement();
-            rs = stmt.executeQuery(dbQuery.toLowerCase());
-
-            while (rs.next()) {
-                Powergrid item = new Powergrid();
-                item.setPowergridId(rs.getInt(1));
-                item.setName(rs.getString(2));
-                item.setMrid(rs.getString("mrid"));
-                grids.add(item);
-            }
+        
+        try (Statement stmt = getConnection().createStatement()){
+        	try (ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())){
+	            while (rs.next()) {
+	                Powergrid item = new Powergrid();
+	                item.setPowergridId(rs.getInt(1));
+	                item.setName(rs.getString(2));
+	                item.setMrid(rs.getString("mrid"));
+	                grids.add(item);
+	            }
+        	}
 
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
         }
 
         return grids;
@@ -414,7 +425,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
         try {
             log.debug(dbQuery);
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
             rs.next();
@@ -450,7 +461,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
             rs.next();
@@ -522,7 +533,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
 
@@ -558,7 +569,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
 
@@ -599,7 +610,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
 
@@ -647,7 +658,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
 
@@ -692,7 +703,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
 
@@ -733,7 +744,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
 
@@ -775,7 +786,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
 
@@ -823,7 +834,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
 
@@ -866,7 +877,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
 
             rs = stmt.executeQuery(dbQuery.toLowerCase());
@@ -911,7 +922,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
             while (rs.next()) {
@@ -951,7 +962,7 @@ public class PowergridDaoMySql implements PowergridDao {
         Connection conn = null;
 
         try {
-            conn = datasource.getConnection();
+            conn = getConnection();
             Statement stmt = conn.createStatement();
             rs = stmt.executeQuery(dbQuery.toLowerCase());
             while (rs.next()) {
@@ -1069,7 +1080,7 @@ public class PowergridDaoMySql implements PowergridDao {
     }
 
     private ResultSet prepareAndExecute(String query, int powergridId, String timestep) throws ParseException, SQLException, ConfigurationException {
-        PreparedStatement stmt = datasource.getConnection().prepareStatement(query);
+        PreparedStatement stmt = getConnection().prepareStatement(query);
         stmt.setInt(1, powergridId);
         stmt.setString(2, timestep);
         return stmt.executeQuery();
