@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 
 import pnnl.goss.core.Request;
 import pnnl.goss.core.UploadRequest;
@@ -20,8 +20,6 @@ public class CreatePowergridRequest extends Request {
     private String powergridName;
     private String mrid;
     private String powergridType;
-    
-    
     
     public void setPowergridContent(String powergridContent) {
 		this.powergridContent = powergridContent;
@@ -84,8 +82,7 @@ public class CreatePowergridRequest extends Request {
         if (!file.exists()) throw new FileNotFoundException();
 
         try {
-            InputStream in = file.toURI().toURL().openStream();
-            powergridContent = IOUtils.toString(in);
+        	powergridContent = FileUtils.readFileToString(file);
         } catch (MalformedURLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
