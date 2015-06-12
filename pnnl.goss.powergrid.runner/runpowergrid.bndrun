@@ -5,21 +5,6 @@
 
 -resolve.effective: active;skip:="osgi.service"
 
--runrequires:  \
-	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
-	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.goss-powergrid-api)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.goss-powergrid-server)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.parsers.parser-api)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.parsers.parser-impl)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.powergrid.runner)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-client)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-core-server)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-core-server-api)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-core-server-registry)',\
-	osgi.identity;filter:='(osgi.identity=com.mysql.jdbc)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.goss-core-security)',\
-	osgi.identity;filter:='(osgi.identity=pnnl.goss.core.security-propertyfile)'
 -runbundles:  \
 	${gogo-runpath},\
 	${osgi-runpath},\
