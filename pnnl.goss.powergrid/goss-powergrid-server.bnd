@@ -5,7 +5,8 @@ Private-Package:  \
 	pnnl.goss.powergrid.server,\
 	pnnl.goss.powergrid.server.dao,\
 	pnnl.goss.powergrid.parser.api,\
-	pnnl.goss.powergrid.parsers
+	pnnl.goss.powergrid.parsers,\
+	pnnl.goss.powergrid.listeners
 Bundle-Version: 1.0.0.${tstamp}
 
 Include-Resource: \
