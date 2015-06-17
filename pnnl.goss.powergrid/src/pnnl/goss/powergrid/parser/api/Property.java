@@ -68,4 +68,9 @@ public class Property implements Serializable {
 				.setName(name)
 				.setValue(value);
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("<%s %s %s>", this.name, this.dataType, this.value);
+	}
 }
