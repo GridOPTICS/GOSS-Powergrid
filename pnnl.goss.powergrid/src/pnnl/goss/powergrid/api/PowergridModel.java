@@ -124,6 +124,9 @@ public class PowergridModel implements Serializable {
 
 	@XmlTransient
 	public HashMap<Integer, HashMap<Integer, Object>> elementMap = new HashMap<Integer, HashMap<Integer, Object>>();
+	
+	@XmlTransient
+	public HashMap<Integer, HashMap<String, Object>> elementMapString = new HashMap<>();
 
 	/**
 	 * Constructs a powergrid model. After the constructor all of the elements
@@ -143,12 +146,14 @@ public class PowergridModel implements Serializable {
 
 	public void reset() {
 		elementMap.clear();
+		elementMapString.clear();
+		
+		elementMapString.put(MACHINES, new HashMap<String, Object>());
 		elementMap.put(BUSES, new HashMap<Integer, Object>());
 		elementMap.put(BRANCHES, new HashMap<Integer, Object>());
 		elementMap.put(TRANSFORMERS, new HashMap<Integer, Object>());
 		elementMap.put(LINES, new HashMap<Integer, Object>());
 		elementMap.put(LOADS, new HashMap<Integer, Object>());
-		elementMap.put(MACHINES, new HashMap<Integer, Object>());
 		elementMap.put(SWITCHEDSHUNTS, new HashMap<Integer, Object>());
 		elementMap.put(SUBSTATIONS, new HashMap<Integer, Object>());
 		// elementMap.put(AREAS, new HashMap<Integer, Object>());
@@ -163,6 +168,10 @@ public class PowergridModel implements Serializable {
 
 	private void addToMap(int whichMap, int id, Object object) {
 		elementMap.get(whichMap).put(id, object);
+	}
+	
+	private void addToMap(int whichMap, String id, Object object) {
+		elementMapString.get(whichMap).put(id, object);
 	}
 
 	private Object getFromMap(int whichMap, int id) {

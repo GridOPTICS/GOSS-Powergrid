@@ -3,14 +3,13 @@ package pnnl.goss.powergrid.requests;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
 
 import pnnl.goss.core.Request;
-import pnnl.goss.core.UploadRequest;
 
 public class CreatePowergridRequest extends Request {
 
@@ -20,6 +19,7 @@ public class CreatePowergridRequest extends Request {
     private String powergridName;
     private String mrid;
     private String powergridType;
+   
     
     public void setPowergridContent(String powergridContent) {
 		this.powergridContent = powergridContent;

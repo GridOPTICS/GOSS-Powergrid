@@ -166,7 +166,6 @@ import javax.xml.bind.annotation.XmlType;
     "machineId",
     "powergridId",
     "busNumber",
-    "machineName",
     "pgen",
     "qgen",
     "maxPgen",
@@ -191,13 +190,11 @@ public class Machine
 
     private final static long serialVersionUID = 12343L;
     @XmlElement(name = "MachineId")
-    protected int machineId;
+    protected String machineId;
     @XmlElement(name = "PowergridId")
     protected int powergridId;
     @XmlElement(name = "BusNumber")
     protected int busNumber;
-    @XmlElement(name = "MachineName", required = true)
-    protected String machineName;
     @XmlElement(name = "Pgen")
     protected double pgen;
     @XmlElement(name = "Qgen")
@@ -237,7 +234,7 @@ public class Machine
      * Gets the value of the machineId property.
      * 
      */
-    public int getMachineId() {
+    public String getMachineId() {
         return machineId;
     }
 
@@ -245,7 +242,7 @@ public class Machine
      * Sets the value of the machineId property.
      * 
      */
-    public void setMachineId(int value) {
+    public void setMachineId(String value) {
         this.machineId = value;
     }
 
@@ -291,34 +288,6 @@ public class Machine
 
     public boolean isSetBusNumber() {
         return true;
-    }
-
-    /**
-     * Gets the value of the machineName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getMachineName() {
-        return machineName;
-    }
-
-    /**
-     * Sets the value of the machineName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setMachineName(String value) {
-        this.machineName = value;
-    }
-
-    public boolean isSetMachineName() {
-        return (this.machineName!= null);
     }
 
     /**
