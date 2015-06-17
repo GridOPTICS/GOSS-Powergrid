@@ -1,0 +1,8 @@
+Include-Resource: \
+  webapp=webapp
+
+X-Web-Resource: /powergrid;webapp/public
+X-Web-Resource-Version: 1.0
+#X-Web-Resource-Default-Page: index.html
+  	
+

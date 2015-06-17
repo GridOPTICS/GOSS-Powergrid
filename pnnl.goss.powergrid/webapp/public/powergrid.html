@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Powergrid Stream</title>
+<script type="text/javascript" src="js/stomp.min.js"></script>
+<script type="text/javascript" src="js/guid.js"></script>
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="//cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
+</head>
+<body>
+<h1>Powergrid Data</h1>
+<input type="text" id="wsaddr" placeholder="Websocke url" value="ws://localhost:61614" />
+<button id="connect">Connect</button> <button id="disconnect">Disconnect</button><br />
+Model Name: <input type="text" id="name" placeholder="Input model name" /> <br />
+<textarea id="model_data" rows="20" cols="80"></textarea><br />
+<button id="create_model">Create New Model</button><br />
+<button id="list_modelss">List Models</button>
+<div id="status"></div>
+<div id="response"></div>
+<div id="debug"></div>
+
+<script type="text/javascript">
+	var client = null;
+	
+	var onChangeStatus = function(new_status){
+		$("#status").html("<pre>"+new_status+"</pre>");
+	}
+
+	var onConnect = function(){
+		onChangeStatus('Connected');
+		client.subscribe("/topic/powergrid/create", onResponse);
+	}
+
+	var onDisconnect = function() {
+		onChangeStatus('Disconnected');
+	}
+
+	var onResponse = function (message) {
+		$("#response").html("<pre>"+message.boody+"</pre>");
+	}
+	
+	var onError = function(error) {
+		onChangeStatus('ERROR: '+error)
+	}
+	
+	$("#disconnect").click(function(){
+		client.disconnect();
+	});
+	
+	$("#connect").click(function(){	
+		var socket = $("#wsaddr").val();
+		client = Stomp.client(socket);
+		client.heartbeat.outgoing = 0;
+		client.heartbeat.incoming = 0;
+		
+		client.debug = function(str) {
+			// append the debug log to a #debug div somewhere in the page using JQuery:
+		    $("#debug").append(str);
+		};
+		
+		client.connect('system', 'manager', onConnect, onError);
+		
+		$("#create_model").click(function(){
+			var data = $("#model_data").val();
+			if (data.length == 0){
+				onChangeStatus('Invalid model data.');
+				return;
+			}
+			client.send("/topic/powergrid/create", {}, data);
+			
+		});
+		$("#list_handlers").click(function() {
+			client.send("/topic/fusion/hello/request", {}, 
+					"hello");
+		});
+	});
+</script>
+</body>
+</html>
