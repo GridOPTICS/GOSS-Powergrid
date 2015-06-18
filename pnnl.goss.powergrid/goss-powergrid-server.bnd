@@ -4,10 +4,5 @@ Private-Package:  \
 	pnnl.goss.powergrid.server.impl,\
 	pnnl.goss.powergrid.server,\
 	pnnl.goss.powergrid.server.dao,\
-	pnnl.goss.powergrid.parser.api,\
-	pnnl.goss.powergrid.parsers,\
 	pnnl.goss.powergrid.listeners
 Bundle-Version: 1.0.0.${tstamp}
-
-Include-Resource: \
-	resources/definitions/Psse23Definitions.js=resources/definitions/Psse23Definitions.js

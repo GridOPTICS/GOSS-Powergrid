@@ -1,5 +1,6 @@
 package pnnl.goss.powergrid.handlers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,9 @@ import pnnl.goss.core.server.DataSourceObject;
 import pnnl.goss.core.server.DataSourcePooledJdbc;
 import pnnl.goss.core.server.DataSourceRegistry;
 import pnnl.goss.core.server.RequestHandler;
+import pnnl.goss.powergrid.api.SavePowergridResults;
 import pnnl.goss.powergrid.parser.api.InvalidDataException;
+import pnnl.goss.powergrid.parser.api.ParserResults;
 import pnnl.goss.powergrid.parser.api.ParserService;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
 import pnnl.goss.powergrid.parsers.ParserServiceImpl;
@@ -35,8 +38,8 @@ public class CreatePowergridHandler implements RequestHandler {
 	@ServiceDependency
 	private volatile DataSourceRegistry datasourceRegistry;
 
-	// @ServiceDependency
-	private volatile ParserService parserService = new ParserServiceImpl();
+	@ServiceDependency
+	private volatile ParserService parserService;
 
 	// private PowergridDataSource datasource = new
 	// PowergridDataSource("powergrid", "manager",
@@ -63,29 +66,40 @@ public class CreatePowergridHandler implements RequestHandler {
 		DataResponse response = new DataResponse();
 
 		try {
-
-			Map<String, List<PropertyGroup>> properties = parserService.parse(
-					"Psse23Definitions",
+			
+			ParserResults results = parserService.parse(
+					"PsseDefinitions",
 					IOUtils.toInputStream(pgRequest.getPowergridContent()));
-			response.setData(saveData(properties));
-
+			
+			if (results.hasErrors()){
+				response.setData(results);
+			}
+			else{
+				SavePowergridResults saveResult = saveData(pgRequest, results.getGrouopMap());
+				response.setData(saveResult);
+			}
 		} catch (InvalidDataException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		response.setData(UUID.randomUUID().toString());
+		finally{
+			response.setResponseComplete(true);
+		}
 
 		return response;
 	}
 
-	private String saveData(Map<String, List<PropertyGroup>> parsedData) {
+	private SavePowergridResults saveData(CreatePowergridRequest request,
+			Map<String, List<PropertyGroup>> parsedData) {
 		DataSourcePooledJdbc obj = (DataSourcePooledJdbc)datasourceRegistry.get("goss.powergrids.north");
 		//DataSourceObject obj = datasourceRegistry.get("goss.powergrids");
 		PowergridDaoMySql mydata = new PowergridDaoMySql(obj);
+		
+		List<String> problems = new ArrayList<String>();
+		
 
 		// PowergridDaoMySql mydata = new PowergridDaoMySql((DataSource) obj);
-		return mydata.createPowergrid("new powergrid", parsedData);
+		return mydata.createPowergrid(request.getPowergridName(), parsedData);
 	}
 
 }

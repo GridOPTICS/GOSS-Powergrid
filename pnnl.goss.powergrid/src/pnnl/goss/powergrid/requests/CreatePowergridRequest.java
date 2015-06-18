@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
 
@@ -13,89 +11,86 @@ import pnnl.goss.core.Request;
 
 public class CreatePowergridRequest extends Request {
 
-    private static final long serialVersionUID = -5144546768914835330L;
-    private String powergridContent;
-    private String coordinateSystem;
-    private String powergridName;
-    private String mrid;
-    private String powergridType;
-   
-    
-    public void setPowergridContent(String powergridContent) {
+	private static final long serialVersionUID = -5144546768914835330L;
+	private String powergridContent;
+	private String substationMappingContent;
+	private String coordinateSystem;
+	private String powergridName;
+	private String importVersion;
+
+	public CreatePowergridRequest() {
+		importVersion = "PSSE_23";
+		powergridName = "Powergrid Model";
+	}
+
+	public void setSubstationMap(String substationMap) {
+		this.substationMappingContent = substationMap;
+	}
+
+	public String getSubstationMap() {
+		return this.substationMappingContent;
+	}
+
+	public void setImportVersion(String version) {
+		this.importVersion = version;
+	}
+
+	public String getImportVersion() {
+		return this.importVersion;
+	}
+
+	public void setPowergridContent(String powergridContent) {
 		this.powergridContent = powergridContent;
 	}
 
-	public void setPowergridType(String value){
-    	this.powergridType = value;
-    }
-    
-    public String getPowergridType(){
-    	return this.powergridType;
-    }
+	public String fileContent() {
+		return powergridContent;
+	}
 
-    public String fileContent(){
-        return powergridContent;
-    }
+	public String getPowergridContent() {
+		return powergridContent;
+	}
 
-    public String getPowergridContent() {
-        return powergridContent;
-    }
+	public String getCoordinateSystem() {
+		return coordinateSystem;
+	}
 
+	public void setCoordinateSystem(String coordinateSystem) {
+		this.coordinateSystem = coordinateSystem;
+	}
 
-    public String getCoordinateSystem() {
-        return coordinateSystem;
-    }
+	public String getPowergridName() {
+		return powergridName;
+	}
 
+	public void setPowergridName(String powergridName) {
+		this.powergridName = powergridName;
+	}
 
+	public void setSubstationMappingFile(File file)
+			throws FileNotFoundException {
+		if (!file.exists())
+			throw new FileNotFoundException();
 
-    public void setCoordinateSystem(String coordinateSystem) {
-        this.coordinateSystem = coordinateSystem;
-    }
+		try {
+			this.substationMappingContent = FileUtils.readFileToString(file);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
+	public void setPowergridFile(File file) throws FileNotFoundException {
+		if (!file.exists())
+			throw new FileNotFoundException();
 
-
-    public String getPowergridName() {
-        return powergridName;
-    }
-
-
-
-    public void setPowergridName(String powergridName) {
-        this.powergridName = powergridName;
-    }
-
-
-
-    public String getMrid() {
-        return mrid;
-    }
-
-
-
-    public void setMrid(String mrid) {
-        this.mrid = mrid;
-    }
-
-
-
-    public void setFile(File file) throws FileNotFoundException{
-        if (!file.exists()) throw new FileNotFoundException();
-
-        try {
-        	powergridContent = FileUtils.readFileToString(file);
-        } catch (MalformedURLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-
-
-
-
-
-
+		try {
+			powergridContent = FileUtils.readFileToString(file);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

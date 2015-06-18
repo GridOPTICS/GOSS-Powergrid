@@ -1,0 +1,3 @@
+Export-Package:  \
+	pnnl.goss.powergrid.parser.api
+Bundle-Version: 1.0.0.${tstamp}

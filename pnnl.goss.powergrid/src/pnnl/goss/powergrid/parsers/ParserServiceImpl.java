@@ -20,15 +20,18 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.felix.dm.annotation.api.Component;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
 import pnnl.goss.powergrid.parser.api.InvalidDataException;
+import pnnl.goss.powergrid.parser.api.ParserResults;
 import pnnl.goss.powergrid.parser.api.ParserService;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
 
 import com.google.gson.Gson;
 
+@Component
 public class ParserServiceImpl implements ParserService{
 	
 	private final Map<String, ParserDefinition> availableDefinitions = new HashMap<>();
@@ -108,7 +111,7 @@ public class ParserServiceImpl implements ParserService{
 	
 	
 	@Override
-	public Map<String, List<PropertyGroup>> parse(String parserDefinition,
+	public ParserResults parse(String parserDefinition,
 			InputStream dataToParse) throws InvalidDataException {
 				
 		List<String> problems = new ArrayList<String>();
@@ -117,7 +120,7 @@ public class ParserServiceImpl implements ParserService{
 		ParserDefinition def = new ParserDefinition();
 		def.setLineSeperated(true);
 		def.setDescription("Pss/e 23 Definition File");
-		def.setName("Psse23Definitions");
+		def.setName("PsseDefinitions");
 		
 		// TODO add this back when ready to have multiple definition files.
 		/*
@@ -148,8 +151,17 @@ public class ParserServiceImpl implements ParserService{
 			// TODO Implement streaming model here aka cim.
 			throw new UnsupportedOperationException("Model definition not implemented!");
 		}
+		
+		boolean errorsFound = false;
+		for(String s: problems){
+			if(s.toUpperCase().startsWith("ERR")) {
+				errorsFound = true;
+				break;
+			}
+		}
 				
-		return powergridPropertyMap;
+		return new ParserResults(powergridPropertyMap, problems, 
+				errorsFound);
 	}
 	
 	
@@ -197,10 +209,10 @@ public class ParserServiceImpl implements ParserService{
 		
 	}
 
-	@Override
-	public List<String> getAvailableDefinitions() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+//	@Override
+//	public List<String> getAvailableDefinitions() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 }

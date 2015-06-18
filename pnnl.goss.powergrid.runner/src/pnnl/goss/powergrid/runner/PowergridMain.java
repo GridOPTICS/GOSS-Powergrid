@@ -15,6 +15,8 @@ import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.GossCoreContants;
 import pnnl.goss.core.Response;
 import pnnl.goss.core.client.ClientServiceFactory;
+import pnnl.goss.powergrid.api.SavePowergridResults;
+import pnnl.goss.powergrid.parser.api.ParserResults;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
 
 public class PowergridMain {
@@ -43,12 +45,12 @@ public class PowergridMain {
 		
 		return false;
 	}
-	public static String createModel(String name, File file){
-		String guid = null;
+	public static Object createModel(String name, File file){
+		Object obj = null;
 		Client client = null;
 		CreatePowergridRequest request = new CreatePowergridRequest();
 		try {
-			request.setFile(file);
+			request.setPowergridFile(file);
 			request.setPowergridName(name);
 			client = getNewClient();
 			Response response = client.getResponse(request);
@@ -56,8 +58,7 @@ public class PowergridMain {
 			// If there wasn't an error follow this path.
 			if (!handleError(response)){
 				DataResponse res = (DataResponse)response;
-				guid = (String)res.getData();
-				
+				obj = res.getData();
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -66,7 +67,7 @@ public class PowergridMain {
 			client.close();
 		}
 		
-		return guid;
+		return obj;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -81,8 +82,20 @@ public class PowergridMain {
 		factory = new ClientServiceFactory();
 		((ClientServiceFactory)factory).updated(properties);
 		File pgFile = new File("../pnnl.goss.powergrid.itests/resources/118.raw");
-		String guid = createModel("PSSE-118", pgFile);
-		System.out.println("Guid is: "+guid);
+		Object obj = createModel("PSSE-118", pgFile);
+		if (obj instanceof ParserResults){
+			
+		}
+		else if(obj instanceof SavePowergridResults){
+			SavePowergridResults results = (SavePowergridResults)obj;
+			if (results.isSuccess()){
+				System.out.println("Successful Guid: " + results.getPowergridGuid());
+			}
+			System.out.println("Errors or warnings");
+			for(String s: results.getErrorsAndWarnings()){
+				System.out.println(s);
+			}
+		}
 		
 		System.exit(0);
 	}

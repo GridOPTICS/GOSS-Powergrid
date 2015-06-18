@@ -19,13 +19,13 @@ public interface ParserService {
 	 * 				individual PropertyGroup represents a single object in the model.
 	 * @throws InvalidDataException 
 	 */
-	Map<String, List<PropertyGroup>> parse(String parserDefinition, InputStream dataStream) throws InvalidDataException;
+	ParserResults parse(String parserDefinition, InputStream dataStream) throws InvalidDataException;
 	
-	/**
-	 * Lookup the available definition files and return them.
-	 * 
-	 * @return
-	 */
-	List<String> getAvailableDefinitions();
+//	/**
+//	 * Lookup the available definition files and return them.
+//	 * 
+//	 * @return
+//	 */
+//	List<String> getAvailableDefinitions();
 
 }
