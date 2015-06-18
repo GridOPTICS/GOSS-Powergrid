@@ -55,6 +55,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -121,11 +122,11 @@ public class PowergridDaoMySql implements PowergridDao {
     	int pgId = insertPowerGrid(pgUUID, powergridName);
     	
     	List<Area> areas = insertAreas(pgId, data.get("areas"));
-    	List<Zone> zones = insertZones(pgId, data.get("areas"));
+    	List<Zone> zones = insertZones(pgId, data.get("zones"));
     	List<Bus> buses = insertBuses(pgId, data.get("buses"));
     	List<Machine> machines = insertGenerators(pgId, data.get("generators"));
     	//List<Branch> branches = insertBranches(pgId, data.get("branches"));
-    	//List<SwitchedShunt> shunts = insertSwitchedShunts(pgId, data.get("switched_shunts"));
+    	List<SwitchedShunt> shunts = insertSwitchedShunts(pgId, data.get("switched_shunts"));
     	
     	
     	return pgUUID;
@@ -166,8 +167,68 @@ public class PowergridDaoMySql implements PowergridDao {
     	System.out.println(name + " "+ output.toString());
     }
     
+    private List<SwitchedShunt> insertSwitchedShunts(int powergridId, List<PropertyGroup> switchedShuntPropertyGroups){
+    	String insert = "INSERT INTO switchedshunt ("+
+    			"SwitchedShuntId, PowergridId, BusNumber, Status, BShunt, BInit, ModSw, VswHi, VswLo, " +
+    			"SwRem, N1, B1, N2, B2, N3, B3, N4, B4, B5, N5, N6, B6, N7, B7, N8, B8, Mrid) " +
+    			"VALUES (" + 
+    			"@SwitchedShuntId, @PowergridId, @BusNumber, @Status, @BShunt, @BInit, @ModSw, @VswHi, " +
+    			"@VswLo, @SwRem, @N1, @B1, @N2, @B2, @N3, @B3, @N4, @B4, @N5, @B5, @N6, @B6, @N7, @B7, " +
+    			"@N8, @B8, @Mrid);";
+    	Map<Integer, Integer> busnumberCount = new HashMap<>();
+    	
+    	for(PropertyGroup pg: switchedShuntPropertyGroups){
+    		if (!busnumberCount.containsKey(pg.getProperty("busNumber").asInt())){
+    			busnumberCount.put(pg.getProperty("busNumber").asInt(), 0);
+    		}
+    		
+    		logPropertyGroup("Switched Shunts", pg);
+    		try(Connection conn = getConnection()){
+    			// Increase the count for this specific bus.
+    			busnumberCount.put(pg.getProperty("busNumber").asInt(), 
+    					busnumberCount.get(pg.getProperty("busNumber").asInt())+1);
+	    		NamedParamStatement namedStmt = new NamedParamStatement(conn, insert);
+	    		// This will be auto populated for us.
+	    		namedStmt.setString("SwitchedShuntId", 
+	    				busnumberCount.get(pg.getProperty("busNumber").asInt()).toString());
+	    		namedStmt.setInt("PowergridId", powergridId);
+				namedStmt.setInt("BusNumber", pg.getProperty("busNumber").asInt());
+	    		namedStmt.setInt("Status", pg.getProperty("status").asInt());
+	    		namedStmt.setDouble("BShunt", 0); //pg.getProperty("").asDouble());
+	    		namedStmt.setDouble("BInit", pg.getProperty("bInit").asDouble());
+	    		namedStmt.setInt("ModSw", 0); // pg.getProperty("mod").asInt());
+	    		namedStmt.setDouble("VswHi", pg.getProperty("vswHi").asDouble());
+	    		namedStmt.setDouble("VswLo", pg.getProperty("vswLo").asDouble());
+	    		namedStmt.setInt("SwRem", pg.getProperty("swRem").asInt());
+	    		namedStmt.setInt("N1", pg.getProperty("").asInt());
+	    		namedStmt.setDouble("B1", pg.getProperty("").asDouble());
+	    		namedStmt.setInt("N2", pg.getProperty("").asInt());
+	    		namedStmt.setDouble("B2", pg.getProperty("").asDouble());
+	    		namedStmt.setInt("N3", pg.getProperty("").asInt());
+	    		namedStmt.setDouble("B3", pg.getProperty("").asDouble());
+	    		namedStmt.setInt("N4", pg.getProperty("").asInt());
+	    		namedStmt.setDouble("B4", pg.getProperty("").asDouble());
+	    		namedStmt.setInt("N5", pg.getProperty("").asInt());
+	    		namedStmt.setDouble("B5", pg.getProperty("").asDouble());
+	    		namedStmt.setInt("N6", pg.getProperty("").asInt());
+	    		namedStmt.setDouble("B6", pg.getProperty("").asDouble());
+	    		namedStmt.setInt("N7", pg.getProperty("").asInt());
+	    		namedStmt.setDouble("B7", pg.getProperty("").asDouble());
+	    		namedStmt.setInt("N8", pg.getProperty("").asInt());
+	    		namedStmt.setDouble("B8", pg.getProperty("").asDouble());
+	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
+				
+				namedStmt.execute();
+				
+	    	} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
+    		
+    	return getSwitchedShunts(powergridId);
+    }
     private List<Machine> insertGenerators(int powergridId, List<PropertyGroup> generatorPropertyGroups){
-    	List<Machine> zones = new ArrayList<>();
     	String insert = "INSERT INTO machine (" +
     			"MachineId, PowergridId, BusNumber, PGen, QGen, MaxPGen, MaxQGen, MinPGen,"+
     			"MinQGen, Status, IsSvc, Vs, Ireg, Zr, Zx, Rt, Xt, Gtap, RmPct, Mrid, MBase) "+
@@ -204,22 +265,8 @@ public class PowergridDaoMySql implements PowergridDao {
 				namedStmt.setString("Mrid", UUID.randomUUID().toString());
 				namedStmt.setDouble("MBase", 0.0);
 				
-				boolean success = namedStmt.execute();
+				namedStmt.execute();
 				
-				if (!success){
-					System.err.println("Failed to insert data.");
-				}
-				
-//	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
-//	    			stmt.setInt(1, powergridId);
-//	    			stmt.setString(2, pg.getProperty("name").asString());
-//	    			stmt.setInt(3,  pg.getProperty("areaNumber").asInt());
-//	    			stmt.setInt(4,  pg.getProperty("isw").asInt());
-//	    			stmt.setDouble(5, 0);
-//	    			stmt.setDouble(6, pg.getProperty("pTolerance").asDouble());
-//	    			stmt.setString(7, UUID.randomUUID().toString());
-//	    			stmt.execute();
-//	    		}
 	    	} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -303,17 +350,19 @@ public class PowergridDaoMySql implements PowergridDao {
     private List<Zone> insertZones(int powergridId, List<PropertyGroup> zonePropertyGroups){
     	List<Zone> zones = new ArrayList<>();
     	String insert = "INSERT INTO zone("
-    			+"PowergridId,ZoneName,Mrid)"
-    			+"VALUES("+getInsertMark("?", 3)+");";
+    			+"PowergridId, ZoneNumber, ZoneName, Mrid)"
+    			+"VALUES(@PowergridId, @ZoneNumber, @ZoneName, @Mrid);";
     	
     	for(PropertyGroup pg: zonePropertyGroups){
-	    	try(Connection conn = getConnection()){
-	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
-	    			stmt.setInt(1, powergridId);
-	    			stmt.setString(2, pg.getProperty("name").asString());
-	    			stmt.setString(3, UUID.randomUUID().toString());
-	    			stmt.execute();
-	    		}
+    		logPropertyGroup("Generators", pg);
+	    	try(Connection conn = getConnection()){	    		
+	    		NamedParamStatement namedStmt = new NamedParamStatement(conn, insert);
+	    		namedStmt.setInt("PowergridId", powergridId);
+	    		namedStmt.setInt("ZoneNumber", pg.getProperty("zoneNumber").asInt());
+	    		namedStmt.setString("ZoneName", pg.getProperty("name").asString());
+	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
+
+	    		namedStmt.execute();	    			
 	    	} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -333,11 +382,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	for(PropertyGroup pg: busPropertyGroups){
     		String busUUID = UUID.randomUUID().toString();
     		try(Connection conn = getConnection()){
-	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
-//	    			stmt.setInt(1, pg.getProperty("").asInt());
-//	    			stmt.setDouble(1, pg.getProperty("").asDouble());
-//	    			stmt.setString(1, pg.getProperty("").asString());
-	    			
+	    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){    			
 	    			stmt.setInt(1, pg.getProperty("busNumber").asInt());    			
 	    			stmt.setInt(2, powergridId);
 	    			stmt.setInt(3, 0);
@@ -358,7 +403,6 @@ public class PowergridDaoMySql implements PowergridDao {
 	    			stmt.execute();
 	    		}
 	    	} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
     	}
@@ -388,7 +432,6 @@ public class PowergridDaoMySql implements PowergridDao {
     			stmt.execute();
     		}
     	} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	
@@ -899,7 +942,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
     public List<SwitchedShunt> getSwitchedShunts(int powergridId) {
         List<SwitchedShunt> items = new ArrayList<SwitchedShunt>();
-        String dbQuery = "select * from switchedshunts where PowerGridId = " + powergridId;
+        String dbQuery = "select * from switchedshunt where PowerGridId = " + powergridId;
         ResultSet rs = null;
         Connection conn = null;
 
@@ -911,12 +954,11 @@ public class PowergridDaoMySql implements PowergridDao {
             while (rs.next()) {
                 SwitchedShunt shunt = new SwitchedShunt();
                 shunt.setPowergridId(powergridId);
-                shunt.setBinit(rs.getDouble(7));
-                shunt.setBshunt(rs.getDouble(6));
-                shunt.setBusNumber(rs.getInt(3));
-                shunt.setStatus(rs.getInt(5));
-                shunt.setSwitchedShuntId(rs.getInt(1));
-                shunt.setSwitchedShuntName(rs.getString(4));
+                shunt.setBinit(rs.getDouble("BInit"));
+                shunt.setBshunt(rs.getDouble("BShunt"));
+                shunt.setBusNumber(rs.getInt("BusNumber"));
+                shunt.setStatus(rs.getInt("Status"));
+                shunt.setSwitchedShuntId(rs.getString("SwitchedShuntId"));
                 items.add(shunt);
             }
         } catch (SQLException e) {
