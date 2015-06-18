@@ -97,7 +97,7 @@ public class PowergridDaoMySql implements PowergridDao {
     protected DataSourcePooledJdbc pooledDatasource;
     private AlertContext alertContext;
     private PowergridTimingOptions powergridTimingOptions;
-    private Key2ValueValue2KeyMap psseToPowergridSchemaMap = new Key2ValueValue2KeyMap();
+    //private Key2ValueValue2KeyMap psseToPowergridSchemaMap = new Key2ValueValue2KeyMap();
     
     /**
      * An internal function that will allow use to get connections from either the DataSource
@@ -463,7 +463,7 @@ public class PowergridDaoMySql implements PowergridDao {
         log.debug("Creating " + PowergridDaoMySql.class);
         alertContext = new AlertContext();
         initializeAlertContext();
-        initializeSchemaMap();
+        //initializeSchemaMap();
 
     }
     
@@ -478,32 +478,32 @@ public class PowergridDaoMySql implements PowergridDao {
         //this.datasource = ds.getDatasource();
         alertContext = new AlertContext();
         initializeAlertContext();
-        initializeSchemaMap();
+        //initializeSchemaMap();
     }
     
-    private void initializeSchemaMap(){
-    	Key2ValueValue2KeyMap nd = psseToPowergridSchemaMap;
-    	try {
-			nd.loadFromFile(new File("map.json"));
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-    	
-    	nd.setKeyContainerName("psse");
-    	nd.setValueContainerName("powergrid");
-    	
-    	nd.add("busNumber", "BusNumber");
-    	nd.add("busType", "Code");
-    	
-    	try {
-			nd.saveToFile(new File("map.json"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
-    }
+//    private void initializeSchemaMap(){
+//    	Key2ValueValue2KeyMap nd = psseToPowergridSchemaMap;
+//    	try {
+//			nd.loadFromFile(new File("map.json"));
+//		} catch (IOException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//    	
+//    	nd.setKeyContainerName("psse");
+//    	nd.setValueContainerName("powergrid");
+//    	
+//    	nd.add("busNumber", "BusNumber");
+//    	nd.add("busType", "Code");
+//    	
+//    	try {
+//			nd.saveToFile(new File("map.json"));
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//    	
+//    }
 
 //    public PowergridDaoMySql(DataSource datasource) {
 //        log.debug("Creating " + PowergridDaoMySql.class);
