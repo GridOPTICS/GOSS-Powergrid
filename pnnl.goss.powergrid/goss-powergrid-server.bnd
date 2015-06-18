@@ -3,6 +3,5 @@ Private-Package:  \
 	pnnl.goss.powergrid.server.datasources,\
 	pnnl.goss.powergrid.server.impl,\
 	pnnl.goss.powergrid.server,\
-	pnnl.goss.powergrid.server.dao,\
-	pnnl.goss.powergrid.listeners
+	pnnl.goss.powergrid.server.dao
 Bundle-Version: 1.0.0.${tstamp}
