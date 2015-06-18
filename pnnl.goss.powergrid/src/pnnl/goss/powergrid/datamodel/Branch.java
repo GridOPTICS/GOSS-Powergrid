@@ -133,11 +133,9 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Branch", propOrder = {
-    "branchId",
     "powergridId",
     "fromBusNumber",
     "toBusNumber",
-    "indexNum",
     "ckt",
     "r",
     "x",
@@ -155,8 +153,6 @@ public class Branch
 {
 
     private final static long serialVersionUID = 12343L;
-    @XmlElement(name = "BranchId")
-    protected int branchId;
     @XmlElement(name = "PowergridId")
     protected int powergridId;
     @XmlElement(name = "FromBusNumber")
@@ -187,22 +183,6 @@ public class Branch
     protected double q;
     @XmlElement(name = "Mrid", required = true)
     protected String mrid;
-
-    /**
-     * Gets the value of the branchId property.
-     * 
-     */
-    public int getBranchId() {
-        return branchId;
-    }
-
-    /**
-     * Sets the value of the branchId property.
-     * 
-     */
-    public void setBranchId(int value) {
-        this.branchId = value;
-    }
 
     public boolean isSetBranchId() {
         return true;
