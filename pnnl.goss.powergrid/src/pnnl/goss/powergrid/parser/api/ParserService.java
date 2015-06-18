@@ -1,8 +1,6 @@
 package pnnl.goss.powergrid.parser.api;
 
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
 
 public interface ParserService {
 	
@@ -11,12 +9,9 @@ public interface ParserService {
 	 * value of the parserDefinition the function should route to either a line readable
 	 * model parser (psse/pti file) or a stream based (rdf) parser.
 	 * 
-	 * If the parsed data is not valid then InvalidDataException will be thrown.
-	 *  
-	 * @param parserDefinition - A string representing the definition file to use.
+	 * @param parserDefinition - A string representing the definition file to use. 
 	 * @param dataStream - A stream of data to be parsed.
-	 * @return - A map of string (class type/card types) with a List of property group values. An
-	 * 				individual PropertyGroup represents a single object in the model.
+	 * @return - A {@link ParserResults} object.
 	 * @throws InvalidDataException 
 	 */
 	ParserResults parse(String parserDefinition, InputStream dataStream) throws InvalidDataException;

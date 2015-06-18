@@ -4,4 +4,21 @@ Export-Package:  \
 -buildpath:  \
 	biz.aQute.bnd.annotation,\
 	pnnl.goss.core.goss-core-server;version=latest,\
-	pnnl.goss.core.goss-core-server-api;version=latest
+	pnnl.goss.core.goss-core-server-api;version=latest,\
+	pnnl.goss.core.goss-core-server-web;version=latest,\
+	pnnl.goss.core.core-api;version=latest,\
+	pnnl.goss.core.goss-client;version=latest,\
+	pnnl.goss.core.goss-core-exceptions;version=latest,\
+	pnnl.goss.core.security-propertyfile;version=latest,\
+	org.apache.activemq.activemq-osgi;version=5.11,\
+	org.apache.activemq.shiro;version=5.11,\
+	org.fusesource.stompjms.stompjms-client,\
+	org.apache.httpcomponents.httpclient,\
+	org.apache.httpcomponents.httpcore,\
+	org.apache.commons.io,\
+	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
+	pnnl.goss.powergrid.goss-powergrid-parser-api;version=latest,\
+	pnnl.goss.core.client-all
+	
+	
+	

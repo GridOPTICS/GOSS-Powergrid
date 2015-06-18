@@ -51,7 +51,6 @@ import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.powergrid.requests.RequestViolationTimeSteps;
 import pnnl.goss.powergrid.requests.RequestViolationTimeSteps.Type;
-import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
 
 
 public class RequestViolationTimeStepsHandler{

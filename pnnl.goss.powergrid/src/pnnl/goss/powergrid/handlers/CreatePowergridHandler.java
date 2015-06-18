@@ -29,8 +29,8 @@ import pnnl.goss.powergrid.parser.api.ParserService;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
 import pnnl.goss.powergrid.parsers.ParserServiceImpl;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
+import pnnl.goss.powergrid.server.PowergridDataSources;
 import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
-import pnnl.goss.powergrid.server.datasources.PowergridDataSource;
 
 @Component
 public class CreatePowergridHandler implements RequestHandler {
@@ -95,9 +95,6 @@ public class CreatePowergridHandler implements RequestHandler {
 		//DataSourceObject obj = datasourceRegistry.get("goss.powergrids");
 		PowergridDaoMySql mydata = new PowergridDaoMySql(obj);
 		
-		List<String> problems = new ArrayList<String>();
-		
-
 		// PowergridDaoMySql mydata = new PowergridDaoMySql((DataSource) obj);
 		return mydata.createPowergrid(request.getPowergridName(), parsedData);
 	}

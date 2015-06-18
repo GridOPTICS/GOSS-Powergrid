@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.apache.http.auth.UsernamePasswordCredentials;
 
@@ -15,9 +16,13 @@ import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.GossCoreContants;
 import pnnl.goss.core.Response;
 import pnnl.goss.core.client.ClientServiceFactory;
+import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.SavePowergridResults;
 import pnnl.goss.powergrid.parser.api.ParserResults;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
+import pnnl.goss.powergrid.requests.RequestPowergrid;
+
+import com.google.gson.Gson;
 
 public class PowergridMain {
 	private static ClientFactory factory;
@@ -69,6 +74,19 @@ public class PowergridMain {
 		
 		return obj;
 	}
+	
+	public static void printPowergrid(String mrid){
+		Gson gson = new Gson();
+		RequestPowergrid request = new RequestPowergrid(mrid);
+		Client client = null;
+		client = getNewClient();
+		Response response = client.getResponse(request);
+		if (!handleError(response)){
+			PowergridModel model = (PowergridModel)((DataResponse) response).getData();
+			System.out.println(gson.toJson(model));
+		}
+		
+	}
 
 	public static void main(String[] args) throws Exception {
 		Dictionary<String, Object> properties = new Hashtable<>();
@@ -91,9 +109,20 @@ public class PowergridMain {
 			if (results.isSuccess()){
 				System.out.println("Successful Guid: " + results.getPowergridGuid());
 			}
-			System.out.println("Errors or warnings");
-			for(String s: results.getErrorsAndWarnings()){
-				System.out.println(s);
+			
+			List<String> errors = results.getErrorsAndWarnings();
+			if (errors.size() > 0 ){
+				System.out.println("Errors or warnings");
+				for(String s: errors){
+					System.out.println(s);
+				}
+			}
+			else{
+				System.out.println("No errors or warnings.");
+			}
+			
+			if(results.isSuccess()){
+				printPowergrid(results.getPowergridGuid());
 			}
 		}
 		

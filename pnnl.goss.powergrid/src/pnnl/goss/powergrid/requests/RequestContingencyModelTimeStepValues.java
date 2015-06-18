@@ -53,12 +53,27 @@ public class RequestContingencyModelTimeStepValues extends Request {
 	private static final long serialVersionUID = 2218988287926482167L;
 	private int contingencyId;
 	private int powerGridId;
+	private String powergridMrid;
 	private Timestamp timestep;
+	
+	public RequestContingencyModelTimeStepValues(int contingencyId, String powergridMrid, Timestamp timestep) {
+		this.contingencyId = contingencyId;
+		this.powergridMrid = powergridMrid;
+		this.timestep = timestep;
+	}
 
 	public RequestContingencyModelTimeStepValues(int contingencyId, int powerGridId, Timestamp timestep) {
 		this.contingencyId = contingencyId;
 		this.powerGridId = powerGridId;
 		this.timestep = timestep;
+	}
+	
+	public String getPowergridMrid(){
+		return this.powergridMrid;
+	}
+	
+	public void setPowergridMrid(String mrid){
+		this.powergridMrid = mrid;
 	}
 
 	public int getContingencyId() {

@@ -46,6 +46,7 @@ package pnnl.goss.powergrid.handlers;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,19 +62,18 @@ import pnnl.goss.core.Response;
 import pnnl.goss.core.security.AuthorizationHandler;
 import pnnl.goss.core.security.AuthorizeAll;
 import pnnl.goss.core.server.DataSourcePooledJdbc;
-import pnnl.goss.core.server.DataSourceRegistry;
 import pnnl.goss.core.server.RequestHandler;
 import pnnl.goss.powergrid.api.ContingencyTimeStepModelValues;
 import pnnl.goss.powergrid.datamodel.ContingencyBranchViolation;
 import pnnl.goss.powergrid.datamodel.ContingencyBusViolation;
 import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
-import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
+import pnnl.goss.powergrid.server.PowergridDataSourceEntries;
 
 @Component
 public class RequestContingencyModelTimeStepValuesHandler implements RequestHandler {
 
 	@ServiceDependency
-	private volatile DataSourceRegistry dsRegistry;
+	private volatile PowergridDataSourceEntries dataSourceEntries;
 	
     String datasourceKey = null;
 
@@ -92,76 +92,46 @@ public class RequestContingencyModelTimeStepValuesHandler implements RequestHand
 
             ctgRequest = (RequestContingencyModelTimeStepValues)request;
 
-            try{
+            DataSourcePooledJdbc datasource = dataSourceEntries.getDataSourceByPowergrid(ctgRequest.getPowergridMrid());
+            try (Connection conn = datasource.getConnection()) {
 
                 model = new ContingencyTimeStepModelValues();
                 model.setContingencyId(ctgRequest.getContingencyId());
                 model.setPowergridId(ctgRequest.getPowerGridId());
 
-                /*
-                String dbQuery = "select * from contingencies where contingencyid ="+ctgRequest.getContingencyId()+" and powergridid ="+ctgRequest.getPowerGridId();
-                Statement stmt = PowergridDataSource.getConnection().createStatement();
-                ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase());
-
-                if(rs.next()){
-                    contingency.setContingencyId(ctgRequest.getContingencyId());
-                    contingency.setName(rs.getString(3));
-                    contingency.setPowerGridId(rs.getInt(2));
-                    contingency.setPowerFlowStatus(rs.getInt(4));
-                }
-
-
-
-                //Add Branches Outs
-                dbQuery = "select * from contingencybranchesout where contingencyid ="+ctgRequest.getContingencyId()+" and powergridid ="+ctgRequest.getPowerGridId();
-                rs = stmt.executeQuery(dbQuery.toLowerCase());
-                List<ContingencyBranchesOut> branchesOuts = new ArrayList<ContingencyBranchesOut>();
-                while(rs.next()){
-                    ContingencyBranchesOut branchesOut = new ContingencyBranchesOut();
-                    branchesOut.setPowerGridId(rs.getInt(3));
-                    branchesOut.setBranchId(rs.getInt(1));
-                    branchesOut.setContingencyId(rs.getInt(2));
-                    branchesOuts.add(branchesOut);
-                }
-                contingency.setBranchesOut(branchesOuts);*/
-
-                //Add Branch Voilations
+                //Add Branch Violations
                 String dbQuery = "select * from contingencybranchviolations where contingencyid ="+ctgRequest.getContingencyId()+" and powergridid ="+ctgRequest.getPowerGridId();
-                
-                PowergridDataSources ds = (PowergridDataSources)dsRegistry.get(PowergridDataSources.class.getName());
-    			Connection connection = ds.getConnection();
-                
-                Statement stmt = connection.createStatement();
-                //Statement stmt = PowergridDataSources.instance().getConnection(datasourceKey).createStatement();
-                ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase());
-                List<ContingencyBranchViolation> branchViolations = new ArrayList<ContingencyBranchViolation>();
-                while(rs.next()){
-                    ContingencyBranchViolation violations = new ContingencyBranchViolation();
-                    violations.setPowergridId(rs.getInt(2));
-                    violations.setBranchId(rs.getInt(3));
-                    violations.setContingencyId(rs.getInt(1));
-                    violations.setVoltage(rs.getDouble(4));
-                    branchViolations.add(violations);
+                try (Statement stmt = conn.createStatement()) {
+	                try (ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())) {
+		                List<ContingencyBranchViolation> branchViolations = new ArrayList<ContingencyBranchViolation>();
+		                while(rs.next()){
+		                    ContingencyBranchViolation violations = new ContingencyBranchViolation();
+		                    violations.setPowergridId(rs.getInt(2));
+		                    violations.setBranchId(rs.getInt(3));
+		                    violations.setContingencyId(rs.getInt(1));
+		                    violations.setVoltage(rs.getDouble(4));
+		                    branchViolations.add(violations);
+		                }
+		                model.setBranchViolations(branchViolations);
+	                }
+
+	                //Add Bus violation
+	                dbQuery = "select * from contingencybusviolations where contingencyid ="+ctgRequest.getContingencyId()+" and powergridid ="+ctgRequest.getPowerGridId();
+	                try(ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())) {
+		                List<ContingencyBusViolation> busViolations = new ArrayList<ContingencyBusViolation>();
+		                while(rs.next()){
+		                    ContingencyBusViolation violations = new ContingencyBusViolation();
+		                    violations.setPowergridId(rs.getInt(2));
+		                    violations.setBusNumber(rs.getInt(3));
+		                    violations.setContingencyId(rs.getInt(1));
+		                    violations.setVoltage(rs.getDouble(4));
+		                    busViolations.add(violations);
+		                }
+		                model.setBusViolations(busViolations);
+	                }
                 }
-                model.setBranchViolations(branchViolations);
-
-                //Add Bus violation
-                dbQuery = "select * from contingencybusviolations where contingencyid ="+ctgRequest.getContingencyId()+" and powergridid ="+ctgRequest.getPowerGridId();
-                rs = stmt.executeQuery(dbQuery.toLowerCase());
-                List<ContingencyBusViolation> busViolations = new ArrayList<ContingencyBusViolation>();
-                while(rs.next()){
-                    ContingencyBusViolation violations = new ContingencyBusViolation();
-                    violations.setPowergridId(rs.getInt(2));
-                    violations.setBusNumber(rs.getInt(3));
-                    violations.setContingencyId(rs.getInt(1));
-                    violations.setVoltage(rs.getDouble(4));
-                    busViolations.add(violations);
-                }
-                model.setBusViolations(busViolations);
-
-
             }
-            catch(Exception e){
+            catch(SQLException e){
                 e.printStackTrace();
 
             }

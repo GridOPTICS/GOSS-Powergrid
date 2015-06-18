@@ -64,6 +64,10 @@ public class RequestPowergrid extends Request {
 		this.name = mrid;
 	}
 	
+	public String getMrid(){
+		return this.mrid;
+	}
+	
 	/**
 	 * <p>
 	 * Request the powergrid with the name of

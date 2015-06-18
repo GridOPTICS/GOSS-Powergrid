@@ -44,7 +44,9 @@
 */
 package pnnl.goss.powergrid.handlers;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -53,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ServiceDependency;
 
 import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
@@ -60,6 +63,7 @@ import pnnl.goss.core.Request;
 import pnnl.goss.core.Response;
 import pnnl.goss.core.security.AuthorizationHandler;
 import pnnl.goss.core.security.AuthorizeAll;
+import pnnl.goss.core.server.DataSourcePooledJdbc;
 import pnnl.goss.core.server.RequestHandler;
 import pnnl.goss.powergrid.api.ContingencyModel;
 import pnnl.goss.powergrid.datamodel.Contingency;
@@ -67,20 +71,21 @@ import pnnl.goss.powergrid.datamodel.ContingencyBranchOut;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.requests.RequestContingencyModel;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
+import pnnl.goss.powergrid.server.PowergridDataSourceEntries;
 import pnnl.goss.powergrid.server.dao.PowergridDao;
 import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
-import pnnl.goss.powergrid.server.datasources.PowergridDataSources;
 
 
 @Component
 public class RequestContingencyModelHandler implements RequestHandler {
+	
+	@ServiceDependency
+	private volatile PowergridDataSourceEntries dataSourceEntries;
 
 	@Override
 	public Response handle(Request request) {
 
 		ContingencyModel model = new ContingencyModel();
-
-		RequestContingencyModel contingencyRequest = null;
 
 		DataResponse response = null;
 
@@ -91,6 +96,8 @@ public class RequestContingencyModelHandler implements RequestHandler {
 		}
 
 		RequestPowergrid requestPowergrid = (RequestPowergrid) request;
+		
+		//TODO change logic to be if not mrid do lookup on powergrid name if not found then register error.
 
 		// Make sure there is a valid name.
 		if (requestPowergrid.getPowergridName() == null || requestPowergrid.getPowergridName().isEmpty()) {
@@ -98,28 +105,19 @@ public class RequestContingencyModelHandler implements RequestHandler {
 			return response;
 		}
 
-		String datasourceKey = PowergridDataSources.instance().getDatasourceKeyWherePowergridName(new PowergridDaoMySql(), requestPowergrid.getPowergridName());
-
-		// Make sure the powergrid name is located in our set.
-		if (datasourceKey == null) {
-			response = new DataResponse(new DataError("Unkown powergrid: " + requestPowergrid.getPowergridName()));
-			return response;
-		}
-		
-		PowergridDao dao = new PowergridDaoMySql(PowergridDataSources.instance().getConnectionPool(datasourceKey));
+		DataSourcePooledJdbc datasource = dataSourceEntries.getDataSourceByPowergrid(requestPowergrid.getMrid());
+		PowergridDao dao = new PowergridDaoMySql(datasource); //PowergridDataSources.instance().getConnectionPool(datasourceKey));
 		Powergrid grid = dao.getPowergridByName(requestPowergrid.getPowergridName());
 		
 		if (request instanceof RequestContingencyModel) {
-			contingencyRequest = (RequestContingencyModel) request;
-
 			int powergridId = grid.getPowergridId();
 			List<Timestamp> timesteps = null;
+			List<Contingency> contingencies = new ArrayList<Contingency>();
 
-			try {
+			try (Statement stmt = datasource.getConnection().createStatement()){
 				String dbQuery = "select * from contingencies where powergridid =" + powergridId;
-				Statement stmt = PowergridDataSources.instance().getConnection(datasourceKey).createStatement();
 				ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase());
-				List<Contingency> contingencies = new ArrayList<Contingency>();
+				;
 
 				while (rs.next()) {
 					Contingency contingency = new Contingency();
@@ -131,72 +129,69 @@ public class RequestContingencyModelHandler implements RequestHandler {
 					contingencies.add(contingency);
 
 				}
-				rs.close();
+			}
+			catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
-				for (Contingency contingency : contingencies) {
-					model.addContingency(contingency, getContingencyBranchesOut(datasourceKey, powergridId, contingency.getContingencyId()));
-
-					if (timesteps == null) {
-						timesteps = getContingencyTimesteps(datasourceKey, powergridId, contingency.getContingencyId());
-					}
-					model.setTimeSteps(timesteps);
+			for (Contingency contingency : contingencies) {
+				try {
+					model.addContingency(contingency, getContingencyBranchesOut(datasource.getConnection(), powergridId, 
+							contingency.getContingencyId()));
+				} catch (SQLException e) {
+					e.printStackTrace();
 				}
 
-			} catch (Exception e) {
-				e.printStackTrace();
-
+				if (timesteps == null) {
+					try {
+						timesteps = getContingencyTimesteps(datasource.getConnection(), powergridId, contingency.getContingencyId());
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+				model.setTimeSteps(timesteps);
 			}
 		}
-
-		if (response == null){
-			
-		}
 		
-		response = new DataResponse();
-		response.setData(model);
-
+		response = new DataResponse(model);
+		
 		return response;
 	}
 
-	private List<ContingencyBranchOut> getContingencyBranchesOut(String datasourceKey, int powergridId, int contingencyId) {
+	private List<ContingencyBranchOut> getContingencyBranchesOut(Connection connection, int powergridId, int contingencyId) {
 
 		List<ContingencyBranchOut> branchesOuts = new ArrayList<ContingencyBranchOut>();
-		try {
+		try (Statement stmt = connection.createStatement()) {
 			String dbQuery = "select * from contingencybranchesout where contingencyid=" + contingencyId + " AND powergridId=" + powergridId;
-			Statement stmt = PowergridDataSources.instance().getConnection(datasourceKey).createStatement();
-			ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase());
-			rs = stmt.executeQuery(dbQuery.toLowerCase());
-
-			while (rs.next()) {
-				ContingencyBranchOut branchesOut = new ContingencyBranchOut();
-				branchesOut.setPowergridId(rs.getInt(3));
-				branchesOut.setBranchId(rs.getInt(1));
-				branchesOut.setContingencyId(rs.getInt(2));
-				branchesOuts.add(branchesOut);
+			try (ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())){
+				
+	
+				while (rs.next()) {
+					ContingencyBranchOut branchesOut = new ContingencyBranchOut();
+					branchesOut.setPowergridId(rs.getInt(3));
+					branchesOut.setBranchId(rs.getInt(1));
+					branchesOut.setContingencyId(rs.getInt(2));
+					branchesOuts.add(branchesOut);
+				}
 			}
-
-			rs.close();
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
 		return branchesOuts;
 	}
 
-	private List<Timestamp> getContingencyTimesteps(String datasourceKey, int powergridId, int contingencyId) {
+	private List<Timestamp> getContingencyTimesteps(Connection connection, int powergridId, int contingencyId) {
 		List<Timestamp> timesteps = new ArrayList<Timestamp>();
-		try {
+		try (Statement stmt = connection.createStatement()){
 			String dbQuery = "select timestep from contingencytimesteps where contingencyid=" + contingencyId + " AND powergridId=" + powergridId;
-			Statement stmt = PowergridDataSources.instance().getConnection(datasourceKey).createStatement();
-			ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase());
-			rs = stmt.executeQuery(dbQuery.toLowerCase());
+			try(ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())) {
 
-			while (rs.next()) {
-				timesteps.add(rs.getTimestamp(0));
+				while (rs.next()) {
+					timesteps.add(rs.getTimestamp(0));
+				}
 			}
-
-			rs.close();
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
