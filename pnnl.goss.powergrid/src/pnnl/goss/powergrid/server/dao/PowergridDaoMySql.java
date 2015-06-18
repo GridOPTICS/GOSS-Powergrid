@@ -88,8 +88,7 @@ import pnnl.goss.powergrid.datamodel.SwitchedShunt;
 import pnnl.goss.powergrid.datamodel.Transformer;
 import pnnl.goss.powergrid.datamodel.Zone;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
-import pnnl.goss.powergrid.server.datasources.PowergridDataSource;
-//import pnnl.goss.core.server.InvalidDatasourceException;
+import pnnl.goss.powergrid.server.PowergridDataSources;
 
 public class PowergridDaoMySql implements PowergridDao {
 
@@ -459,13 +458,13 @@ public class PowergridDaoMySql implements PowergridDao {
     	return pgId;
     }
 
-    public PowergridDaoMySql() {
-        log.debug("Creating " + PowergridDaoMySql.class);
-        alertContext = new AlertContext();
-        initializeAlertContext();
-        //initializeSchemaMap();
-
-    }
+//    public PowergridDaoMySql() {
+//        log.debug("Creating " + PowergridDaoMySql.class);
+//        alertContext = new AlertContext();
+//        initializeAlertContext();
+//        //initializeSchemaMap();
+//
+//    }
     
     /**
      * The assumption is 
@@ -478,7 +477,7 @@ public class PowergridDaoMySql implements PowergridDao {
         //this.datasource = ds.getDatasource();
         alertContext = new AlertContext();
         initializeAlertContext();
-        //initializeSchemaMap();
+//        initializeSchemaMap();
     }
     
 //    private void initializeSchemaMap(){
@@ -567,7 +566,7 @@ public class PowergridDaoMySql implements PowergridDao {
     }
 
     public Powergrid getPowergridById(int powergridId) {
-        String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrids pg INNER JOIN areas a ON pg.PowergridId=a.PowergridId where pg.PowergridId = " + powergridId;
+        String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN areas a ON pg.PowergridId=a.PowergridId where pg.PowergridId = " + powergridId;
         Powergrid grid = new Powergrid();
         ResultSet rs = null;
         Connection conn = null;
@@ -604,7 +603,7 @@ public class PowergridDaoMySql implements PowergridDao {
     }
 
     public Powergrid getPowergridByName(String powergridName) {
-        String dbQuery = "select * from powergrids where name = '" + powergridName + "'";
+        String dbQuery = "select * from powergrid where name = '" + powergridName + "'";
         Powergrid grid = new Powergrid();
         ResultSet rs = null;
         Connection conn = null;
@@ -1224,8 +1223,40 @@ public class PowergridDaoMySql implements PowergridDao {
 
     @Override
     public Powergrid getPowergridByMrid(String mrid) {
-        // TODO Auto-generated method stub
-        return null;
+    	String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN area a ON pg.PowergridId=a.PowergridId where pg.Mrid = " + mrid;
+        Powergrid grid = new Powergrid();
+        ResultSet rs = null;
+        Connection conn = null;
+
+        try {
+            log.debug(dbQuery);
+            conn = getConnection();
+            Statement stmt = conn.createStatement();
+            rs = stmt.executeQuery(dbQuery.toLowerCase());
+            rs.next();
+            grid.setPowergridId(rs.getInt(1));
+            grid.setName(rs.getString(2));
+            grid.setMrid(rs.getString("mrid"));
+            rs.close();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+        return grid;
     }
 
     @Override
