@@ -9,6 +9,7 @@
 package pnnl.goss.powergrid.datamodel;
 
 import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -148,7 +149,6 @@ import javax.xml.bind.annotation.XmlType;
     "switchedShuntId",
     "powergridId",
     "busNumber",
-    "switchedShuntName",
     "status",
     "bshunt",
     "binit",
@@ -170,13 +170,11 @@ public class SwitchedShunt
 
     private final static long serialVersionUID = 12343L;
     @XmlElement(name = "SwitchedShuntId")
-    protected int switchedShuntId;
+    protected String switchedShuntId;
     @XmlElement(name = "PowergridId")
     protected int powergridId;
     @XmlElement(name = "BusNumber")
     protected int busNumber;
-    @XmlElement(name = "SwitchedShuntName", required = true)
-    protected String switchedShuntName;
     @XmlElement(name = "Status")
     protected int status;
     @XmlElement(name = "Bshunt")
@@ -210,7 +208,7 @@ public class SwitchedShunt
      * Gets the value of the switchedShuntId property.
      * 
      */
-    public int getSwitchedShuntId() {
+    public String getSwitchedShuntId() {
         return switchedShuntId;
     }
 
@@ -218,7 +216,7 @@ public class SwitchedShunt
      * Sets the value of the switchedShuntId property.
      * 
      */
-    public void setSwitchedShuntId(int value) {
+    public void setSwitchedShuntId(String value) {
         this.switchedShuntId = value;
     }
 
@@ -264,34 +262,6 @@ public class SwitchedShunt
 
     public boolean isSetBusNumber() {
         return true;
-    }
-
-    /**
-     * Gets the value of the switchedShuntName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSwitchedShuntName() {
-        return switchedShuntName;
-    }
-
-    /**
-     * Sets the value of the switchedShuntName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSwitchedShuntName(String value) {
-        this.switchedShuntName = value;
-    }
-
-    public boolean isSetSwitchedShuntName() {
-        return (this.switchedShuntName!= null);
     }
 
     /**
