@@ -123,13 +123,50 @@ public class PowergridDaoMySql implements PowergridDao {
     	String pgUUID = UUID.randomUUID().toString();
     	int pgId = insertPowerGrid(pgUUID, powergridName);
     	
-    	List<Area> areas = insertAreas(pgId, data.get("areas"));
-    	List<Zone> zones = insertZones(pgId, data.get("zones"));
-    	List<Bus> buses = insertBuses(pgId, data.get("buses"));
-    	List<Machine> machines = insertGenerators(pgId, data.get("generators"));
-    	List<Branch> branches = insertBranches(pgId, data.get("branches"));
-    	List<SwitchedShunt> shunts = insertSwitchedShunts(pgId, data.get("switched_shunts"));
+    	if (data.get("buses") == null) {
+    		problems.add("ERROR: Buses are empty");
+    	}
+    	else{
+    		insertAreas(pgId, data.get("buses"));
+    	}
     	
+    	if (data.get("generators") == null) {
+    		problems.add("ERROR: Generators are empty");
+    	}
+    	else{
+    		insertAreas(pgId, data.get("generators"));
+    	}
+    	
+    	if (data.get("switched_shunts") == null) {
+    		problems.add("ERROR: Shunts are empty");
+    	}
+    	else{
+    		insertAreas(pgId, data.get("switched_shunts"));
+    	}
+    	
+    	
+    	if (data.get("branches") == null) {
+    		problems.add("ERROR: Branches are empty");
+    	}
+    	else{
+    		insertAreas(pgId, data.get("branches"));
+    	}
+    	
+    	if (data.get("areas") == null) {
+    		problems.add("WARN: Areas are empty");
+    	}
+    	else{
+    		insertAreas(pgId, data.get("areas"));
+    	}
+    	
+    	if (data.get("zone") == null) {
+    		problems.add("WARN: Zones are empty");
+    	}
+    	else{
+    		insertZones(pgId, data.get("zone"));
+    	}
+    	
+    	    	
     	if (pgUUID != null){
     		
     	}
@@ -280,7 +317,7 @@ public class PowergridDaoMySql implements PowergridDao {
     }
     
     private List<Branch> insertBranches(int powergridId, List<PropertyGroup> branchPropertyGroups){
-    	List<Branch> zones = new ArrayList<>();
+    	List<Branch> zone = new ArrayList<>();
     	String insert = "INSERT INTO branch ("+
     			"PowergridId, FromBusNumber, ToBusNumber, Ckt, R, X, RateA, RateB, RateC, "+
     			"Status, P, Q, Mrid) " + 
@@ -343,7 +380,7 @@ public class PowergridDaoMySql implements PowergridDao {
     }
     
     private List<Area> insertAreas(int powergridId, List<PropertyGroup> areaPropertyGroups){
-    	List<Area> zones = new ArrayList<>();
+    	List<Area> zone = new ArrayList<>();
     	String insert = "INSERT INTO area("
     			+"PowergridId,AreaName,AreaId,Isw,Pdes,Ptol,Mrid)"
     			+"VALUES("+getInsertMark("?", 7)+");";
@@ -370,7 +407,7 @@ public class PowergridDaoMySql implements PowergridDao {
     }
     
     private List<Zone> insertZones(int powergridId, List<PropertyGroup> zonePropertyGroups){
-    	List<Zone> zones = new ArrayList<>();
+    	List<Zone> zone = new ArrayList<>();
     	String insert = "INSERT INTO zone("
     			+"PowergridId, ZoneNumber, ZoneName, Mrid)"
     			+"VALUES(@PowergridId, @ZoneNumber, @ZoneName, @Mrid);";
@@ -566,7 +603,7 @@ public class PowergridDaoMySql implements PowergridDao {
     }
 
     public Powergrid getPowergridById(int powergridId) {
-        String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN areas a ON pg.PowergridId=a.PowergridId where pg.PowergridId = " + powergridId;
+        String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN area a ON pg.PowergridId=a.PowergridId where pg.PowergridId = " + powergridId;
         Powergrid grid = new Powergrid();
         ResultSet rs = null;
         Connection conn = null;
