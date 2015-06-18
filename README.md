@@ -14,8 +14,14 @@ Installation Windows 7
 6.  Import projects into workspace 
     a. File->Import    General->Existing Projects into workspace
     b. Select root directory, powergrid download location
-    c. Select cnf and pnnl.goss.powergrid and import
-7.  
+    c. Select cnf, pnnl.goss.powergrid, pnnl.goss.powergrid.runner, and  pnnl.goss.powergrid.itests and import (may need to check the  Search for nested projects)
+7.  If you would like to you a local version of GOSS-Core,
+    a.  Update cnf/ext/repositories.bnd, 
+    b.  Select source view
+    c.  	aQute.bnd.deployer.repository.LocalIndexedRepo;name=GOSS Local Release;local=<location>/GOSS-Core2/cnf/releaserepo;pretty=true,\
+    d. verify by switching to bndtools
+8.  Rebuild project, you should no longer have errors
+9.  
 
 
 
