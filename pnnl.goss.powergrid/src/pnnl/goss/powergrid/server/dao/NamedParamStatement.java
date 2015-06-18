@@ -32,8 +32,8 @@ public class NamedParamStatement {
         while (matcher.find()) {
         	// Because the ending of the match is either a space or a comma we need
         	// to trim that off through matcher.end()
-        	String fieldToReplace = sql.substring(matcher.start(), matcher.end()-1);
-        	String field = fieldToReplace.substring(1);
+        	String fieldToReplace = sql.substring(matcher.start(), matcher.end());
+        	String field = fieldToReplace.substring(1, fieldToReplace.length() - 1);
         	
         	if (!orderMap.containsKey(field)){
         		orderMap.put(field, new ArrayList<>());
@@ -41,20 +41,27 @@ public class NamedParamStatement {
         	
         	orderMap.get(field).add(matchNumber);
         	order.add(field);
-        	prepSql = prepSql.replaceAll(fieldToReplace, "?");
+        	
+        	// Handle comma correctly for small field names that could be prefixes of other
+        	// field names such as @R and @Rate.  Doing the replace all would remove the @R
+        	// from @Rate if we didn't do this.
+        	if (fieldToReplace.endsWith(",")){
+        		prepSql = prepSql.replaceFirst(fieldToReplace, "?,");
+        	}
+        	else if (fieldToReplace.endsWith(")")){
+        		fieldToReplace = fieldToReplace.substring(0, fieldToReplace.length()-1);
+        		prepSql = prepSql.replaceFirst(fieldToReplace, "?");
+        	}
+        	else{
+        		prepSql = prepSql.replaceFirst(fieldToReplace, "?");
+        	}
         	matchNumber++;
-        	
-        	//fields.add(sql.substring(matcher.start(), matcher.end()));
-        	
-//          System.out.print("Start index: " + matcher.start());
-//          System.out.print(" End index: " + matcher.end() + " ");
-//          System.out.println(matcher.group());
         }
         
-        for(String d: order){
-        	System.out.println("Field "+d);
-        	System.out.println(orderMap.get(d));
-        }
+//        for(String d: order){
+//        	System.out.println("Field "+d);
+//        	System.out.println(orderMap.get(d));
+//        }
         
         System.out.println(prepSql);
         prepStmt = conn.prepareStatement(prepSql);
@@ -116,7 +123,6 @@ public class NamedParamStatement {
         prepStmt.setString(getIndex(name), value);
     }
     public void setDouble(String name, double value) throws SQLException {        
-    	System.out.println("Setting double: "+name);
         prepStmt.setDouble(getIndex(name), value);
     }
 
