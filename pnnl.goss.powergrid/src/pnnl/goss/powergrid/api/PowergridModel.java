@@ -177,6 +177,10 @@ public class PowergridModel implements Serializable {
 	private Object getFromMap(int whichMap, int id) {
 		return elementMap.get(whichMap).get(id);
 	}
+	
+	private Object getFromMap(int whichMap, String id) {
+		return elementMapString.get(whichMap).get(id);
+	}
 
 	public Transformer getTransformer(int id) {
 		return (Transformer) getFromMap(TRANSFORMERS, id);
@@ -281,7 +285,7 @@ public class PowergridModel implements Serializable {
 
 	public void setBranches(List<Branch> branches) {
 		for (Branch item : branches) {
-			addToMap(BRANCHES, item.getBranchId(), item);
+			addToMap(BRANCHES, item.getMrid(), item);
 		}
 		this.branches = branches;
 	}
@@ -380,19 +384,19 @@ public class PowergridModel implements Serializable {
 		
 		double ratedPq = Math.abs(mvaFlow / branch.getRateA()) * 100;
 		
-		Alert oldAlert = (Alert)getFromMap(BRANCHES, branch.getBranchId());
+		Alert oldAlert = (Alert)getFromMap(BRANCHES, branch.getMrid());
 		
 		if (ratedPq > mvaHigh){
 			if (oldAlert == null){
 				Alert newAlert = new Alert(AlertType.ALERTTYPE_BRANCH, AlertSeverity.SEVERITY_HIGH, branch.getMrid(), ratedPq, null);
 				branchAlerts.add(newAlert);
-				addToMap(BRANCH_ALERTS, branch.getBranchId(), newAlert);
+				addToMap(BRANCH_ALERTS, branch.getMrid(), newAlert);
 			}
 			else if(ratedPq > oldAlert.getViolationValue()){
 				branchAlerts.remove(oldAlert);
 				Alert newAlert = new Alert(AlertType.ALERTTYPE_BRANCH, AlertSeverity.SEVERITY_HIGH, branch.getMrid(), ratedPq, null);
 				branchAlerts.add(newAlert);
-				addToMap(BRANCH_ALERTS, branch.getBranchId(), newAlert);
+				addToMap(BRANCH_ALERTS, branch.getMrid(), newAlert);
 			}
 				
 		}
@@ -400,13 +404,13 @@ public class PowergridModel implements Serializable {
 			if (oldAlert == null){
 				Alert newAlert = new Alert(AlertType.ALERTTYPE_BRANCH, AlertSeverity.SEVERITY_WARN, branch.getMrid(), ratedPq, null);
 				branchAlerts.add(newAlert);
-				addToMap(BRANCH_ALERTS, branch.getBranchId(), newAlert);
+				addToMap(BRANCH_ALERTS, branch.getMrid(), newAlert);
 			}
 			else if(ratedPq > oldAlert.getViolationValue()){
 				branchAlerts.remove(oldAlert);
 				Alert newAlert = new Alert(AlertType.ALERTTYPE_BRANCH, AlertSeverity.SEVERITY_WARN, branch.getMrid(), ratedPq, null);
 				branchAlerts.add(newAlert);
-				addToMap(BRANCH_ALERTS, branch.getBranchId(), newAlert);
+				addToMap(BRANCH_ALERTS, branch.getMrid(), newAlert);
 			}
 		}
 	}
