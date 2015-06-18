@@ -3,10 +3,7 @@ package pnnl.goss.powergrid.runner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
-
-import javax.naming.ConfigurationException;
 
 import org.apache.http.auth.UsernamePasswordCredentials;
 
@@ -29,7 +26,6 @@ public class PowergridMain {
 			client = factory.create(PROTOCOL.OPENWIRE, 
 					new UsernamePasswordCredentials("system", "manager"));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return client;
@@ -49,12 +45,12 @@ public class PowergridMain {
 	}
 	public static String createModel(String name, File file){
 		String guid = null;
-		
+		Client client = null;
 		CreatePowergridRequest request = new CreatePowergridRequest();
 		try {
 			request.setFile(file);
 			request.setPowergridName(name);
-			Client client = getNewClient();
+			client = getNewClient();
 			Response response = client.getResponse(request);
 			
 			// If there wasn't an error follow this path.
@@ -64,8 +60,10 @@ public class PowergridMain {
 				
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally{
+			client.close();
 		}
 		
 		return guid;
@@ -80,14 +78,13 @@ public class PowergridMain {
 		properties.put(GossCoreContants.PROP_OPENWIRE_URI, "tcp://localhost:61616");
 		properties.put(GossCoreContants.PROP_STOMP_URI, "tcp://localhost:61613");
 		
-		// TODO Auto-generated method stub
 		factory = new ClientServiceFactory();
 		((ClientServiceFactory)factory).updated(properties);
 		File pgFile = new File("../pnnl.goss.powergrid.itests/resources/118.raw");
 		String guid = createModel("PSSE-118", pgFile);
 		System.out.println("Guid is: "+guid);
-		//System.out.println(pgFile.getAbsolutePath()+ " exists? "+ pgFile.exists());
-		//String result = createModel("PSSE-123"), filename)
+		
+		System.exit(0);
 	}
 
 }
