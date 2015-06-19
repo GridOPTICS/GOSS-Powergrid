@@ -127,21 +127,21 @@ public class PowergridDaoMySql implements PowergridDao {
     		problems.add("ERROR: Buses are empty");
     	}
     	else{
-    		insertAreas(pgId, data.get("buses"));
+    		insertBuses(pgId, data.get("buses"));
     	}
     	
     	if (data.get("generators") == null) {
     		problems.add("ERROR: Generators are empty");
     	}
     	else{
-    		insertAreas(pgId, data.get("generators"));
+    		insertGenerators(pgId, data.get("generators"));
     	}
     	
     	if (data.get("switched_shunts") == null) {
     		problems.add("ERROR: Shunts are empty");
     	}
     	else{
-    		insertAreas(pgId, data.get("switched_shunts"));
+    		insertSwitchedShunts(pgId, data.get("switched_shunts"));
     	}
     	
     	
@@ -149,7 +149,7 @@ public class PowergridDaoMySql implements PowergridDao {
     		problems.add("ERROR: Branches are empty");
     	}
     	else{
-    		insertAreas(pgId, data.get("branches"));
+    		insertBranches(pgId, data.get("branches"));
     	}
     	
     	if (data.get("areas") == null) {
