@@ -1044,7 +1044,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
     public List<Substation> getSubstations(int powergridId) {
         List<Substation> items = new ArrayList<Substation>();
-        String dbQuery = "select * from substations where PowerGridId = " + powergridId;
+        String dbQuery = "select * from substation where PowerGridId = " + powergridId;
         ResultSet rs = null;
         Connection conn = null;
 
@@ -1260,39 +1260,24 @@ public class PowergridDaoMySql implements PowergridDao {
 
     @Override
     public Powergrid getPowergridByMrid(String mrid) {
-    	String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN area a ON pg.PowergridId=a.PowergridId where pg.Mrid = " + mrid;
+    	String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN area a ON pg.PowergridId=a.PowergridId where pg.Mrid = ?";
         Powergrid grid = new Powergrid();
-        ResultSet rs = null;
-        Connection conn = null;
 
-        try {
-            log.debug(dbQuery);
-            conn = getConnection();
-            Statement stmt = conn.createStatement();
-            rs = stmt.executeQuery(dbQuery.toLowerCase());
-            rs.next();
-            grid.setPowergridId(rs.getInt(1));
-            grid.setName(rs.getString(2));
-            grid.setMrid(rs.getString("mrid"));
-            rs.close();
+        try (Connection conn = pooledDatasource.getConnection()) {
+        	try (PreparedStatement stmt = conn.prepareStatement(dbQuery)){
+        		stmt.setString(1, mrid);
+        		try(ResultSet rs = stmt.executeQuery()){
+        			rs.next();
+                    grid.setPowergridId(rs.getInt("PowergridId"));
+                    grid.setName(rs.getString("name"));
+                    grid.setMrid(rs.getString("mrid"));
+        		}
+        	}
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-
+        } 
+        
         return grid;
     }
 
