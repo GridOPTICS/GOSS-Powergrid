@@ -61,7 +61,7 @@ public class RequestPowergrid extends Request {
 	 * @param mrid
 	 */
 	public RequestPowergrid(String mrid){
-		this.name = mrid;
+		this.mrid = mrid;
 	}
 	
 	public String getMrid(){
