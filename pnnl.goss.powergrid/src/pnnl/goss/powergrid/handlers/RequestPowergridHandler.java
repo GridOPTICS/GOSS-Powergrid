@@ -168,10 +168,10 @@ public class RequestPowergridHandler implements RequestHandler {
         }
 
         // Make sure there is a valid name.
-        if(requestPowergrid.getPowergridName() == null || requestPowergrid.getPowergridName().isEmpty()){
-            response = new DataResponse(new DataError("Bad powergrid name"));
-            return response;
-        }
+//        if(requestPowergrid.getPowergridName() == null || requestPowergrid.getPowergridName().isEmpty()){
+//            response = new DataResponse(new DataError("Bad powergrid name"));
+//            return response;
+//        }
 
 //		String datasourceKey = PowergridDataSources.instance().getDatasourceKeyWherePowergridName(new PowergridDaoMySql(), requestPowergrid.getPowergridName());
 //
