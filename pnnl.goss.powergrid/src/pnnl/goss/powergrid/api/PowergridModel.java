@@ -150,7 +150,7 @@ public class PowergridModel implements Serializable {
 		
 		elementMapString.put(MACHINES, new HashMap<String, Object>());
 		elementMap.put(BUSES, new HashMap<Integer, Object>());
-		elementMap.put(BRANCHES, new HashMap<Integer, Object>());
+		elementMapString.put(BRANCHES, new HashMap<String, Object>());
 		elementMap.put(TRANSFORMERS, new HashMap<Integer, Object>());
 		elementMap.put(LINES, new HashMap<Integer, Object>());
 		elementMap.put(LOADS, new HashMap<Integer, Object>());
@@ -159,7 +159,7 @@ public class PowergridModel implements Serializable {
 		// elementMap.put(AREAS, new HashMap<Integer, Object>());
 		// elementMap.put(ZONES, new HashMap<Integer, Object>());
 		elementMap.put(SUBSTATION_ALERTS, new HashMap<Integer, Object>());
-		elementMap.put(BRANCH_ALERTS, new HashMap<Integer, Object>());
+		elementMapString.put(BRANCH_ALERTS, new HashMap<String, Object>());
 		
 		
 		substationAlerts.clear();
