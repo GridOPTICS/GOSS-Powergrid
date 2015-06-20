@@ -44,6 +44,7 @@
 */
 package pnnl.goss.powergrid.handlers;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,6 +71,7 @@ import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
+import pnnl.goss.powergrid.requests.RequestPowergridPart;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStep;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStepValues;
 import pnnl.goss.powergrid.server.PowergridDataSourceEntries;
@@ -189,6 +191,8 @@ public class RequestPowergridHandler implements RequestHandler {
             response = getAvailablePowergrids();
         } else if (request instanceof RequestPowergridTimeStepValues) {
             response = new DataResponse(new DataError("RequestPowergridTimeStepValues not implemented yet!"));
+        } else if (request instanceof RequestPowergridPart) {
+        	response = getPowergridPartType((RequestPowergridPart) request);
         } else{
             response = getPowergridModelResponse((RequestPowergrid) request);
         }
@@ -198,11 +202,42 @@ public class RequestPowergridHandler implements RequestHandler {
             response = new DataResponse();
             response.setData(new DataError("Invalid request type specified!"));
         }
+        response.setResponseComplete(true);
 
         return response;
     }
 
-    @Override
+    private DataResponse getPowergridPartType(RequestPowergridPart request) {
+    	
+    	PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByPowergrid(request.getMrid()));
+    	DataResponse response = new DataResponse();
+    	
+    	Powergrid grid = dao.getPowergridByMrid(request.getMrid());
+    	
+    	// According to http://stackoverflow.com/questions/1387954/how-to-serialize-a-list-in-java
+    	// casting to Serializable from lists should be ok.    	
+    	switch(request.getRequestedPartType()){
+//    	case BRANCHES:
+//    		response.setData((Serializable) dao.getBranches(grid.getPowergridId()));
+//    		break;
+    	case BUSES:
+    		response.setData((Serializable) dao.getBuses(grid.getPowergridId()));
+    		break;
+    	case SWITCHED_SHUNTS:
+    		response.setData((Serializable) dao.getSwitchedShunts(grid.getPowergridId()));
+    		break;
+    	case MACHINES:
+    		response.setData((Serializable) dao.getMachines(grid.getPowergridId()));
+    		break;
+    	case LOADS:
+    		response.setData((Serializable) dao.getLoads(grid.getPowergridId()));
+    		break;
+    	}
+    	
+		return response;
+	}
+
+	@Override
     public Response handle(Request request) {
         Response response = null;
         try {
@@ -223,6 +258,7 @@ public class RequestPowergridHandler implements RequestHandler {
 	public Map<Class<? extends Request>, Class<? extends AuthorizationHandler>> getHandles() {
 		Map<Class<? extends Request>, Class<? extends AuthorizationHandler>> auths = new HashMap<>();
 		auths.put(RequestPowergrid.class, AuthorizeAll.class);
+		auths.put(RequestPowergridPart.class, AuthorizeAll.class);
 		auths.put(RequestPowergridTimeStep.class, AuthorizeAll.class);
 		auths.put(RequestPowergridList.class, AuthorizeAll.class);
 		auths.put(RequestPowergridTimeStepValues.class, AuthorizeAll.class);
