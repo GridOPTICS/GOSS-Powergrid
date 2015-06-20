@@ -57,8 +57,10 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.naming.ConfigurationException;
@@ -119,56 +121,72 @@ public class PowergridDaoMySql implements PowergridDao {
     public SavePowergridResults createPowergrid(String powergridName, 
     		Map<String, List<PropertyGroup>> data){
     	
+    	// TODO Start passing problems to the various insert statements.
     	List<String> problems = new ArrayList<>();
     	String pgUUID = UUID.randomUUID().toString();
-    	int pgId = insertPowerGrid(pgUUID, powergridName);
+    	int pgId = insertPowerGrid(pgUUID, powergridName, problems);
+    	
+    	List<Bus> buses = null;
+    	List<Substation> substations = null;
+    	List<Area> areas = null;
+    	List<Zone> zones = null;
+    	List<Branch> branches = null;
+    	List<Machine> machines = null;
+    	List<SwitchedShunt> switchedSnunts = null;
     	
     	if (data.get("buses") == null) {
     		problems.add("ERROR: Buses are empty");
+    		problems.add("ERROR: Substations are empty");
     	}
     	else{
-    		insertBuses(pgId, data.get("buses"));
+    		buses = insertBuses(pgId, data.get("buses"), problems);
+
     	}
     	
     	if (data.get("generators") == null) {
     		problems.add("ERROR: Generators are empty");
     	}
     	else{
-    		insertGenerators(pgId, data.get("generators"));
+    		machines = insertGenerators(pgId, data.get("generators"), problems);
     	}
     	
     	if (data.get("switched_shunts") == null) {
     		problems.add("ERROR: Shunts are empty");
     	}
     	else{
-    		insertSwitchedShunts(pgId, data.get("switched_shunts"));
+    		switchedSnunts = insertSwitchedShunts(pgId, data.get("switched_shunts"), problems);
     	}
-    	
-    	
+    	    	
     	if (data.get("branches") == null) {
     		problems.add("ERROR: Branches are empty");
     	}
     	else{
-    		insertBranches(pgId, data.get("branches"));
+    		branches = insertBranches(pgId, data.get("branches"), problems);
     	}
     	
     	if (data.get("areas") == null) {
     		problems.add("WARN: Areas are empty");
+    		// Areas must be instantiated for substation to loop over.
+    		areas = new ArrayList<Area>();
     	}
     	else{
-    		insertAreas(pgId, data.get("areas"));
+    		areas = insertAreas(pgId, data.get("areas"), problems);
     	}
     	
     	if (data.get("zone") == null) {
     		problems.add("WARN: Zones are empty");
+    		// Zones must be instantiated for substation to loop over.
+    		zones = new ArrayList<Zone>();
     	}
     	else{
-    		insertZones(pgId, data.get("zone"));
+    		zones = insertZones(pgId, data.get("zone"), problems);
     	}
     	
-    	    	
-    	if (pgUUID != null){
-    		
+    	if (buses == null){
+    		problems.add("Substations can't be created!");
+    	}
+    	else{
+    		substations = insertSubstations(pgId, buses, areas, zones, problems);
     	}
     	
     	return new SavePowergridResults(pgUUID, problems);
@@ -209,7 +227,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	System.out.println(name + " "+ output.toString());
     }
     
-    private List<SwitchedShunt> insertSwitchedShunts(int powergridId, List<PropertyGroup> switchedShuntPropertyGroups){
+    private List<SwitchedShunt> insertSwitchedShunts(int powergridId, List<PropertyGroup> switchedShuntPropertyGroups, List<String> problems){
     	String insert = "INSERT INTO switchedshunt ("+
     			"SwitchedShuntId, PowergridId, BusNumber, Status, BShunt, BInit, ModSw, VswHi, VswLo, " +
     			"SwRem, N1, B1, N2, B2, N3, B3, N4, B4, B5, N5, N6, B6, N7, B7, N8, B8, Mrid) " +
@@ -269,7 +287,7 @@ public class PowergridDaoMySql implements PowergridDao {
     		
     	return getSwitchedShunts(powergridId);
     }
-    private List<Machine> insertGenerators(int powergridId, List<PropertyGroup> generatorPropertyGroups){
+    private List<Machine> insertGenerators(int powergridId, List<PropertyGroup> generatorPropertyGroups, List<String> problems){
     	String insert = "INSERT INTO machine (" +
     			"MachineId, PowergridId, BusNumber, PGen, QGen, MaxPGen, MaxQGen, MinPGen,"+
     			"MinQGen, Status, IsSvc, Vs, Ireg, Zr, Zx, Rt, Xt, Gtap, RmPct, Mrid, MBase) "+
@@ -316,7 +334,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	return getMachines(powergridId);
     }
     
-    private List<Branch> insertBranches(int powergridId, List<PropertyGroup> branchPropertyGroups){
+    private List<Branch> insertBranches(int powergridId, List<PropertyGroup> branchPropertyGroups, List<String> problems){
     	List<Branch> zone = new ArrayList<>();
     	String insert = "INSERT INTO branch ("+
     			"PowergridId, FromBusNumber, ToBusNumber, Ckt, R, X, RateA, RateB, RateC, "+
@@ -379,7 +397,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	return getBranches(powergridId);
     }
     
-    private List<Area> insertAreas(int powergridId, List<PropertyGroup> areaPropertyGroups){
+    private List<Area> insertAreas(int powergridId, List<PropertyGroup> areaPropertyGroups, List<String> problems){
     	List<Area> zone = new ArrayList<>();
     	String insert = "INSERT INTO area("
     			+"PowergridId,AreaName,AreaId,Isw,Pdes,Ptol,Mrid)"
@@ -406,7 +424,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	return getAreas(powergridId);
     }
     
-    private List<Zone> insertZones(int powergridId, List<PropertyGroup> zonePropertyGroups){
+    private List<Zone> insertZones(int powergridId, List<PropertyGroup> zonePropertyGroups, List<String> problems){
     	List<Zone> zone = new ArrayList<>();
     	String insert = "INSERT INTO zone("
     			+"PowergridId, ZoneNumber, ZoneName, Mrid)"
@@ -468,7 +486,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	
     }
     
-    private int insertPowerGrid(String uuid, String name){
+    private int insertPowerGrid(String uuid, String name, List<String> problems){
     	List<Powergrid> grids = getAvailablePowergrids();
     	int maxPg = 0;
     	for(Powergrid g: grids){
