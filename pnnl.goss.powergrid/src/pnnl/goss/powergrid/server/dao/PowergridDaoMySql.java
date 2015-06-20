@@ -44,15 +44,12 @@
 */
 package pnnl.goss.powergrid.server.dao;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,12 +61,10 @@ import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.naming.ConfigurationException;
-import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pnnl.goss.core.server.DataSourceObject;
 import pnnl.goss.core.server.DataSourcePooledJdbc;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.SavePowergridResults;
@@ -90,7 +85,6 @@ import pnnl.goss.powergrid.datamodel.SwitchedShunt;
 import pnnl.goss.powergrid.datamodel.Transformer;
 import pnnl.goss.powergrid.datamodel.Zone;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
-import pnnl.goss.powergrid.server.PowergridDataSources;
 
 public class PowergridDaoMySql implements PowergridDao {
 
@@ -111,7 +105,6 @@ public class PowergridDaoMySql implements PowergridDao {
     	try {
 			conn = pooledDatasource.getConnection();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}    	
     	return conn;
@@ -127,12 +120,16 @@ public class PowergridDaoMySql implements PowergridDao {
     	int pgId = insertPowerGrid(pgUUID, powergridName, problems);
     	
     	List<Bus> buses = null;
-    	List<Substation> substations = null;
+    	@SuppressWarnings("unused")
+		List<Substation> substations = null;
     	List<Area> areas = null;
     	List<Zone> zones = null;
-    	List<Branch> branches = null;
-    	List<Machine> machines = null;
-    	List<SwitchedShunt> switchedSnunts = null;
+    	@SuppressWarnings("unused")
+		List<Branch> branches = null;
+    	@SuppressWarnings("unused")
+		List<Machine> machines = null;
+    	@SuppressWarnings("unused")
+		List<SwitchedShunt> switchedSnunts = null;
     	
     	if (data.get("buses") == null) {
     		problems.add("ERROR: Buses are empty");
@@ -280,7 +277,6 @@ public class PowergridDaoMySql implements PowergridDao {
 				namedStmt.execute();
 				
 	    	} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
     	}
@@ -326,7 +322,6 @@ public class PowergridDaoMySql implements PowergridDao {
     		namedStmt.executeBatch();
 				
     	} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	
@@ -334,7 +329,6 @@ public class PowergridDaoMySql implements PowergridDao {
     }
     
     private List<Branch> insertBranches(int powergridId, List<PropertyGroup> branchPropertyGroups, List<String> problems){
-    	List<Branch> zone = new ArrayList<>();
     	String insert = "INSERT INTO branch ("+
     			"PowergridId, FromBusNumber, ToBusNumber, Ckt, R, X, RateA, RateB, RateC, "+
     			"Status, P, Q, Mrid) " + 
@@ -371,7 +365,6 @@ public class PowergridDaoMySql implements PowergridDao {
     }
     
     private List<Area> insertAreas(int powergridId, List<PropertyGroup> areaPropertyGroups, List<String> problems){
-    	List<Area> zone = new ArrayList<>();
     	String insert = "INSERT INTO area("
     			+"PowergridId,AreaName,AreaId,Isw,Pdes,Ptol,Mrid)"
     			+"VALUES("+getInsertMark("?", 7)+");";
@@ -389,7 +382,6 @@ public class PowergridDaoMySql implements PowergridDao {
 	    			stmt.execute();
 	    		}
 	    	} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
     	}
@@ -398,7 +390,6 @@ public class PowergridDaoMySql implements PowergridDao {
     }
     
     private List<Zone> insertZones(int powergridId, List<PropertyGroup> zonePropertyGroups, List<String> problems){
-    	List<Zone> zone = new ArrayList<>();
     	String insert = "INSERT INTO zone("
     			+"PowergridId, ZoneNumber, ZoneName, Mrid)"
     			+"VALUES(@PowergridId, @ZoneNumber, @ZoneName, @Mrid);";
@@ -413,7 +404,6 @@ public class PowergridDaoMySql implements PowergridDao {
     		}
     		namedStmt.executeBatch();	    			
     	} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	
@@ -617,13 +607,6 @@ public class PowergridDaoMySql implements PowergridDao {
     	return pgId;
     }
 
-//    public PowergridDaoMySql() {
-//        log.debug("Creating " + PowergridDaoMySql.class);
-//        alertContext = new AlertContext();
-//        initializeAlertContext();
-//        //initializeSchemaMap();
-//
-//    }
     
     /**
      * The assumption is 
@@ -632,44 +615,10 @@ public class PowergridDaoMySql implements PowergridDao {
     public PowergridDaoMySql(DataSourcePooledJdbc datasource) {
         log.debug("Creating " + PowergridDaoMySql.class + " with DataSourceObject.");
         this.pooledDatasource = datasource;
-        //PowergridDataSource ds = (PowergridDataSource)datasource;
-        //this.datasource = ds.getDatasource();
         alertContext = new AlertContext();
         initializeAlertContext();
-//        initializeSchemaMap();
     }
     
-//    private void initializeSchemaMap(){
-//    	Key2ValueValue2KeyMap nd = psseToPowergridSchemaMap;
-//    	try {
-//			nd.loadFromFile(new File("map.json"));
-//		} catch (IOException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-//    	
-//    	nd.setKeyContainerName("psse");
-//    	nd.setValueContainerName("powergrid");
-//    	
-//    	nd.add("busNumber", "BusNumber");
-//    	nd.add("busType", "Code");
-//    	
-//    	try {
-//			nd.saveToFile(new File("map.json"));
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//    	
-//    }
-
-//    public PowergridDaoMySql(DataSource datasource) {
-//        log.debug("Creating " + PowergridDaoMySql.class);
-//        this.datasource = datasource;
-//        alertContext = new AlertContext();
-//        initializeAlertContext();
-//    }
-
     public AlertContext getAlertContext(int powergridId){
         return alertContext;
     }
@@ -727,36 +676,17 @@ public class PowergridDaoMySql implements PowergridDao {
     public Powergrid getPowergridById(int powergridId) {
         String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN area a ON pg.PowergridId=a.PowergridId where pg.PowergridId = " + powergridId;
         Powergrid grid = new Powergrid();
-        ResultSet rs = null;
-        Connection conn = null;
-
-        try {
-            log.debug(dbQuery);
-            conn = getConnection();
-            Statement stmt = conn.createStatement();
-            rs = stmt.executeQuery(dbQuery.toLowerCase());
-            rs.next();
-            grid.setPowergridId(rs.getInt(1));
-            grid.setName(rs.getString(2));
-            grid.setMrid(rs.getString("mrid"));
-            rs.close();
+        
+        try (Statement stmt = getConnection().createStatement()){
+        	try (ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())){
+	            rs.next();
+	            grid.setPowergridId(rs.getInt(1));
+	            grid.setName(rs.getString(2));
+	            grid.setMrid(rs.getString("mrid"));
+        	}
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
+        } 
 
         return grid;
     }
@@ -764,34 +694,15 @@ public class PowergridDaoMySql implements PowergridDao {
     public Powergrid getPowergridByName(String powergridName) {
         String dbQuery = "select * from powergrid where name = '" + powergridName + "'";
         Powergrid grid = new Powergrid();
-        ResultSet rs = null;
-        Connection conn = null;
-
-        try {
-            conn = getConnection();
-            Statement stmt = conn.createStatement();
-            rs = stmt.executeQuery(dbQuery.toLowerCase());
-            rs.next();
-            grid.setPowergridId(rs.getInt(1));
-            grid.setName(rs.getString(2));
-            grid.setMrid(rs.getString("mrid"));
-            rs.close();
+        try (Statement stmt = getConnection().createStatement()){
+        	try (ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())){
+	            rs.next();
+	            grid.setPowergridId(rs.getInt(1));
+	            grid.setName(rs.getString(2));
+	            grid.setMrid(rs.getString("mrid"));
+        	}
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
         }
 
         return grid;
@@ -836,127 +747,71 @@ public class PowergridDaoMySql implements PowergridDao {
     public List<Timestamp> getTimeSteps(int powergridId) {
         List<Timestamp> items = new ArrayList<Timestamp>();
         String dbQuery = "select * from powergridtimesteps where PowerGridId = " + powergridId;
-        ResultSet rs = null;
-        Connection conn = null;
-
-        try {
-            conn = getConnection();
-            Statement stmt = conn.createStatement();
-            rs = stmt.executeQuery(dbQuery.toLowerCase());
-
-            while (rs.next()) {
-                items.add(rs.getTimestamp(2));
-            }
+        
+        try (Statement stmt = getConnection().createStatement()){
+        	try (ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())){
+	            while (rs.next()) {
+	                items.add(rs.getTimestamp(2));
+	            }
+        	}
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-        }
+        } 
+        	
         return items;
-
     }
 
     public List<Area> getAreas(int powergridId) {
         List<Area> items = new ArrayList<Area>();
         String dbQuery = "select * from area where PowerGridId = " + powergridId;
-        ResultSet rs = null;
-        Connection conn = null;
-
-        try {
-            conn = getConnection();
-            Statement stmt = conn.createStatement();
-            rs = stmt.executeQuery(dbQuery.toLowerCase());
-
-            while (rs.next()) {
-                Area area = new Area();
-                area.setPowergridId(powergridId);
-                area.setAreaName(rs.getString(2));
-                area.setMrid(rs.getString("mrid"));
-                area.setPtol(rs.getDouble("Ptol"));
-                area.setIsw(rs.getInt("Isw"));
-                items.add(area);
+        try (Statement stmt = getConnection().createStatement()){
+        	try (ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())){      		
+	            while (rs.next()) {
+	                Area area = new Area();
+	                area.setPowergridId(powergridId);
+	                area.setAreaName(rs.getString(2));
+	                area.setMrid(rs.getString("mrid"));
+	                area.setPtol(rs.getDouble("Ptol"));
+	                area.setIsw(rs.getInt("Isw"));
+	                items.add(area);
+	            }
             }
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
         }
+        
         return items;
     }
 
     public List<Branch> getBranches(int powergridId) {
         List<Branch> items = new ArrayList<Branch>();
         String dbQuery = "select * from branch where PowerGridId = " + powergridId;
-        ResultSet rs = null;
-        Connection conn = null;
-
-        try {
-            conn = getConnection();
-            Statement stmt = conn.createStatement();
-            rs = stmt.executeQuery(dbQuery.toLowerCase());
-
-            while (rs.next()) {
-                Branch branch = new Branch();
-                branch.setPowergridId(powergridId);
-                branch.setFromBusNumber(rs.getInt("FromBusNumber"));
-                branch.setToBusNumber(rs.getInt("ToBusNumber"));
-                branch.setCkt(rs.getString("Ckt"));
-                branch.setR(rs.getDouble("R"));
-                branch.setX(rs.getDouble("X"));
-                branch.setRating(rs.getDouble("RateA"));
-                branch.setRateA(rs.getDouble("RateA"));
-                branch.setRateB(rs.getDouble("RateB"));
-                branch.setRateC(rs.getDouble("RateC"));
-                branch.setStatus(rs.getInt("Status"));
-                branch.setP(rs.getDouble("P"));
-                branch.setQ(rs.getDouble("Q"));
-                branch.setMrid(rs.getString("Mrid"));
-                items.add(branch);
-            }
+        
+        try (Statement stmt = getConnection().createStatement()){
+        	try (ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())){
+        		while (rs.next()) {
+	                Branch branch = new Branch();
+	                branch.setPowergridId(powergridId);
+	                branch.setFromBusNumber(rs.getInt("FromBusNumber"));
+	                branch.setToBusNumber(rs.getInt("ToBusNumber"));
+	                branch.setCkt(rs.getString("Ckt"));
+	                branch.setR(rs.getDouble("R"));
+	                branch.setX(rs.getDouble("X"));
+	                branch.setRating(rs.getDouble("RateA"));
+	                branch.setRateA(rs.getDouble("RateA"));
+	                branch.setRateB(rs.getDouble("RateB"));
+	                branch.setRateC(rs.getDouble("RateC"));
+	                branch.setStatus(rs.getInt("Status"));
+	                branch.setP(rs.getDouble("P"));
+	                branch.setQ(rs.getDouble("Q"));
+	                branch.setMrid(rs.getString("Mrid"));
+	                items.add(branch);
+	            }
+        	}
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
-        } finally {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
         }
+        
         return items;
     }
 
