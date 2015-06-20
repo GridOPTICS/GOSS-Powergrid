@@ -18,10 +18,18 @@ import pnnl.goss.core.Response;
 import pnnl.goss.core.client.ClientServiceFactory;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.SavePowergridResults;
+import pnnl.goss.powergrid.datamodel.Branch;
+import pnnl.goss.powergrid.datamodel.Bus;
+import pnnl.goss.powergrid.datamodel.Load;
+import pnnl.goss.powergrid.datamodel.Machine;
+import pnnl.goss.powergrid.datamodel.SwitchedShunt;
 import pnnl.goss.powergrid.parser.api.ParserResults;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
+import pnnl.goss.powergrid.requests.RequestPowergridPart;
+import pnnl.goss.powergrid.requests.RequestPowergridPart.PowergridPartType;
 
+import com.google.common.base.Enums;
 import com.google.gson.Gson;
 
 public class PowergridMain {
@@ -75,6 +83,42 @@ public class PowergridMain {
 		return obj;
 	}
 	
+	@SuppressWarnings({ "unchecked", "incomplete-switch" })
+	public static void doGetPartsForPowergrid(String mrid) {
+		Client client = getNewClient();
+		Gson gson = new Gson();
+		for(PowergridPartType pt: PowergridPartType.values()){
+			RequestPowergridPart request = new RequestPowergridPart(mrid, pt);
+			Response response = client.getResponse(request);
+			if (!handleError(response)){
+				switch(pt){
+				case BUSES:
+					List<Bus> items = (List<Bus>) ((DataResponse) response).getData();
+					System.out.println("Buses:\n" + gson.toJson(items));
+					break;
+				case BRANCHES:
+					List<Branch> branches = (List<Branch>) ((DataResponse) response).getData();
+					System.out.println("Branches:\n" + gson.toJson(branches));
+					break;
+				case MACHINES:
+					List<Machine> machines = (List<Machine>) ((DataResponse) response).getData();
+					System.out.println("Generators:\n" + gson.toJson(machines));
+					break;
+				case LOADS:
+					List<Load> loads = (List<Load>) ((DataResponse) response).getData();
+					System.out.println("Generators:\n" + gson.toJson(loads));
+					break;
+				case SWITCHED_SHUNTS:
+					List<SwitchedShunt> shunts = (List<SwitchedShunt>) ((DataResponse) response).getData();
+					System.out.println("Switched Shunts:\n" + gson.toJson(shunts));
+					break;
+				}
+			
+			}
+		}
+		client.close();
+	}
+	
 	public static void printPowergrid(String mrid){
 		Gson gson = new Gson();
 		RequestPowergrid request = new RequestPowergrid(mrid);
@@ -85,7 +129,6 @@ public class PowergridMain {
 			PowergridModel model = (PowergridModel)((DataResponse) response).getData();
 			System.out.println(gson.toJson(model));
 		}
-		
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -123,6 +166,8 @@ public class PowergridMain {
 			
 			if(results.isSuccess()){
 				printPowergrid(results.getPowergridGuid());
+				
+				doGetPartsForPowergrid(results.getPowergridGuid());
 			}
 		}
 		
