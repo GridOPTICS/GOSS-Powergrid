@@ -155,10 +155,10 @@ public class PowergridModel implements Serializable {
 		elementMap.put(LINES, new HashMap<Integer, Object>());
 		elementMap.put(LOADS, new HashMap<Integer, Object>());
 		elementMap.put(SWITCHEDSHUNTS, new HashMap<Integer, Object>());
-		elementMap.put(SUBSTATIONS, new HashMap<Integer, Object>());
+		elementMapString.put(SUBSTATIONS, new HashMap<String, Object>());
 		// elementMap.put(AREAS, new HashMap<Integer, Object>());
 		// elementMap.put(ZONES, new HashMap<Integer, Object>());
-		elementMap.put(SUBSTATION_ALERTS, new HashMap<Integer, Object>());
+		elementMapString.put(SUBSTATION_ALERTS, new HashMap<String, Object>());
 		elementMapString.put(BRANCH_ALERTS, new HashMap<String, Object>());
 		
 		
@@ -206,12 +206,12 @@ public class PowergridModel implements Serializable {
 		return (Bus) getFromMap(BUSES, busNumber);
 	}
 
-	public Substation getSubstation(int id) {
-		return (Substation) getFromMap(SUBSTATIONS, id);
+	public Substation getSubstation(String substationName) {
+		return (Substation) getFromMap(SUBSTATIONS, substationName);
 	}
 
 	public Substation getSubstation(Bus bus) {
-		return getSubstation(bus.getSubstationId());
+		return getSubstation(bus.getSubstationName());
 	}
 	
 	public AlertContext getAlertContext(){
@@ -219,7 +219,7 @@ public class PowergridModel implements Serializable {
 	}
 	
 	private Alert getSubstationAlert(Substation substation){
-		return (Alert)getFromMap(SUBSTATION_ALERTS, substation.getSubstationId());
+		return (Alert)getFromMap(SUBSTATION_ALERTS, substation.getSubstationName());
 	}
 
 	@XmlElementWrapper(name = "Lines")
@@ -298,7 +298,7 @@ public class PowergridModel implements Serializable {
 
 	public void setSubstations(List<Substation> substations) {
 		for (Substation item : substations) {
-			addToMap(SUBSTATIONS, item.getSubstationId(), item);
+			addToMap(SUBSTATIONS, item.getSubstationName(), item);
 		}
 		this.substations = substations;
 	}
@@ -439,27 +439,27 @@ public class PowergridModel implements Serializable {
 			if (oldAlert == null) {
 				Alert newAlert = new Alert(AlertType.ALERTTYPE_SUBSTATION, AlertSeverity.SEVERITY_HIGH, substation.getMrid(), busPercentValue, null);
 				substationAlerts.add(newAlert);
-				addToMap(SUBSTATION_ALERTS, substation.getSubstationId(), newAlert);
+				addToMap(SUBSTATION_ALERTS, substation.getSubstationName(), newAlert);
 			}
 			// If the new value is further from 1 than the old value.
 			else if (Math.abs(1 - busPercentValue) > Math.abs(1 - oldAlert.getViolationValue())) {
 				Alert newAlert = new Alert(AlertType.ALERTTYPE_SUBSTATION, AlertSeverity.SEVERITY_HIGH, substation.getMrid(), busPercentValue, null);
 				substationAlerts.remove(oldAlert);
 				substationAlerts.add(newAlert);
-				addToMap(SUBSTATION_ALERTS, substation.getSubstationId(), newAlert);
+				addToMap(SUBSTATION_ALERTS, substation.getSubstationName(), newAlert);
 			}
 		} else if (busPercentValue > warnHighVoltage || busPercentValue < warnLowVoltage) {
 			if (oldAlert == null) {
 				Alert newAlert = new Alert(AlertType.ALERTTYPE_SUBSTATION, AlertSeverity.SEVERITY_WARN, substation.getMrid(), busPercentValue, null);
 				substationAlerts.add(newAlert);
-				addToMap(SUBSTATION_ALERTS, substation.getSubstationId(), newAlert);
+				addToMap(SUBSTATION_ALERTS, substation.getSubstationName(), newAlert);
 			}
 			// If the new value is further from 1 than the old value.
 			else if (Math.abs(1 - busPercentValue) > Math.abs(1 - oldAlert.getViolationValue())) {
 				substationAlerts.remove(oldAlert);
 				Alert newAlert = new Alert(AlertType.ALERTTYPE_SUBSTATION, AlertSeverity.SEVERITY_WARN, substation.getMrid(), busPercentValue, null);
 				substationAlerts.add(newAlert);
-				addToMap(SUBSTATION_ALERTS, substation.getSubstationId(), newAlert);
+				addToMap(SUBSTATION_ALERTS, substation.getSubstationName(), newAlert);
 			}
 		}
 	}
