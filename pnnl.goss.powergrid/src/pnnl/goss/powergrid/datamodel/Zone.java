@@ -56,6 +56,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Zone", propOrder = {
     "powergridId",
+    "zoneId",
     "zoneName",
     "mrid"
 })
@@ -66,6 +67,8 @@ public class Zone
     private final static long serialVersionUID = 12343L;
     @XmlElement(name = "PowergridId")
     protected int powergridId;
+    @XmlElement(name = "ZoneId")
+    protected int zoneId;
     @XmlElement(name = "ZoneName", required = true)
     protected String zoneName;
     @XmlElement(name = "Mrid", required = true)
@@ -88,6 +91,26 @@ public class Zone
     }
 
     public boolean isSetPowergridId() {
+        return true;
+    }
+
+    /**
+     * Gets the value of the powergridId property.
+     * 
+     */
+    public int getZoneId() {
+        return zoneId;
+    }
+
+    /**
+     * Sets the value of the powergridId property.
+     * 
+     */
+    public void setZoneId(int value) {
+        this.zoneId = value;
+    }
+
+    public boolean isSetZoneId() {
         return true;
     }
 

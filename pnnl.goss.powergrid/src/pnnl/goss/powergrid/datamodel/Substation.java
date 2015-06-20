@@ -87,11 +87,10 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Substation", propOrder = {
-    "substationId",
     "powergridId",
-    "areaName",
-    "zoneName",
     "substationName",
+    "areaName",
+    "zoneName",    
     "latitude",
     "longitude",
     "mrid"
@@ -101,12 +100,14 @@ public class Substation
 {
 
     private final static long serialVersionUID = 12343L;
-    @XmlElement(name = "SubstationId")
-    protected int substationId;
     @XmlElement(name = "PowergridId")
     protected int powergridId;
+    @XmlElement(name = "AreaId")
+    protected int areaId;
     @XmlElement(name = "AreaName")
     protected String areaName;
+    @XmlElement(name = "ZoneId")
+    protected int zoneId;
     @XmlElement(name = "ZoneName")
     protected String zoneName;
     @XmlElement(name = "SubstationName", required = true)
@@ -117,26 +118,6 @@ public class Substation
     protected double longitude;
     @XmlElement(name = "Mrid", required = true)
     protected String mrid;
-
-    /**
-     * Gets the value of the substationId property.
-     * 
-     */
-    public int getSubstationId() {
-        return substationId;
-    }
-
-    /**
-     * Sets the value of the substationId property.
-     * 
-     */
-    public void setSubstationId(int value) {
-        this.substationId = value;
-    }
-
-    public boolean isSetSubstationId() {
-        return true;
-    }
 
     /**
      * Gets the value of the powergridId property.
@@ -184,6 +165,62 @@ public class Substation
 
     public boolean isSetAreaName() {
         return (this.areaName!= null);
+    }
+    
+    /**
+     * Gets the value of the areaId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public int getAreaId() {
+        return areaId;
+    }
+
+    /**
+     * Sets the value of the areaId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAreaId(int value) {
+        this.areaId = value;
+    }
+
+    public boolean isSetAreaId() {
+        return true;
+    }
+
+    /**
+     * Gets the value of the zoneId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public int getZoneId() {
+        return zoneId;
+    }
+
+    /**
+     * Sets the value of the zoneId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setZoneId(int value) {
+        this.zoneId = value;
+    }
+
+    public boolean isSetZoneId() {
+        return true;
     }
 
     /**

@@ -152,8 +152,8 @@ public class Bus
     protected int busNumber;
     @XmlElement(name = "PowergridId")
     protected int powergridId;
-    @XmlElement(name = "SubstationId")
-    protected Integer substationId;
+    @XmlElement(name = "SubstationName")
+    protected String substationName;
     @XmlElement(name = "BusName", required = true)
     protected String busName;
     @XmlElement(name = "BaseKv")
@@ -219,33 +219,6 @@ public class Bus
         return true;
     }
 
-    /**
-     * Gets the value of the substationId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *     
-     */
-    public Integer getSubstationId() {
-        return substationId;
-    }
-
-    /**
-     * Sets the value of the substationId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *     
-     */
-    public void setSubstationId(Integer value) {
-        this.substationId = value;
-    }
-
-    public boolean isSetSubstationId() {
-        return (this.substationId!= null);
-    }
 
     /**
      * Gets the value of the busName property.
@@ -274,6 +247,35 @@ public class Bus
     public boolean isSetBusName() {
         return (this.busName!= null);
     }
+
+    /**
+     * Gets the value of the substationName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSubstationName() {
+        return substationName;
+    }
+
+    /**
+     * Sets the value of the substationName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSubstationName(String value) {
+        this.substationName = value;
+    }
+
+    public boolean isSetSubstationName() {
+        return (this.substationName!= null);
+    }
+    
 
     /**
      * Gets the value of the baseKv property.
