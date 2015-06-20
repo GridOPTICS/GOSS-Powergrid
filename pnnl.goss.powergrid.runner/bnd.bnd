@@ -18,7 +18,8 @@ Export-Package:  \
 	org.apache.commons.io,\
 	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
 	pnnl.goss.powergrid.goss-powergrid-parser-api;version=latest,\
-	pnnl.goss.core.client-all
+	pnnl.goss.core.client-all,\
+	pnnl.goss.core.goss-core-server-registry
 	
 	
 	
