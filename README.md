@@ -17,11 +17,13 @@ Installation Windows 7
     c. Select cnf, pnnl.goss.powergrid, pnnl.goss.powergrid.runner, and  pnnl.goss.powergrid.itests and import (may need to check the  Search for nested projects)
 7.  If you would like to you a local version of GOSS-Core,
     a.  Update cnf/ext/repositories.bnd, 
-    b.  Select source view
+    b.  Select source view and add the following
     c.  	aQute.bnd.deployer.repository.LocalIndexedRepo;name=GOSS Local Release;local=<location>/GOSS-Core2/cnf/releaserepo;pretty=true,\
-    d. verify by switching to bndtools
-8.  Rebuild project, you should no longer have errors
-9.  
+    d. verify by switching to bndtools and verify that there are packages under GOSS Local Relase
+8.  Open pnnl.goss.powergrid/bnd.bnd, Rebuild project, you should no longer have errors
+9.  Open pnnl.goss.powergrid.runner/runpowergrid.bndrun and click Run OSGI
+    a. Verify with gs:listDatasources
+    b. and gs:listHandlers
 
 
 
