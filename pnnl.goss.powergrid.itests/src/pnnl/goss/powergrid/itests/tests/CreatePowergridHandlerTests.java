@@ -20,7 +20,7 @@ import org.junit.Test;
 import pnnl.goss.core.Response;
 import pnnl.goss.core.server.RequestHandler;
 import pnnl.goss.core.server.RequestHandlerRegistry;
-import pnnl.goss.powergrid.parser.api.ParserService;
+//import pnnl.goss.powergrid.parser.api.ParserService;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
 
 
@@ -41,7 +41,7 @@ public class CreatePowergridHandlerTests {
 		// be registered with the osgi container.
 		testConfig = configure(this)
 				.add(serviceDependency(RequestHandlerRegistry.class))
-				.add(serviceDependency(ParserService.class))
+//				.add(serviceDependency(ParserService.class))
 				.add(serviceDependency(RequestHandler.class));
 		
 		
