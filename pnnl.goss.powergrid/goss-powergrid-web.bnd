@@ -4,5 +4,9 @@ Include-Resource: \
 X-Web-Resource: /powergrid;webapp/public
 X-Web-Resource-Version: 1.0
 #X-Web-Resource-Default-Page: index.html
-  	
 
+
+Private-Package:  \
+	pnnl.goss.powergrid.web
+Bundle-Version: 1.0.0.${tstamp}
+Bundle-Activator: pnnl.goss.powergrid.web.Activator

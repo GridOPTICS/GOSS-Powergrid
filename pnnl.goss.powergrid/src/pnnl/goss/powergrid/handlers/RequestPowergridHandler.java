@@ -66,6 +66,7 @@ import pnnl.goss.core.server.DataSourcePooledJdbc;
 import pnnl.goss.core.server.DataSourceRegistry;
 import pnnl.goss.core.server.RequestHandler;
 import pnnl.goss.powergrid.api.PowergridModel;
+import pnnl.goss.powergrid.api.PowergridService;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
@@ -84,19 +85,22 @@ import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
 public class RequestPowergridHandler implements RequestHandler {
 
 	@ServiceDependency
+	private volatile PowergridService powergridService;
+
+	@ServiceDependency
 	private volatile PowergridDataSourceEntries dataSourceEntries;
-	
+
     private static Logger log = LoggerFactory.getLogger(RequestPowergridHandler.class);
     private static PowergridList availablePowergrids = null;
-    
+
     private DataResponse getPowergridModleAtTimestepResponse(RequestPowergridTimeStep request) {
     	PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByPowergrid(request.getMrid()));
-    	
+
     	Powergrid grid = dao.getPowergridByMrid(request.getMrid());
-        
+
         DataResponse response = new DataResponse();
         if (grid.isSetPowergridId()) {
-        	
+
             PowergridModel model = dao.getPowergridModelAtTime(grid.getPowergridId(), request.getTimestep());
             response.setData(model);
         } else {
@@ -107,8 +111,8 @@ public class RequestPowergridHandler implements RequestHandler {
     }
 
     private DataResponse getPowergridModelResponse(RequestPowergrid request) {
-        
-        
+
+
         PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByPowergrid(request.getMrid()));
 
         Powergrid grid = dao.getPowergridByMrid(request.getMrid());
@@ -132,12 +136,9 @@ public class RequestPowergridHandler implements RequestHandler {
     }
 
     private DataResponse getAvailablePowergrids(){
-    	// TODO: This logic doesn't work with more than one database.
-    	for(String k: dataSourceEntries.getDataSourceKeys()){
-    		PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByKey(k));
-    		availablePowergrids = new PowergridList(dao.getAvailablePowergrids());
-    	}
-    	
+
+    	availablePowergrids = new PowergridList(powergridService.getPowergrids());
+
         DataResponse response = new DataResponse(availablePowergrids);
         return response;
     }
@@ -164,7 +165,7 @@ public class RequestPowergridHandler implements RequestHandler {
         RequestPowergrid requestPowergrid = (RequestPowergrid)request;
         log.debug("using datasource: " + PowergridDataSourceEntries.class.getName());
         DataSourcePooledJdbc datasource = dataSourceEntries.getDataSourceByPowergrid(requestPowergrid.getMrid());
-                
+
         if(requestPowergrid.getPowergridName()== null && request instanceof RequestPowergridList){
             return getAvailablePowergrids();
         }
@@ -208,14 +209,14 @@ public class RequestPowergridHandler implements RequestHandler {
     }
 
     private DataResponse getPowergridPartType(RequestPowergridPart request) {
-    	
+
     	PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByPowergrid(request.getMrid()));
     	DataResponse response = new DataResponse();
-    	
+
     	Powergrid grid = dao.getPowergridByMrid(request.getMrid());
-    	
+
     	// According to http://stackoverflow.com/questions/1387954/how-to-serialize-a-list-in-java
-    	// casting to Serializable from lists should be ok.    	
+    	// casting to Serializable from lists should be ok.
     	switch(request.getRequestedPartType()){
 //    	case BRANCHES:
 //    		response.setData((Serializable) dao.getBranches(grid.getPowergridId()));
@@ -233,7 +234,7 @@ public class RequestPowergridHandler implements RequestHandler {
     		response.setData((Serializable) dao.getLoads(grid.getPowergridId()));
     		break;
     	}
-    	
+
 		return response;
 	}
 
@@ -253,7 +254,7 @@ public class RequestPowergridHandler implements RequestHandler {
         return response;
     }
 
-    
+
     @Override
 	public Map<Class<? extends Request>, Class<? extends AuthorizationHandler>> getHandles() {
 		Map<Class<? extends Request>, Class<? extends AuthorizationHandler>> auths = new HashMap<>();
