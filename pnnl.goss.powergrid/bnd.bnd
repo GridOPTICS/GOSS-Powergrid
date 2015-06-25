@@ -21,7 +21,7 @@
 	javax.ws.rs.jsr311-api,\
 	biz.aQute.junit,\
 	org.apache.felix.dependencymanager.runtime,\
-	org.apache.felix.dependencymanager,\
+	org.apache.felix.dependencymanager;version=4,\
 	org.apache.httpcomponents__httpclient,\
 	org.apache.geronimo.specs.geronimo-jpa_3.0_spec,\
 	org.amdatu.testing.configurator,\
