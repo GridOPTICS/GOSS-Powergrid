@@ -1,7 +1,9 @@
 package pnnl.goss.powergrid.server;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.felix.dm.annotation.api.Component;
 import org.apache.felix.dm.annotation.api.ServiceDependency;
@@ -22,6 +24,9 @@ public class AllPowergridService implements PowergridService {
 	@ServiceDependency
 	private volatile PowergridDataSourceEntries dataSourceEntries;
 
+	private volatile Map<String, String> mridToDatasourceKeyMap = new HashMap<>();
+	private volatile Map<String, Powergrid> mridToPowergridMap = new HashMap<>();
+
     private static Logger log = LoggerFactory.getLogger(RequestPowergridHandler.class);
 
     @Start
@@ -35,15 +40,32 @@ public class AllPowergridService implements PowergridService {
 
 		for(String k: dataSourceEntries.getDataSourceKeys()){
     		PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByKey(k));
-    		availablePowergrids.addAll(dao.getAvailablePowergrids());
+    		for(Powergrid g:dao.getAvailablePowergrids()){
+    			mridToDatasourceKeyMap.put(g.getMrid(), k);
+    			mridToPowergridMap.put(g.getMrid(), g);
+    			availablePowergrids.add(g);
+    		}
     	}
+
 		return availablePowergrids;
 	}
 
 	@Override
 	public PowergridModel getPowergridModel(String mrid) {
-		// TODO Auto-generated method stub
-		return null;
+		PowergridModel model = null;
+		// Load the powergrid map so we know which datasource to look
+		// up the powergrid model from.
+		if (mridToDatasourceKeyMap.isEmpty()){
+			getPowergrids();
+		}
+
+		if (mridToDatasourceKeyMap.containsKey(mrid)){
+			String dsKey = mridToDatasourceKeyMap.get(mrid);
+			PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByKey(dsKey));
+			model = dao.getPowergridModel(mridToPowergridMap.get(mrid).getPowergridId());
+		}
+
+		return model;
 	}
 
 	@Override

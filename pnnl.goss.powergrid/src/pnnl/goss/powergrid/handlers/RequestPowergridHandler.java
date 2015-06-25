@@ -99,7 +99,7 @@ public class RequestPowergridHandler implements RequestHandler {
     	Powergrid grid = dao.getPowergridByMrid(request.getMrid());
 
         DataResponse response = new DataResponse();
-        if (grid.isSetPowergridId()) {
+        if (grid.getMrid() != null && !grid.getMrid().isEmpty()) {
 
             PowergridModel model = dao.getPowergridModelAtTime(grid.getPowergridId(), request.getTimestep());
             response.setData(model);
@@ -124,7 +124,7 @@ public class RequestPowergridHandler implements RequestHandler {
 
         DataResponse response = new DataResponse();
 
-        if (grid != null && grid.isSetPowergridId()) {
+        if (isPowergridSet(grid)) {
             PowergridModel model = dao.getPowergridModel(grid.getPowergridId());
             response.setData(model);
         } else {
@@ -133,6 +133,11 @@ public class RequestPowergridHandler implements RequestHandler {
 
         return response;
 
+    }
+
+    private boolean isPowergridSet(Powergrid grid){
+    	return (grid != null && grid.getMrid() != null &&
+    			!grid.getMrid().isEmpty());
     }
 
     private DataResponse getAvailablePowergrids(){
