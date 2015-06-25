@@ -20,6 +20,7 @@
 	com.mysql.jdbc,\
 	javax.ws.rs.jsr311-api,\
 	biz.aQute.junit,\
+	${swagger-buildpath},\
 	org.apache.felix.dependencymanager.runtime,\
 	org.apache.felix.dependencymanager;version=4,\
 	org.apache.httpcomponents__httpclient,\

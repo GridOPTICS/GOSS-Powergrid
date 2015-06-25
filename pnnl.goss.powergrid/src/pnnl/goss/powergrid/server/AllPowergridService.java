@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.PowergridService;
 import pnnl.goss.powergrid.datamodel.Powergrid;
-import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.handlers.RequestPowergridHandler;
 import pnnl.goss.powergrid.server.dao.PowergridDao;
 import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
