@@ -9,10 +9,8 @@
 	org.apache.httpcomponents.httpclient,\
 	org.apache.servicemix.bundles.commons-dbcp,\
 	org.apache.commons.pool,\
-	osgi.cmpn;version=5.0,\
-	osgi.enterprise;version=5.0,\
-	osgi.residential;version=4.3,\
-	osgi.core;version=5.0,\
+	${osgi-buildpath},\
+	${httpservice-buildpath},\
 	javax.persistence;version=2.1,\
 	com.google.gson,\
 	slf4j.api;version=1.7,\
@@ -31,4 +29,5 @@
 	pnnl.goss.core.core-api,\
 	pnnl.goss.core.goss-core-security,\
 	pnnl.goss.core.goss-core-server-api,\
-	pnnl.goss.core.goss-client
+	pnnl.goss.core.goss-client,\
+	pnnl.goss.core.goss-core-server-registry
