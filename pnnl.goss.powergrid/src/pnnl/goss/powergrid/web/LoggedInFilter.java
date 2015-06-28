@@ -49,13 +49,13 @@ public class LoggedInFilter implements Filter
 	private volatile TokenIdentifierMap idMap;
 
     @Start
-    public void start(){
+    public void start() throws ServletException{
     	System.out.println("Starting "+this.getClass().getName());
     	try {
 			httpService.registerFilter(this, "/powergrid/.*",  null,  100,  null);
 		} catch (ServletException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw e;
 		}
 
     }
@@ -69,7 +69,7 @@ public class LoggedInFilter implements Filter
     public void init(FilterConfig config)
         throws ServletException
     {
-        doLog("Init with config [" + config + "]");
+        System.out.println("Initializing filter with config: "+config);
     }
 
     /**
@@ -101,7 +101,6 @@ public class LoggedInFilter implements Filter
 	        			body.append(charBuffer, 0, bytesRead);
 	        		}
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 
@@ -152,7 +151,8 @@ public class LoggedInFilter implements Filter
         throws IOException, ServletException
     {
     	HttpServletRequest httpReq = (HttpServletRequest) req;
-    	String authToken = getTokenIfPresent(httpReq);
+    	MultiReadHttpServletRequestWrapper wrapper = new MultiReadHttpServletRequestWrapper(httpReq);
+    	String authToken = getTokenIfPresent(wrapper);
     	String ip = httpReq.getRemoteAddr();
     	String identifier = null;
     	boolean identifierSet = false;
@@ -160,7 +160,7 @@ public class LoggedInFilter implements Filter
     	if (authToken != null){
     		identifier = idMap.getIdentifier(ip, authToken);
     		if (identifier != null && !identifier.isEmpty()){
-    			req.setAttribute("identifier", identifier);
+    			wrapper.setAttribute("identifier", identifier);
     			identifierSet = true;
     		}
     	}
@@ -173,16 +173,11 @@ public class LoggedInFilter implements Filter
     	}
 
         System.out.println("Identifier set: "+identifier);
-        chain.doFilter(req, res);
+        chain.doFilter(wrapper, res);
     }
 
-    public void destroy()
-    {
-        doLog("Destroyed filter");
-    }
-
-    private void doLog(String message)
-    {
-        //System.out.println("## [" + this.name + "] " + message);
-    }
+	@Override
+	public void destroy() {
+		System.out.println("Destroying filter.");
+	}
 }
