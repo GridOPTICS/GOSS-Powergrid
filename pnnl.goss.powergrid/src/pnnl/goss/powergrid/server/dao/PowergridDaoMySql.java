@@ -92,15 +92,15 @@ public class PowergridDaoMySql implements PowergridDao {
     protected DataSourcePooledJdbc pooledDatasource;
     private AlertContext alertContext;
     private PowergridTimingOptions powergridTimingOptions;
-        
-    public SavePowergridResults createPowergrid(String powergridName, 
+
+    public SavePowergridResults createPowergrid(String powergridName,
     		Map<String, List<PropertyGroup>> data){
-    	
+
     	// TODO Start passing problems to the various insert statements.
     	List<String> problems = new ArrayList<>();
     	String pgUUID = UUID.randomUUID().toString();
     	int pgId = insertPowerGrid(pgUUID, powergridName, problems);
-    	
+
     	List<Bus> buses = null;
     	@SuppressWarnings("unused")
 		List<Substation> substations = null;
@@ -112,7 +112,7 @@ public class PowergridDaoMySql implements PowergridDao {
 		List<Machine> machines = null;
     	@SuppressWarnings("unused")
 		List<SwitchedShunt> switchedSnunts = null;
-    	
+
     	if (data.get("buses") == null) {
     		problems.add("ERROR: Buses are empty");
     		problems.add("ERROR: Substations are empty");
@@ -121,28 +121,28 @@ public class PowergridDaoMySql implements PowergridDao {
     		buses = insertBuses(pgId, data.get("buses"), problems);
 
     	}
-    	
+
     	if (data.get("generators") == null) {
     		problems.add("ERROR: Generators are empty");
     	}
     	else{
     		machines = insertGenerators(pgId, data.get("generators"), problems);
     	}
-    	
+
     	if (data.get("switched_shunts") == null) {
     		problems.add("ERROR: Shunts are empty");
     	}
     	else{
     		switchedSnunts = insertSwitchedShunts(pgId, data.get("switched_shunts"), problems);
     	}
-    	    	
+
     	if (data.get("branches") == null) {
     		problems.add("ERROR: Branches are empty");
     	}
     	else{
     		branches = insertBranches(pgId, data.get("branches"), problems);
     	}
-    	
+
     	if (data.get("areas") == null) {
     		problems.add("WARN: Areas are empty");
     		// Areas must be instantiated for substation to loop over.
@@ -151,7 +151,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	else{
     		areas = insertAreas(pgId, data.get("areas"), problems);
     	}
-    	
+
     	if (data.get("zone") == null) {
     		problems.add("WARN: Zones are empty");
     		// Zones must be instantiated for substation to loop over.
@@ -160,17 +160,17 @@ public class PowergridDaoMySql implements PowergridDao {
     	else{
     		zones = insertZones(pgId, data.get("zone"), problems);
     	}
-    	
+
     	if (buses == null){
     		problems.add("Substations can't be created!");
     	}
     	else{
     		substations = insertSubstations(pgId, buses, areas, zones, problems);
     	}
-    	
+
     	return new SavePowergridResults(pgUUID, problems);
     }
-    
+
     private String getInsertMark(String mark, int count){
     	int i=0;
     	String data = "";
@@ -182,10 +182,10 @@ public class PowergridDaoMySql implements PowergridDao {
     		data += "," + mark;
     		i++;
     	}
-    	
+
     	return data;
     }
-    
+
     private void logPropertyGroup(String name, PropertyGroup pg){
     	System.out.println("LOGGING Group: "+ name);
     	StringBuilder output =new StringBuilder();
@@ -202,32 +202,32 @@ public class PowergridDaoMySql implements PowergridDao {
 			}
 			output.append(" ");
 		}
-    	
+
     	System.out.println(name + " "+ output.toString());
     }
-    
+
     private List<SwitchedShunt> insertSwitchedShunts(int powergridId, List<PropertyGroup> switchedShuntPropertyGroups, List<String> problems){
     	String insert = "INSERT INTO switchedshunt ("+
     			"SwitchedShuntId, PowergridId, BusNumber, Status, BShunt, BInit, ModSw, VswHi, VswLo, " +
     			"SwRem, N1, B1, N2, B2, N3, B3, N4, B4, B5, N5, N6, B6, N7, B7, N8, B8, Mrid) " +
-    			"VALUES (" + 
+    			"VALUES (" +
     			"@SwitchedShuntId, @PowergridId, @BusNumber, @Status, @BShunt, @BInit, @ModSw, @VswHi, " +
     			"@VswLo, @SwRem, @N1, @B1, @N2, @B2, @N3, @B3, @N4, @B4, @N5, @B5, @N6, @B6, @N7, @B7, " +
     			"@N8, @B8, @Mrid);";
     	Map<Integer, Integer> busnumberCount = new HashMap<>();
-    	
+
     	for(PropertyGroup pg: switchedShuntPropertyGroups){
     		if (!busnumberCount.containsKey(pg.getProperty("busNumber").asInt())){
     			busnumberCount.put(pg.getProperty("busNumber").asInt(), 0);
     		}
-    		
+
     		try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
     			// Increase the count for this specific bus.
-    			busnumberCount.put(pg.getProperty("busNumber").asInt(), 
+    			busnumberCount.put(pg.getProperty("busNumber").asInt(),
     					busnumberCount.get(pg.getProperty("busNumber").asInt())+1);
-	    		
+
 	    		// This will be auto populated for us.
-	    		namedStmt.setString("SwitchedShuntId", 
+	    		namedStmt.setString("SwitchedShuntId",
 	    				busnumberCount.get(pg.getProperty("busNumber").asInt()).toString());
 	    		namedStmt.setInt("PowergridId", powergridId);
 				namedStmt.setInt("BusNumber", pg.getProperty("busNumber").asInt());
@@ -255,14 +255,14 @@ public class PowergridDaoMySql implements PowergridDao {
 	    		namedStmt.setInt("N8", pg.getProperty("").asInt());
 	    		namedStmt.setDouble("B8", pg.getProperty("").asDouble());
 	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
-				
+
 				namedStmt.execute();
-				
+
 	    	} catch (SQLException e) {
 				e.printStackTrace();
 			}
     	}
-    		
+
     	return getSwitchedShunts(powergridId);
     }
     private List<Machine> insertGenerators(int powergridId, List<PropertyGroup> generatorPropertyGroups, List<String> problems){
@@ -294,30 +294,30 @@ public class PowergridDaoMySql implements PowergridDao {
 				namedStmt.setDouble("Rt", pg.getProperty("rTran").asDouble());
 				namedStmt.setDouble("Xt", pg.getProperty("xTran").asDouble());
 				namedStmt.setDouble("Gtap", pg.getProperty("gTap").asDouble());
-				namedStmt.setDouble("RmPct", pg.getProperty("rmPcnt").asDouble());				
+				namedStmt.setDouble("RmPct", pg.getProperty("rmPcnt").asDouble());
 				namedStmt.setDouble("MBase", 0.0);
 				namedStmt.setString("Mrid", UUID.randomUUID().toString());
-				
+
 				namedStmt.addBatch();
     		}
-    		
+
     		namedStmt.executeBatch();
-				
+
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    	
+
     	return getMachines(powergridId);
     }
-    
+
     private List<Branch> insertBranches(int powergridId, List<PropertyGroup> branchPropertyGroups, List<String> problems){
     	String insert = "INSERT INTO branch ("+
     			"PowergridId, FromBusNumber, ToBusNumber, Ckt, R, X, RateA, RateB, RateC, "+
-    			"Status, P, Q, Mrid) " + 
-    			"VALUES ( " + 
+    			"Status, P, Q, Mrid) " +
+    			"VALUES ( " +
     			"@PowergridId, @FromBusNumber, @ToBusNumber, @Ckt, @R, @X, @RateA, @RateB, "+
     			"@RateC, @Status, @P, @Q, @Mrid);";
-    	
+
     	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
     		for(PropertyGroup pg: branchPropertyGroups){
 	    		namedStmt.setInt("PowergridId", powergridId);
@@ -330,7 +330,7 @@ public class PowergridDaoMySql implements PowergridDao {
 	    		namedStmt.setDouble("RateB", pg.getProperty("ratingB").asDouble());
 	    		namedStmt.setDouble("RateC", pg.getProperty("ratingC").asDouble());
 	    		namedStmt.setInt("Status", pg.getProperty("status").asInt());
-	    		
+
 	    		// Now we need to create a line or transformer depending on the
 	    		// data.
 	    		namedStmt.setDouble("P", 0.0); // pg.getProperty("").asDouble());
@@ -342,15 +342,15 @@ public class PowergridDaoMySql implements PowergridDao {
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    	
+
     	return getBranches(powergridId);
     }
-    
+
     private List<Area> insertAreas(int powergridId, List<PropertyGroup> areaPropertyGroups, List<String> problems){
     	String insert = "INSERT INTO area("
     			+"PowergridId,AreaName,AreaId,Isw,Pdes,Ptol,Mrid)"
     			+"VALUES(@PowergridId,@AreaName,@AreaId,@Isw,@Pdes,@Ptol,@Mrid);";
-    	
+
 
     	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
     		for(PropertyGroup pg: areaPropertyGroups){
@@ -367,15 +367,15 @@ public class PowergridDaoMySql implements PowergridDao {
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    	
+
     	return getAreas(powergridId);
     }
-    
+
     private List<Zone> insertZones(int powergridId, List<PropertyGroup> zonePropertyGroups, List<String> problems){
     	String insert = "INSERT INTO zone("
     			+"PowergridId, ZoneNumber, ZoneName, Mrid)"
     			+"VALUES(@PowergridId, @ZoneNumber, @ZoneName, @Mrid);";
-    	
+
     	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
     		for(PropertyGroup pg: zonePropertyGroups){
 	    		namedStmt.setInt("PowergridId", powergridId);
@@ -384,23 +384,23 @@ public class PowergridDaoMySql implements PowergridDao {
 	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
 	    		namedStmt.addBatch();
     		}
-    		namedStmt.executeBatch();	    			
+    		namedStmt.executeBatch();
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    	
+
     	return getZones(powergridId);
     }
-    
+
     private List<Bus> insertBuses(int powergridId, List<PropertyGroup> busPropertyGroups, List<String> problems){
        	String insert = "INSERT INTO bus("+
        			"BusNumber, PowergridId, SubstationName, BusName, BaseKV, Code, Pl, Ql, Gl, Bl, AreaId, Va, " +
        			"Vm, ZoneId, Mrid) " +
-       			"VALUES( " + 
+       			"VALUES( " +
        			"@BusNumber, @PowergridId, @SubstationName, @BusName, @BaseKV, @Code, @Pl, @Ql, " +
        			"@Gl, @Bl, @AreaId, @Va, @Vm, @ZoneId, @Mrid)";
-    	
-		
+
+
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
     		for(PropertyGroup pg: busPropertyGroups){
     			namedStmt.setInt("BusNumber", pg.getProperty("busNumber").asInt());
@@ -420,55 +420,55 @@ public class PowergridDaoMySql implements PowergridDao {
     			namedStmt.setDouble("Vm", pg.getProperty("vAng").asDouble());
     			namedStmt.setInt("ZoneId", pg.getProperty("zone").asInt());
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
-    			namedStmt.addBatch();	    			
+    			namedStmt.addBatch();
 	    	}
-    		
+
     		namedStmt.executeBatch();
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
-        	
+
     	return getBuses(powergridId);
-    	
+
     }
-    
+
     private List<Substation> insertSubstations(int pgId, List<Bus> buses,
     		List<Area> areas, List<Zone> zones, List<String> problems){
-    	    	
+
     	Map<String, List<Bus>> nameToBusesIndex = new LinkedHashMap<>();
-    	
-    	// Strip numbers from the end of string and combine with like names. 
+
+    	// Strip numbers from the end of string and combine with like names.
     	for(int x=0; x < buses.size(); x++){
     		Bus b = buses.get(x);
-    		
+
     		// Replace all ending numbers
     		String name = b.getBusName().replaceAll("\\d+$", "");
-    		
+
     		if (!nameToBusesIndex.containsKey(name)){
     			nameToBusesIndex.put(name, new ArrayList<>());
     		}
-    		
+
     		nameToBusesIndex.get(name).add(b);
     	}
-    	
-    	
+
+
     	String query = "INSERT INTO substation (" +
     			"PowergridId, SubstationName, AreaId, AreaName, ZoneId, ZoneName, Latitude, "+
     			"Longitude, Mrid) "+
     			"VALUES (" +
     			"@PowergridId, @SubstationName, @AreaId, @AreaName, @ZoneId, @ZoneName, "+
     			"@Latitude, @Longitude, @Mrid)";
-    	
+
     	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), query)) {
     		for (String name: nameToBusesIndex.keySet()){
     			namedStmt.setInt("PowergridId", pgId);
 	        	namedStmt.setString("SubstationName", name);
-	        	
+
 	        	// The assumption is that all buses are in the same area if not then there is a
 	        	// problem and that needs to be added
 	        	int areaId = -1;
 	        	String areaName = null;
-	        	
+
 	        	for (Bus b: nameToBusesIndex.get(name)){
 	        		if (areaId == -1){
 	        			areaId = b.getAreaId();
@@ -479,17 +479,17 @@ public class PowergridDaoMySql implements PowergridDao {
 	        					"for bus: "+b.getBusName()+" there are at least two areas present.");
 	        		}
 	        	}
-	        	
+
 	        	for(Area a: areas){
 	        		if (areaId == a.getAreaId()){
 	        			areaName = a.getAreaName();
 	        			break;
 	        		}
 	        	}
-	        	
+
 	        	int zoneId = -1;
 	        	String zoneName = null;
-	        	
+
 	        	for (Bus b: nameToBusesIndex.get(name)){
 	        		if (zoneId == -1){
 	        			zoneId = b.getZoneId();
@@ -506,11 +506,11 @@ public class PowergridDaoMySql implements PowergridDao {
 	        			break;
 	        		}
 	        	}
-	        	
+
 	        	if (areaId == -1){
 	        		namedStmt.setNullInt("AreaId");
 		    		namedStmt.setNullString("AreaName");
-	        	} 
+	        	}
 	        	else{
 	        		namedStmt.setInt("AreaId", areaId);
 	        		namedStmt.setString("AreaName", areaName);
@@ -518,7 +518,7 @@ public class PowergridDaoMySql implements PowergridDao {
 	        	if (zoneId == -1){
 	        		namedStmt.setNullInt("ZoneId");
 		    		namedStmt.setNullString("ZoneName");
-	        	} 
+	        	}
 	        	else{
 		    		namedStmt.setInt("ZoneId", zoneId);
 		    		namedStmt.setString("ZoneName", zoneName);
@@ -527,20 +527,20 @@ public class PowergridDaoMySql implements PowergridDao {
 	    		namedStmt.setDouble("Latitude", 0.0);
 	    		namedStmt.setDouble("Longitude", 0.0);
 	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
-	    		
+
 	    		namedStmt.addBatch();
     		}
-    		
+
     		namedStmt.executeBatch();
-	    		
+
 		} catch(SQLException e){
 			problems.add(e.getMessage());
 			e.printStackTrace();
 		}
-    	
+
     	String update = "UPDATE Bus SET SubstationName=@SubstationName " +
     			"WHERE BusNumber=@BusNumber AND PowergridId=@PowergridId";
-    	
+
     	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), update)) {
     		for (Entry<String, List<Bus>> item: nameToBusesIndex.entrySet()) {
     			for (Bus b: item.getValue()){
@@ -551,17 +551,17 @@ public class PowergridDaoMySql implements PowergridDao {
 	    			namedStmt.setString("SubstationName", item.getKey());
 	    			namedStmt.setInt("BusNumber", b.getBusNumber());
 	    			namedStmt.addBatch();
-    			}    		
+    			}
     		}
     		namedStmt.executeBatch();
     	}
     	catch(SQLException e){
     		e.printStackTrace();
     	}
-    	    	
-    	return getSubstations(pgId);    	
+
+    	return getSubstations(pgId);
     }
-    
+
     private int insertPowerGrid(String uuid, String name, List<String> problems){
     	List<Powergrid> grids = getAvailablePowergrids();
     	int maxPg = 0;
@@ -570,9 +570,9 @@ public class PowergridDaoMySql implements PowergridDao {
     			maxPg = g.getPowergridId();
     		}
     	}
-    	
+
     	String insert = "INSERT INTO powergrid(PowergridId, Name,CoordinateSystem,Mrid) VALUES(?,?,?,?);";
-    	
+
     	int pgId = maxPg + 1;
     	try(Connection conn = pooledDatasource.getConnection()){
     		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
@@ -585,13 +585,13 @@ public class PowergridDaoMySql implements PowergridDao {
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    	
+
     	return pgId;
     }
 
-    
+
     /**
-     * The assumption is 
+     * The assumption is
      * @param datasource
      */
     public PowergridDaoMySql(DataSourcePooledJdbc datasource) {
@@ -600,7 +600,7 @@ public class PowergridDaoMySql implements PowergridDao {
         alertContext = new AlertContext();
         initializeAlertContext();
     }
-    
+
     public AlertContext getAlertContext(int powergridId){
         return alertContext;
     }
@@ -626,7 +626,7 @@ public class PowergridDaoMySql implements PowergridDao {
         List<Powergrid> grids = new ArrayList<Powergrid>();
 
         String dbQuery = "select pg.powergridId, pg.Name, a.mrid from powergrid pg inner join area a on pg.Powergridid=a.PowergridId";
-        
+
         try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	try (ResultSet rs = stmt.executeQuery()) {
 	            while (rs.next()) {
@@ -658,7 +658,7 @@ public class PowergridDaoMySql implements PowergridDao {
     public Powergrid getPowergridById(int powergridId) {
         String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN area a ON pg.PowergridId=a.PowergridId where pg.PowergridId = " + powergridId;
         Powergrid grid = new Powergrid();
-        
+
         try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	try (ResultSet rs = stmt.executeQuery()){
 	            rs.next();
@@ -668,7 +668,7 @@ public class PowergridDaoMySql implements PowergridDao {
         	}
         } catch (SQLException e) {
             e.printStackTrace();
-        } 
+        }
 
         return grid;
     }
@@ -729,7 +729,7 @@ public class PowergridDaoMySql implements PowergridDao {
     public List<Timestamp> getTimeSteps(int powergridId) {
         List<Timestamp> items = new ArrayList<Timestamp>();
         String dbQuery = "select * from powergridtimesteps where PowerGridId = " + powergridId;
-        
+
         try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	try (ResultSet rs = stmt.executeQuery()){
 	            while (rs.next()) {
@@ -738,8 +738,8 @@ public class PowergridDaoMySql implements PowergridDao {
         	}
         } catch (SQLException e) {
             e.printStackTrace();
-        } 
-        	
+        }
+
         return items;
     }
 
@@ -747,7 +747,7 @@ public class PowergridDaoMySql implements PowergridDao {
         List<Area> items = new ArrayList<Area>();
         String dbQuery = "select * from area where PowerGridId = " + powergridId;
         try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
-        	try (ResultSet rs = stmt.executeQuery()){      		
+        	try (ResultSet rs = stmt.executeQuery()){
 	            while (rs.next()) {
 	                Area area = new Area();
 	                area.setPowergridId(powergridId);
@@ -761,14 +761,14 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return items;
     }
 
     public List<Branch> getBranches(int powergridId) {
         List<Branch> items = new ArrayList<Branch>();
         String dbQuery = "select * from branch where PowerGridId = " + powergridId;
-        
+
         try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	try (ResultSet rs = stmt.executeQuery()){
         		while (rs.next()) {
@@ -793,7 +793,7 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return items;
     }
 
@@ -803,14 +803,14 @@ public class PowergridDaoMySql implements PowergridDao {
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setInt("powergridId", powergridId);
-        	
+
             try(ResultSet rs = namedStmt.executeQuery()){
 
 	            while (rs.next()) {
 	                Bus bus = new Bus();
 	                bus.setPowergridId(powergridId);
 	                bus.setBusNumber(rs.getInt(1));
-	                bus.setSubstationName(rs.getString("SubstationName")); 
+	                bus.setSubstationName(rs.getString("SubstationName"));
 	                bus.setBusName(rs.getString(4));
 	                bus.setBaseKv(rs.getDouble(5));
 	                bus.setCode(rs.getInt(6));
@@ -823,7 +823,7 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return items;
     }
 
@@ -833,7 +833,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setInt("powergridId", powergridId);
-        	
+
             try(ResultSet rs = namedStmt.executeQuery()){
 
 	            while (rs.next()) {
@@ -848,7 +848,7 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return items;
     }
 
@@ -858,7 +858,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setInt("powergridId", powergridId);
-        	
+
             try(ResultSet rs = namedStmt.executeQuery()){
 	            while (rs.next()) {
 	                Load load = new Load();
@@ -874,7 +874,7 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return items;
     }
 
@@ -884,9 +884,9 @@ public class PowergridDaoMySql implements PowergridDao {
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setInt("powergridId", powergridId);
-        	
+
             try(ResultSet rs = namedStmt.executeQuery()){
-	
+
 	            while (rs.next()) {
 	                Machine machine = new Machine();
 	                machine.setPowergridId(powergridId);
@@ -906,7 +906,7 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return items;
     }
 
@@ -916,7 +916,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setInt("powergridId", powergridId);
-        	
+
             try(ResultSet rs = namedStmt.executeQuery()){
 
 	            while (rs.next()) {
@@ -933,17 +933,17 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return items;
     }
 
     public List<Substation> getSubstations(int powergridId) {
         List<Substation> items = new ArrayList<Substation>();
         String dbQuery = "select * from substation where PowerGridId=@PowergridId";
-        
+
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setInt("PowergridId", powergridId);
-        	
+
             try(ResultSet rs = namedStmt.executeQuery()){
 	            while (rs.next()) {
 	                Substation substation = new Substation();
@@ -962,17 +962,17 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-            
+
         return items;
     }
 
     public List<Transformer> getTransformers(int powergridId) {
         List<Transformer> items = new ArrayList<Transformer>();
         String dbQuery = "select * from transformer where PowerGridId=@powergridId";
-        
+
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setInt("powergridId", powergridId);
-        	
+
             try(ResultSet rs = namedStmt.executeQuery()){
 	            while (rs.next()) {
 	                Transformer transformer = new Transformer();
@@ -987,17 +987,17 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return items;
     }
 
     public List<Zone> getZones(int powergridId) {
         List<Zone> items = new ArrayList<Zone>();
         String dbQuery = "select * from zone where PowerGridId=@powergridId";
-        
+
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setInt("powergridId", powergridId);
-        	
+
             try(ResultSet rs = namedStmt.executeQuery()){
 	            while (rs.next()) {
 	                Zone zone = new Zone();
@@ -1009,7 +1009,7 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        
+
         return items;
     }
 
@@ -1123,8 +1123,8 @@ public class PowergridDaoMySql implements PowergridDao {
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } 
-        
+        }
+
         return grid;
     }
 
