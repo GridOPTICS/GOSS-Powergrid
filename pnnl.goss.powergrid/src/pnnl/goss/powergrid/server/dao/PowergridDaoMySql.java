@@ -1114,11 +1114,12 @@ public class PowergridDaoMySql implements PowergridDao {
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setString("Mrid", mrid);
         	try(ResultSet rs = namedStmt.executeQuery()){
-        		rs.next();
-                grid.setPowergridId(rs.getInt("PowergridId"));
-                grid.setName(rs.getString("name"));
-                grid.setMrid(rs.getString("mrid"));
-    		}        	
+        		if (rs.next()){
+        			grid.setPowergridId(rs.getInt("PowergridId"));
+        			grid.setName(rs.getString("name"));
+        			grid.setMrid(rs.getString("mrid"));
+        		}
+    		}
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
