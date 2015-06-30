@@ -1,9 +1,5 @@
 package pnnl.goss.powergrid.web;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,11 +8,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.amdatu.web.rest.doc.Description;
+import org.amdatu.web.rest.doc.ReturnType;
 
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
@@ -25,51 +24,23 @@ import pnnl.goss.core.server.RequestHandlerRegistry;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
+import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 @Path("/powergrid/api")
+@Produces(MediaType.APPLICATION_JSON)
 public class PowergridWebService {
 
 	private volatile RequestHandlerRegistry handlers;
 
-	public synchronized JsonObject getRequestJsonBody(HttpServletRequest request){
-		Gson gson = new Gson();
-		return gson.fromJson(getRequestBody(request), JsonObject.class);
-	}
-	public synchronized String getRequestBody(HttpServletRequest request){
-		StringBuilder body = new StringBuilder();
-		char[] charBuffer = new char[128];
-		InputStream inputStream;
-		try {
-			inputStream = request.getInputStream();
-			int bytesRead = -1;
-    		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-    		while ((bytesRead = reader.read(charBuffer)) > 0) {
-    			body.append(charBuffer, 0, bytesRead);
-    		}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		return body.toString();
-	}
-
 	@POST
 	@Path("/list")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces({MediaType.APPLICATION_JSON,
-			MediaType.APPLICATION_XML})
 	@Description(
 		"Returns a list of Powergrid instances which contains it's mrid.  " +
 		"Using the mrid the application can then post a request for a specific " +
 		"PowergridModel instance or lists of it's components.")
 	public Collection<Powergrid> list(String identifier, @Context HttpServletRequest request){
-
-		System.out.println("BODY IS: "+ getRequestBody(request)); //body.toString());
-		System.out.println("JSON BODY IS: " + getRequestJsonBody(request));
-
 		System.out.println("Listing powergrids. "+ identifier);
 		RequestPowergridList reqList = new RequestPowergridList();
 		String subject = identifier;
@@ -85,18 +56,41 @@ public class PowergridWebService {
 				data = new ArrayList<>();
 			}
 		}
+
 		return data;
 	}
 
 	@POST
+	@Path("/{mrid}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces({MediaType.APPLICATION_JSON,
-		MediaType.APPLICATION_XML})
-	public PowergridModel getPowergridByMrid(@Context HttpServletRequest req,
-			String AuthToken){
+	@Description("Returns a PowergridModel for the requested mrid.")
+	@ReturnType(PowergridModel.class)
+	public Response getPowergridByMrid(String identifier, @PathParam("mrid") String mrid, @Context HttpServletRequest req) throws WebServiceException{
+		System.out.println("Retrieving powergrid for mrid: "+ mrid);
+		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
+		String subject = identifier;
+		PowergridModel model = null;
+		Response response = null;
 
-		return null; //powergridService.getPowergridModel(mrid);
+		if (handlers.checkAccess((Request)pgRequest, subject)){
+			DataResponse res;
+			try {
+				res = (DataResponse)handlers.handle(pgRequest);
+				if (WebUtil.wasError(res.getData())){
+					response = Response.status(Response.Status.BAD_REQUEST)
+							.entity(res.getData()).build();
+				}
+				else {
+					model = ((PowergridModel)res.getData());
+					response = Response.status(Response.Status.OK).entity(model).build();
+				}
+			} catch (HandlerNotFoundException e) {
+				e.printStackTrace();
 
+			}
+		}
+
+		return response;
 	}
 
 //	@GET
