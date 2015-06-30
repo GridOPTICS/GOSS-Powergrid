@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.felix.dm.annotation.api.Component;
 import org.apache.felix.dm.annotation.api.ServiceDependency;
@@ -143,6 +144,9 @@ public class LoggedInFilter implements Filter
      * If the AuthToken is valid then an 'identifier' parameter will be set on the
      * request before it is sent to the next filter.
      *
+     * If the AuthToken is not valid or is invalid then 401 header is set and an
+     * error message is produced.
+     *
      * (non-Javadoc)
      * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
      */
@@ -166,6 +170,7 @@ public class LoggedInFilter implements Filter
     	}
 
     	if (!identifierSet){
+    		((HttpServletResponse)res).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     		PrintWriter out = res.getWriter();
 			out.write("{\"error\":\"Invalid Authentication Token\"}");
 			out.close();
