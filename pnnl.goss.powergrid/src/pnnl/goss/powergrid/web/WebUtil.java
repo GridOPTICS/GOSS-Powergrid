@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -15,7 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 public class WebUtil {
-
+	
 	public static boolean wasError(Object obj) {
 		return obj instanceof DataError;
 	}
@@ -40,5 +38,5 @@ public class WebUtil {
 			e1.printStackTrace();
 		}
 		return body.toString();
-	}
+	}	
 }
