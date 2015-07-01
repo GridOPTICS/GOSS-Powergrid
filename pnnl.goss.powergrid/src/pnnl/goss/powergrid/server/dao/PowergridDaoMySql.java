@@ -86,6 +86,10 @@ import pnnl.goss.powergrid.datamodel.Transformer;
 import pnnl.goss.powergrid.datamodel.Zone;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
 
+import com.fasterxml.jackson.core.io.JsonStringEncoder;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 public class PowergridDaoMySql implements PowergridDao {
 
     private static Logger log = LoggerFactory.getLogger(PowergridDaoMySql.class);
@@ -523,7 +527,7 @@ public class PowergridDaoMySql implements PowergridDao {
 		    		namedStmt.setInt("ZoneId", zoneId);
 		    		namedStmt.setString("ZoneName", zoneName);
 	        	}
-	    		// TODO: Add the ability to add lat and long values.
+	        	
 	    		namedStmt.setDouble("Latitude", 0.0);
 	    		namedStmt.setDouble("Longitude", 0.0);
 	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
@@ -639,7 +643,6 @@ public class PowergridDaoMySql implements PowergridDao {
         	}
 
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -1108,20 +1111,19 @@ public class PowergridDaoMySql implements PowergridDao {
 
     @Override
     public Powergrid getPowergridByMrid(String mrid) {
-    	String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN area a ON pg.PowergridId=a.PowergridId where pg.Mrid=@Mrid";
+    	String dbQuery = "select pg.PowergridId, pg.Name, pg.Mrid from powergrid pg where pg.Mrid=@Mrid";
         Powergrid grid = new Powergrid();
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setString("Mrid", mrid);
-        	try(ResultSet rs = namedStmt.executeQuery()){
-        		if (rs.next()){
+        	try(ResultSet rs = namedStmt.executeQuery()){        		
+        		if (rs.first()){
         			grid.setPowergridId(rs.getInt("PowergridId"));
         			grid.setName(rs.getString("name"));
         			grid.setMrid(rs.getString("mrid"));
         		}
     		}
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -1133,5 +1135,23 @@ public class PowergridDaoMySql implements PowergridDao {
         // TODO Auto-generated method stub
 
     }
+
+	@Override
+	public JsonObject getExtension(int poewrgridId, String ext_table) {
+		String dbQuery = "select * from ext_"+ext_table;
+		Gson gson = new Gson();
+		JsonObject jsonObj = null;
+		try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
+        	//namedStmt.setString("table", "ext_"+ext_table);
+        	try(ResultSet rs = namedStmt.executeQuery()){
+        		jsonObj = gson.fromJson(SqlUtil.getJSONFromResultSet(rs, "result"), JsonObject.class);
+    		}
+        } catch (SQLException e) {
+        	jsonObj = new JsonObject();
+        	jsonObj.addProperty("error", "Invalid extension '"+ ext_table + "' specified");
+        }
+
+		return jsonObj;
+	}
 
 }

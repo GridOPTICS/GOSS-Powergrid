@@ -56,6 +56,8 @@ import org.apache.felix.dm.annotation.api.ServiceDependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonObject;
+
 import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
@@ -79,11 +81,12 @@ import pnnl.goss.powergrid.server.PowergridDataSourceEntries;
 import pnnl.goss.powergrid.server.dao.PowergridDao;
 import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
 
-
-
 @Component
 public class RequestPowergridHandler implements RequestHandler {
-
+	
+	public static String POWERGRID_EXT = "ext_table";
+	public static String EXT_SHUNTS = "switchedshunt";
+	
 	@ServiceDependency
 	private volatile PowergridService powergridService;
 
@@ -112,21 +115,22 @@ public class RequestPowergridHandler implements RequestHandler {
 
     private DataResponse getPowergridModelResponse(RequestPowergrid request) {
 
-
-        PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByPowergrid(request.getMrid()));
-
-        Powergrid grid = dao.getPowergridByMrid(request.getMrid());
-//        // Determine how the user requested the data.
-//        if (request.getPowergridName() != null && !request.getPowergridName().isEmpty())
-//        {
-//            grid = ds.getPowergridByName(request.getPowergridName());
-//        }
-
-        DataResponse response = new DataResponse();
+    	Map<String, Object> extensions = request.getExtensions();
+    	PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByPowergrid(request.getMrid()));
+    	Powergrid grid = dao.getPowergridByMrid(request.getMrid());
+    	
+    	DataResponse response = new DataResponse();
 
         if (isPowergridSet(grid)) {
-            PowergridModel model = dao.getPowergridModel(grid.getPowergridId());
-            response.setData(model);
+	    	if (extensions.containsKey(POWERGRID_EXT)){
+	    		String extTable = (String) extensions.get(POWERGRID_EXT);
+	    		JsonObject json = dao.getExtension(grid.getPowergridId(), extTable);
+	    		response.setData(json.toString());	    		
+	    	}
+	    	else{
+	    		PowergridModel model = dao.getPowergridModel(grid.getPowergridId());
+                response.setData(model);
+	    	}
         } else {
             response.setData(new DataError("Powergrid not found!"));
         }

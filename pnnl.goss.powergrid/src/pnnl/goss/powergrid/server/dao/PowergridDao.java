@@ -47,6 +47,8 @@ package pnnl.goss.powergrid.server.dao;
 import java.sql.Timestamp;
 import java.util.List;
 
+import com.google.gson.JsonObject;
+
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.datamodel.AlertContext;
 import pnnl.goss.powergrid.datamodel.Area;
@@ -96,7 +98,8 @@ public interface PowergridDao {
 	List<Substation> getSubstations(int powergridId);
 	List<Transformer> getTransformers(int powergridId);
 	List<Zone> getZones(int powergridId);
-	
+		
+	JsonObject getExtension(int poewrgridId, String ext_table);
 	
 	void persist(Powergrid powergrid);
 }

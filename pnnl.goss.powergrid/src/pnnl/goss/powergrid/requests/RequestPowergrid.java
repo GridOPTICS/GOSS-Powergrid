@@ -44,6 +44,9 @@
 */
 package pnnl.goss.powergrid.requests;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import pnnl.goss.core.Request;
 
 public class RequestPowergrid extends Request {
@@ -52,6 +55,15 @@ public class RequestPowergrid extends Request {
 
 	String name = null;
 	String mrid = null;
+	Map<String, Object> extensions = new HashMap<>();
+	
+	public void addExtesion(String key, Object value){
+		extensions.put(key, value);
+	}
+	
+	public Map<String, Object> getExtensions(){
+		return extensions;
+	}
 	
 	/**
 	 * Request a powergrid with the passed mrid associated with it.  The

@@ -96,6 +96,44 @@ public class PowergridWebService {
 
 		return response;
 	}
+	
+	@POST
+	@Path("/ext/{mrid}/{type}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Description("Returns a PowergridModel for the requested mrid.")
+	@ReturnType(PowergridModel.class)
+	public Response getPowergridExt(String identifier, 
+			@PathParam("mrid") String mrid, 
+			@PathParam("type") String extensionType,
+			@Context HttpServletRequest req) {
+		
+		System.out.println("Retrieving powergrid for mrid: "+ mrid);
+		
+		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
+		pgRequest.addExtesion("ext_table", extensionType);
+		Response response = null;
+
+		if (handlers.checkAccess((Request)pgRequest, identifier)){
+			DataResponse res;
+			try {
+				res = (DataResponse)handlers.handle(pgRequest);
+				if (WebUtil.wasError(res.getData())){
+					response = Response.status(Response.Status.BAD_REQUEST)
+							.entity(res.getData()).build();
+				}
+				else {
+					String data = ((String)res.getData());
+					response = Response.status(Response.Status.OK).entity(data).build();
+				}
+			} catch (HandlerNotFoundException e) {
+				e.printStackTrace();
+
+			}
+		}
+
+		return response;
+	}
+
 
 	@POST
 	@Path("/create")
