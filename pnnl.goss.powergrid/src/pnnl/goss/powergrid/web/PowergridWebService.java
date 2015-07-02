@@ -164,6 +164,9 @@ public class PowergridWebService {
 		if (format.equalsIgnoreCase("matpower")){
 			pgRequest.addExtesion("format", "MATPOWER");
 		}
+		else if (format.equalsIgnoreCase("pypower")){
+			pgRequest.addExtesion("format", "PYPOWER");
+		}
 		else{
 			JsonObject json = new JsonObject();
 			json.addProperty("error", "Invalid format specifier chose (matpower)");
