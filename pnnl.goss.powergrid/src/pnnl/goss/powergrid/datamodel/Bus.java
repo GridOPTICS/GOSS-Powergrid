@@ -9,177 +9,69 @@
 package pnnl.goss.powergrid.datamodel;
 
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * <p>Java class for Bus complex type.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="Bus">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="BusNumber">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}int">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="PowergridId">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}int">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="SubstationId" minOccurs="0">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}int">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="BusName">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *               &lt;maxLength value="50"/>
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="BaseKv">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}double">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="Code">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}int">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="Pl">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}double">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="Ql">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}double">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="Gl">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}double">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="Bl">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}double">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="AreaId">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}int">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="Va">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}double">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="Vm">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}double">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="ZoneId">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}int">
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *         &lt;element name="Mrid">
- *           &lt;simpleType>
- *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *               &lt;length value="36"/>
- *             &lt;/restriction>
- *           &lt;/simpleType>
- *         &lt;/element>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- * 
- * 
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Bus", propOrder = {
-    "busNumber",
-    "powergridId",
-    "substationId",
-    "busName",
-    "baseKv",
-    "code",
-    "pl",
-    "ql",
-    "gl",
-    "bl",
-    "areaId",
-    "va",
-    "vm",
-    "zoneId",
-    "mrid"
-})
+@JsonIgnoreProperties({ "powergridId",
+	"setPowergridId"})
 public class Bus
     implements Serializable
 {
 
     private final static long serialVersionUID = 12343L;
-    @XmlElement(name = "BusNumber")
     protected int busNumber;
-    @XmlElement(name = "PowergridId")
     protected int powergridId;
-    @XmlElement(name = "SubstationName")
     protected String substationName;
-    @XmlElement(name = "BusName", required = true)
     protected String busName;
-    @XmlElement(name = "BaseKv")
     protected double baseKv;
-    @XmlElement(name = "Code")
     protected int code;
-    @XmlElement(name = "Pl")
-    protected double pl;
-    @XmlElement(name = "Ql")
+    protected double pl;    
     protected double ql;
-    @XmlElement(name = "Gl")
     protected double gl;
-    @XmlElement(name = "Bl")
     protected double bl;
-    @XmlElement(name = "AreaId")
     protected int areaId;
-    @XmlElement(name = "Va")
     protected double va;
-    @XmlElement(name = "Vm")
     protected double vm;
-    @XmlElement(name = "ZoneId")
     protected int zoneId;
-    @XmlElement(name = "Mrid", required = true)
     protected String mrid;
+    protected double totalPLoad;
+    protected double totalQLoad;
+    protected double totalPGen;
+    protected double totalQGen;   
 
-    /**
+    public double getTotalPLoad() {
+		return totalPLoad;
+	}
+
+	public void setTotalPLoad(double totalPLoad) {
+		this.totalPLoad = totalPLoad;
+	}
+
+	public double getTotalQLoad() {
+		return totalQLoad;
+	}
+
+	public void setTotalQLoad(double totalQLoad) {
+		this.totalQLoad = totalQLoad;
+	}
+
+	public double getTotalPGen() {
+		return totalPGen;
+	}
+
+	public void setTotalPGen(double totalPGen) {
+		this.totalPGen = totalPGen;
+	}
+
+	public double getTotalQGen() {
+		return totalQGen;
+	}
+
+	public void setTotalQGen(double totalQGen) {
+		this.totalQGen = totalQGen;
+	}
+
+	/**
      * Gets the value of the busNumber property.
      * 
      */
@@ -401,7 +293,7 @@ public class Bus
      * Gets the value of the areaId property.
      * 
      */
-    public int getAreaId() {
+    public int getAreaNumber() {
         return areaId;
     }
 
@@ -461,7 +353,7 @@ public class Bus
      * Gets the value of the zoneId property.
      * 
      */
-    public int getZoneId() {
+    public int getZoneNumber() {
         return zoneId;
     }
 
