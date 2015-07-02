@@ -1,5 +1,6 @@
 Private-Package:  \
 	pnnl.goss.powergrid.handlers,\
+	pnnl.goss.powergrid.formatters,\
 	pnnl.goss.powergrid.server.datasources,\
 	pnnl.goss.powergrid.server,\
 	pnnl.goss.powergrid.server.dao,\

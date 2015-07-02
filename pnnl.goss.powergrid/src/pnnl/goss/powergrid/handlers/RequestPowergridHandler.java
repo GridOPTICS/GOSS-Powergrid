@@ -73,6 +73,7 @@ import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.formatters.MatPowerFormatter;
 import pnnl.goss.powergrid.formatters.PowergridFormatter;
+import pnnl.goss.powergrid.formatters.PyPowerFormatter;
 import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
@@ -134,8 +135,20 @@ public class RequestPowergridHandler implements RequestHandler {
 	    	else if(extensions.containsKey(FORMAT_EXT)) {
 	    		String formatType = (String) extensions.get(FORMAT_EXT);
 	    		PowergridModel model = dao.getPowergridModel(grid.getPowergridId());
-	    		MatPowerFormatter formatter = new MatPowerFormatter();
-	    		response.setData(formatter.format(model));
+	    		PowergridFormatter formatter = null;
+	    		if (formatType.equals("MATPOWER")){
+	    			formatter = new MatPowerFormatter();
+	    		} 
+	    		else if(formatType.equals("PYPOWER")){
+	    			formatter = new PyPowerFormatter();
+	    		}
+	    		if (formatter != null){
+	    			response.setData(formatter.format(model));
+	    		}
+	    		else{
+	    			response.setData(new DataError("Invalid formatter type specified."));
+	    		}
+	    		
 	    	}
 	    	else{
 	    		PowergridModel model = dao.getPowergridModel(grid.getPowergridId());
