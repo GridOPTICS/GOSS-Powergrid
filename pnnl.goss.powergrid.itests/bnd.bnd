@@ -23,7 +23,6 @@ Private-Package:  \
 	org.amdatu.configurator.api,\
 	org.amdatu.configurator.autoconf,\
 	org.amdatu.configurator.properties,\
-	pnnl.goss.powergrid.parsers.parser-api;version=latest,\
 	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
 	pnnl.goss.core.core-api,\
 	pnnl.goss.core.goss-core-server-api,\
