@@ -3,7 +3,9 @@ package pnnl.goss.powergrid.formatters;
 import java.util.Map;
 
 import pnnl.goss.powergrid.api.PowergridModel;
+import pnnl.goss.powergrid.datamodel.Branch;
 import pnnl.goss.powergrid.datamodel.Bus;
+import pnnl.goss.powergrid.datamodel.Machine;
 
 public class MatPowerFormatter implements PowergridFormatter {
 
@@ -24,6 +26,8 @@ public class MatPowerFormatter implements PowergridFormatter {
 		
 		addHeading(builder, "powergrid");
 		addBuses(builder);
+		addMachines(builder);
+		addBranches(builder);
 		
 		return builder.toString();
 	}
@@ -41,7 +45,7 @@ public class MatPowerFormatter implements PowergridFormatter {
 	
 	private void addBuses(StringBuilder builder){
 		builder.append("%% bus data\n");
-		builder.append("%	bus_i	type	Pd	Qd	Gs	Bs	area	Vm	Va	baseKV	zone	Vmax	Vmin");
+		builder.append("%	bus_i	type	Pd	Qd	Gs	Bs	area	Vm	Va	baseKV	zone	Vmax	Vmin\n");
 		builder.append("mpc.bus = [");
 		for (Bus b: model.getBuses()){
 			addTabDelimit(builder, b.getBusNumber(),
@@ -60,6 +64,72 @@ public class MatPowerFormatter implements PowergridFormatter {
 				);
 			builder.append("\n");
 		}		
+		
+		builder.append("];\n\n");		
+	}
+	
+	private void addMachines(StringBuilder builder){
+		builder.append(
+			"%% generator data\n" +
+			"%	bus	Pg	Qg	Qmax	Qmin	Vg	mBase	status	Pmax	Pmin	Pc1	Pc2	Qc1min	Qc1max	Qc2min	Qc2max	ramp_agc	ramp_10	ramp_30	ramp_q	apf\n"+
+			"mpc.gen = [\n");
+		for (Machine m: model.getMachines()){
+			addTabDelimit(builder, 
+					m.getBusNumber(),
+					m.getPgen(),
+					m.getQgen(),
+					m.getMaxQgen(),
+					m.getMinQgen(),
+					1, // Vg
+					100, // TODO should be mBase.
+					m.getStatus(),
+					m.getMaxPgen(),
+					m.getMinPgen(),
+					0,	// Pc1	
+					0,  // Pc2	
+					0, 	// Qc1min	
+					0,	// Qc1max	
+					0, 	// Qc2min	
+					0,	// Qc2max	
+					0,	// ramp_agc	
+					0,	// ramp_10	
+					0, 	// ramp_30	
+					0,  // ramp_q	
+					0	// apf
+				);
+			builder.append("\n");
+		}		
+		
+		builder.append("];\n\n");
+	}
+	
+	private void addBranches(StringBuilder builder){
+		builder.append(
+			"%% branch data\n"+
+			"%	fbus	tbus	r	x	b	rateA	rateB	rateC	ratio	angle	status	angmin	angmax\n"+
+			"mpc.branch = [\n");
+		for (Branch b: model.getBranches()){
+			addTabDelimit(builder,
+				b.getFromBusNumber(),
+				b.getToBusNumber(),
+				b.getR(),
+				b.getX(),
+				b.getbCap(),
+				b.getRateA(),
+				b.getRateB(),
+				b.getRateC(),
+				b.getRatio(),
+				b.getAngle(),
+				b.getStatus(),
+				-360, // Angle min
+				360 // Angle max				
+			);
+			
+			builder.append("\n");
+		}		
+		
+		builder.append("];\n\n");
+		
 	}
 	
 	private void addDelimit(StringBuilder builder,  String delimiter, Object ... items){
