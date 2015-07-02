@@ -475,10 +475,10 @@ public class PowergridDaoMySql implements PowergridDao {
 
 	        	for (Bus b: nameToBusesIndex.get(name)){
 	        		if (areaId == -1){
-	        			areaId = b.getAreaId();
+	        			areaId = b.getAreaNumber();
 	        			continue;
 	        		}
-	        		if (b.getAreaId() != areaId){
+	        		if (b.getAreaNumber() != areaId){
 	        			problems.add("WARN: Substation relies one area mapped to it's buses\n"+
 	        					"for bus: "+b.getBusName()+" there are at least two areas present.");
 	        		}
@@ -496,10 +496,10 @@ public class PowergridDaoMySql implements PowergridDao {
 
 	        	for (Bus b: nameToBusesIndex.get(name)){
 	        		if (zoneId == -1){
-	        			zoneId = b.getZoneId();
+	        			zoneId = b.getZoneNumber();
 	        			continue;
 	        		}
-	        		if (b.getZoneId() != zoneId){
+	        		if (b.getZoneNumber() != zoneId){
 	        			problems.add("WARN: Substation relies one zone mapped to it's buses\n"+
 	        					"for bus: "+b.getBusName()+" there are at least two zones present.");
 	        		}
