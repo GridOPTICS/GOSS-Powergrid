@@ -71,6 +71,8 @@ import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.PowergridService;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
+import pnnl.goss.powergrid.formatters.MatPowerFormatter;
+import pnnl.goss.powergrid.formatters.PowergridFormatter;
 import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
@@ -85,6 +87,8 @@ import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
 public class RequestPowergridHandler implements RequestHandler {
 	
 	public static String POWERGRID_EXT = "ext_table";
+	public static String FORMAT_EXT = "format";
+	
 	public static String EXT_SHUNTS = "switchedshunt";
 	
 	@ServiceDependency
@@ -126,6 +130,12 @@ public class RequestPowergridHandler implements RequestHandler {
 	    		String extTable = (String) extensions.get(POWERGRID_EXT);
 	    		JsonObject json = dao.getExtension(grid.getPowergridId(), extTable);
 	    		response.setData(json.toString());	    		
+	    	}
+	    	else if(extensions.containsKey(FORMAT_EXT)) {
+	    		String formatType = (String) extensions.get(FORMAT_EXT);
+	    		PowergridModel model = dao.getPowergridModel(grid.getPowergridId());
+	    		MatPowerFormatter formatter = new MatPowerFormatter();
+	    		response.setData(formatter.format(model));
 	    	}
 	    	else{
 	    		PowergridModel model = dao.getPowergridModel(grid.getPowergridId());

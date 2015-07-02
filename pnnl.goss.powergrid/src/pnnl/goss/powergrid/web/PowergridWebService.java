@@ -100,7 +100,19 @@ public class PowergridWebService {
 	@POST
 	@Path("/ext/{mrid}/{type}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Description("Returns a PowergridModel for the requested mrid.")
+	@Description(
+		"Returns the appropriate extension to the powergrid. "+
+		"Available types are: <ul>" +
+		"<li>area</li>"+
+		"<li>branchinput</li>"+
+		"<li>branchstate</li>" +
+		"<li>bus</li>"+
+		"<li>generator</li>"+
+		"<li>interface</li>"+
+		"<li>load</li>"+
+		"<li>switchedshunt</li>\n"+
+		"<li>tieline</li></ul>"
+	)
 	@ReturnType(PowergridModel.class)
 	public Response getPowergridExt(String identifier, 
 			@PathParam("mrid") String mrid, 
@@ -111,6 +123,56 @@ public class PowergridWebService {
 		
 		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
 		pgRequest.addExtesion("ext_table", extensionType);
+		Response response = null;
+
+		if (handlers.checkAccess((Request)pgRequest, identifier)){
+			DataResponse res;
+			try {
+				res = (DataResponse)handlers.handle(pgRequest);
+				if (WebUtil.wasError(res.getData())){
+					response = Response.status(Response.Status.BAD_REQUEST)
+							.entity(res.getData()).build();
+				}
+				else {
+					String data = ((String)res.getData());
+					response = Response.status(Response.Status.OK).entity(data).build();
+				}
+			} catch (HandlerNotFoundException e) {
+				e.printStackTrace();
+
+			}
+		}
+
+		return response;
+	}
+
+	@POST
+	@Path("/format/{mrid}/{format_code}")
+	@Produces(MediaType.TEXT_PLAIN)
+	@Description(
+		"Returns a PowergridModel formatted as directed.  Currently supported "+
+		"is: <ul><li>matpower</li></ul>")
+	public Response getPowergridFormatted(String identifier, 
+			@PathParam("mrid") String mrid, 
+			@PathParam("format_code") String format,
+			@Context HttpServletRequest req) {
+		
+		System.out.println("Retrieving powergrid for mrid: "+ mrid);
+		
+		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
+		
+		if (format.equalsIgnoreCase("matpower")){
+			pgRequest.addExtesion("format", "MATPOWER");
+		}
+		else{
+			JsonObject json = new JsonObject();
+			json.addProperty("error", "Invalid format specifier chose (matpower)");
+
+			// NOTE EXITING HERE !
+			return Response.status(Response.Status.BAD_REQUEST)
+					.entity(json).build();
+			
+		}
 		Response response = null;
 
 		if (handlers.checkAccess((Request)pgRequest, identifier)){
