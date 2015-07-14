@@ -1,0 +1,205 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Synthetic Data Generation and Repository | Upload Model</title>
+    <link rel="stylesheet" href="css/foundation.min.css" />
+	<link rel="stylesheet" href="css/dataTables.foundation.css" />
+    <script src="js/vendor/modernizr.js"></script>
+	<script src="js/jquery-1.11.1.min.js"></script>
+	<script src="js/jquery.dataTables.min.js"></script>
+	
+	
+	
+	
+	
+  </head>
+  
+<body>
+
+	<nav class="top-bar" data-topbar role="navigation">
+	  <ul class="title-area">
+		<li class="name">
+		  <h1><a href="#">New</a></h1>
+		</li>
+		 <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+	  </ul>
+	  
+	  <ul class="title-area">
+		<li class="name">
+		  <h1><a href="#">Download</a></h1>
+		</li>
+		 <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+	  </ul>
+
+	  <section class="top-bar-section">
+		<!-- Right Nav Section -->
+		<ul class="right">
+		  <li class="has-dropdown">
+			<a href="#">Settings</a>
+			<ul class="dropdown">
+			  <li><a href="#">Change Password</a></li>
+			  <li class="active"><a href="#">Sign Out</a></li>
+			</ul>
+		  </li>
+		</ul>
+
+	  </section>
+	</nav>
+
+    <div class="row">
+	  <div class="large-12 columns">
+        <h3>View Power Grid Model</h3>
+      </div>
+    </div>
+	<br/>
+
+	<div class="row">
+	<table id="example" class="display" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Office</th>
+                <th>Age</th>
+                <th>Start date</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+ 
+        <tfoot>
+            <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Office</th>
+                <th>Age</th>
+                <th>Start date</th>
+                <th>Salary</th>
+            </tr>
+        </tfoot>
+ 
+        <tbody>
+            <tr>
+                <td>Tiger Nixon</td>
+                <td>System Architect</td>
+                <td>Edinburgh</td>
+                <td>61</td>
+                <td>2011/04/25</td>
+                <td>$320,800</td>
+            </tr>
+            <tr>
+                <td>Garrett Winters</td>
+                <td>Accountant</td>
+                <td>Tokyo</td>
+                <td>63</td>
+                <td>2011/07/25</td>
+                <td>$170,750</td>
+            </tr>
+            <tr>
+                <td>Ashton Cox</td>
+                <td>Junior Technical Author</td>
+                <td>San Francisco</td>
+                <td>66</td>
+                <td>2009/01/12</td>
+                <td>$86,000</td>
+            </tr>
+            <tr>
+                <td>Cedric Kelly</td>
+                <td>Senior Javascript Developer</td>
+                <td>Edinburgh</td>
+                <td>22</td>
+                <td>2012/03/29</td>
+                <td>$433,060</td>
+            </tr>
+            <tr>
+                <td>Airi Satou</td>
+                <td>Accountant</td>
+                <td>Tokyo</td>
+                <td>33</td>
+                <td>2008/11/28</td>
+                <td>$162,700</td>
+            </tr>
+            <tr>
+                <td>Brielle Williamson</td>
+                <td>Integration Specialist</td>
+                <td>New York</td>
+                <td>61</td>
+                <td>2012/12/02</td>
+                <td>$372,000</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript">
+
+$(document).ready(function() {
+		$('#example').dataTable();
+} );
+
+$("input[name=access]").click(function(){
+   var access = $("input[name='access']:checked").val();
+	if(access=='group'){
+		$('#groups').prop('disabled',false)
+	}
+	else{
+		$('#groups').prop('disabled',true)
+	}
+});
+
+function upload(){
+	var f = fileinput.files[0]; 
+	
+
+}
+
+function sendFile(evt) {
+    var f = fileinput.files[0]; 
+
+    if (f) {
+      var r = new FileReader();
+      r.onload = function(e) { 
+	    var contents = e.target.result;
+		alert(contents)
+        client.send("/topic/synthdata/request/newmodel",{}, contents.toString())
+      }
+      r.readAsText(f);
+    } else { 
+      alert("Failed to load file");
+    }
+  }
+  
+ function genData(evt){
+    var user = sessionStorage.gossUser;
+
+	if (winter.checked) {
+		profile_value = winter.value
+	}else{
+		profile_value = summer.value
+	}
+	
+ 	var request = "{"
+				+ "username:\""+user+"\","
+				+ "modelId:\""+file_id+"\","
+				+ "profile:\""+profile_value+"\","
+				+ "lineOutage:\""+line_outage.value+"\","
+				+ "genOutage:\""+gen_outage.value+"\""
+				+ "}"
+	alert(request)
+	client.send("/topic/synthdata/"+user+"/gendata",{}, request.toString())
+				
+ }
+ 
+ function download() {
+			window.open("data:test/text;charset=utf-8," + encodeURIComponent(message.body));
+		}
+
+	
+
+</script>
+</body>
+<html>

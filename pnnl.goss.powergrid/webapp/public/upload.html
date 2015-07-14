@@ -1,0 +1,320 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Synthetic Data Generation and Repository | Upload Model</title>
+    <link rel="stylesheet" href="css/foundation.css" />
+    <script src="js/vendor/modernizr.js"></script>
+	<script src="js/jquery-2.1.4.min.js"></script>
+  </head>
+  
+<body>
+
+<form enctype="multipart/form-data" method="post" name="uploadForm">
+
+	<input type="hidden" name="token" value="" />
+
+	<nav class="top-bar" data-topbar role="navigation">
+	  <ul class="title-area">
+		<li class="name">
+		  <h1><a href="#">New</a></h1>
+		</li>
+		 <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+	  </ul>
+	  
+	  <ul class="title-area">
+		<li class="name">
+		  <h1><a href="#">Download</a></h1>
+		</li>
+		 <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+	  </ul>
+
+	  <section class="top-bar-section">
+		<!-- Right Nav Section -->
+		<ul class="right">
+		  <li class="has-dropdown">
+			<a href="#">Settings</a>
+			<ul class="dropdown">
+			  <li><a href="#">Change Password</a></li>
+			  <li class="active"><a href="#">Sign Out</a></li>
+			</ul>
+		  </li>
+		</ul>
+
+	  </section>
+	</nav>
+
+    <div class="row">
+	  <div class="large-12 columns">
+        <h3>Upload New Power Grid Model</h3>
+      </div>
+    </div>
+	<br/>
+
+	<div class="row">
+		<div class="large-4 columns">
+			<label>Name
+				<input type="text" id="name"/>
+			</label>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="large-4 columns">
+		  <label>Format
+			<select>
+				<option value="pti">PTI(23,26,29,31)</option>
+				<option value="cim">CIM</option>
+			</select>
+		  </label>
+		</div>
+	</div>
+	
+	<div class="row" id="attributes_div">
+		<div class="large-8 medium-8 columns">
+		
+			<div class="row">
+				<div class="large-6 medium-6 columns">
+				<br>
+				Select User Access:
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="large-2 columns">
+					<input type="radio" id="public" name="access" value="public" checked>Public
+				</div>
+				<div class="large-2 columns">
+					<input type="radio" id="private" name="access" value="private">Private
+				</div>
+				<div class="large-2 columns">
+					<input type="radio" id="group" name="access" value="group">Group:
+				</div>
+				<div class="large-6 columns">
+					<select id="groups" disabled="true">
+						<option value="pnnl">PNNL</option>
+						<option value="UW">UW</option>
+						<option value="NASPI">NASPI</option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="large-4 columns">
+		  <label>File
+			 <input type="file" id="model_file" accept=".raw" >
+		  </label>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="large-8 columns">
+		  <label>Description
+			<textarea rows="10" id="description" placeholder="Model Description in few lines"></textarea>
+		  </label>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="large-4 medium-4 columns">
+            <input type="submit" id="submit" class="button small round" id="submit" value="Upload"/>
+        </div>
+	</div>
+	
+	<br>
+
+	</form>
+
+<script type="text/javascript">
+
+$("input[name=access]").click(function(){
+   var access = $("input[name='access']:checked").val();
+	if(access=='group'){
+		$('#groups').prop('disabled',false)
+	}
+	else{
+		$('#groups').prop('disabled',true)
+	}
+});
+
+var parameters = {};
+
+// This event will happen when the user changes the model_file parameter
+// the model_file_content and model_file_name parameters are modified in
+// the "global" parameters field.
+function readFile(input) {
+	
+    if ( input.files && input.files[0] ) {
+        console.log('input.files');
+        var FR= new FileReader();
+            		
+		
+        FR.onload = function(e) {
+             //$('#img').attr( "src", e.target.result );
+             //$('#base').text( e.target.result );
+             
+             // Retrieve the name of the file
+             var name = $('#name').val();
+             
+             // Update the page level parameters
+             parameters['model_file_name'] = input.files[0].name;
+             parameters['model_file_content'] = e.target.result;
+             $('#name').val(name + input.files[0].name);
+             
+
+             //$('#base').text( JSON.stringify(pdata) );
+             //uploadFileData = e.target.result;
+
+             //console.log(pdata);
+             /*$.ajax({
+                 type: 'POST',
+                 url: '/jsonrpc',
+                 data: JSON.stringify(pdata),
+                 dataType: 'json',
+                 success: function(data){
+                     $('#results').text('Success');
+                       console.log('success '+data.toString());},
+                 failure: function(data){
+                     $('#results').text('failure');
+                      console.log('failure '+data.toString());}
+
+             });*/
+        };
+        
+        FR.readAsDataURL( input.files[0] )
+
+
+    }
+}
+
+$("#model_file").change(function(){
+    console.log('Uploading model data');
+    readFile( this );
+});
+
+function validateAndPost(){
+	$('#authToken').value = document.cookie
+	console.log('Posting parameters\n'+ JSON.stringify(parameters));
+	if (parameters['model_file_name'] != null && parameters['model_file_name'].length > 0){
+		$.ajax({
+            type: 'POST',
+            url: '/powergrid/api/create',
+            data: JSON.stringify(parameters),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function(data){
+            	console.log('Success');
+            	console.log(data.toString());
+			},
+            failure: function(data){
+            	console.log('Failure');
+                console.log(data.toString());
+                alert("Falure: "+ data.toString());
+            }
+
+        });	
+	}
+	else {
+		alert('invalid model file!');
+	}
+	
+	
+}
+
+$('#submit').click(function(){
+	var authToken  = document.cookie.split("=")[1]
+	parameters['AuthToken'] = authToken;
+	parameters['description'] = $('#description').val();
+	parameters['name'] = $('#name').val();
+	parameters['access_level'] = $("input[name='access']:checked").val();
+	
+	validateAndPost();    	
+});
+
+
+/*
+function submit(){
+	
+	$('#authToken').value = document.cookie
+	
+	var form = document.forms.namedItem("uploadForm");
+	form.addEventListener('submit', function(ev) {
+
+	  var oOutput = document.querySelector("div"),
+	      oData = new FormData(form);
+
+	  var oReq = new XMLHttpRequest();
+	  oReq.open("POST", "http://localhost:8181/powergrid/create", true);
+	  oReq.onload = function(oEvent) {
+	    if (oReq.status == 200) {
+	      oOutput.innerHTML = "Uploaded!";
+	    } else {
+	      oOutput.innerHTML = "Error " + oReq.status + " occurred when trying to upload your file.<br \/>";
+	    }
+	  };
+
+	  oReq.send(oData);
+	  ev.preventDefault();
+	}, false);
+	
+	
+	
+}
+
+function upload(){
+	var f = fileinput.files[0]; 
+	
+
+}
+
+function sendFile(evt) {
+    var f = fileinput.files[0]; 
+
+    if (f) {
+      var r = new FileReader();
+      r.onload = function(e) { 
+	    var contents = e.target.result;
+		alert(contents)
+        client.send("/topic/synthdata/request/newmodel",{}, contents.toString())
+      }
+      r.readAsText(f);
+    } else { 
+      alert("Failed to load file");
+    }
+  }
+  
+ function genData(evt){
+    var user = sessionStorage.gossUser;
+
+	if (winter.checked) {
+		profile_value = winter.value
+	}else{
+		profile_value = summer.value
+	}
+	
+ 	var request = "{"
+				+ "username:\""+user+"\","
+				+ "modelId:\""+file_id+"\","
+				+ "profile:\""+profile_value+"\","
+				+ "lineOutage:\""+line_outage.value+"\","
+				+ "genOutage:\""+gen_outage.value+"\""
+				+ "}"
+	alert(request)
+	client.send("/topic/synthdata/"+user+"/gendata",{}, request.toString())
+				
+ }
+ 
+ function download() {
+			window.open("data:test/text;charset=utf-8," + encodeURIComponent(message.body));
+		}
+		*/
+	
+
+</script>
+</body>
+<html>
