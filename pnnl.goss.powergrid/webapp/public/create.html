@@ -1,0 +1,127 @@
+<html>
+<head>
+	<title>Create Powergrid Example</title>
+</head>
+	<html>
+<head>
+    <script language="javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+</head>
+<body>
+<div>
+	Token: <input type="text" id="token" placeholder="Enter auth token" />
+</div>
+<div>
+	Name: <input type="text" id="name" placeholder="Enter powergrid name" /><br/>
+</div>
+<div>
+	Access Level: <input type="text" id="access_level" placeholder="Access Level (public|private|group)" value="public" />
+</div>
+<div>
+	Description:<br/>
+	<textarea id="description" rows="10" cols="80"></textarea>
+</div>
+<div>
+	Model File: <input type="file" id="model_file" /> 
+</div>
+<div>
+	<button id="upload_file">Create Powergrid</button>
+</div>
+
+<script language="javascript">
+	var parameters = {};
+	
+	// This event will happen when the user changes the model_file parameter
+	// the model_file_content and model_file_name parameters are modified in
+	// the "global" parameters field.
+	function readFile(input) {
+		
+        if ( input.files && input.files[0] ) {
+            console.log('input.files');
+            var FR= new FileReader();
+                		
+    		
+            FR.onload = function(e) {
+                 //$('#img').attr( "src", e.target.result );
+                 //$('#base').text( e.target.result );
+                 
+                 // Retrieve the name of the file
+                 var name = $('#name').val();
+                 
+                 // Update the page level parameters
+                 parameters['model_file_name'] = input.files[0].name;
+                 parameters['model_file_content'] = e.target.result;
+                 $('#name').val(name + input.files[0].name);
+                 
+
+                 //$('#base').text( JSON.stringify(pdata) );
+                 //uploadFileData = e.target.result;
+
+                 //console.log(pdata);
+                 /*$.ajax({
+                     type: 'POST',
+                     url: '/jsonrpc',
+                     data: JSON.stringify(pdata),
+                     dataType: 'json',
+                     success: function(data){
+                         $('#results').text('Success');
+                           console.log('success '+data.toString());},
+                     failure: function(data){
+                         $('#results').text('failure');
+                          console.log('failure '+data.toString());}
+
+                 });*/
+            };
+            
+            FR.readAsDataURL( input.files[0] )
+
+
+        }
+    }
+
+    $("#model_file").change(function(){
+        console.log('Uploading model data');
+        readFile( this );
+    });
+    
+    function validateAndPost(){
+    	console.log('Posting parameters\n'+ JSON.stringify(parameters));
+    	if (parameters['model_file_name'] != null && parameters['model_file_name'].length > 0){
+    		$.ajax({
+                type: 'POST',
+                url: '/powergrid/api/create',
+                data: JSON.stringify(parameters),
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(data){
+                	console.log('Success');
+                	console.log(data.toString());
+    			},
+                failure: function(data){
+                	console.log('Failure');
+                    console.log(data.toString());
+                    alert("Falure: "+ data.toString());
+                }
+
+            });	
+    	}
+    	else {
+    		alert('invalid model file!');
+    	}
+    	
+    	
+    }
+    
+    $('#upload_file').click(function(){
+    	parameters['AuthToken'] = $('#token').val();
+    	parameters['description'] = $('#description').val();
+    	parameters['name'] = $('#name').val();
+    	parameters['access_level'] = $('#access_level').val();
+    	
+    	validateAndPost();    	
+    });
+</script>
+
+</body>
+</html>
+</body></html>
