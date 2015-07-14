@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -53,7 +54,7 @@ public class LoggedInFilter implements Filter
     public void start() throws ServletException{
     	System.out.println("Starting "+this.getClass().getName());
     	try {
-			httpService.registerFilter(this, "/powergrid/.*",  null,  100,  null);
+			httpService.registerFilter(this, "/powergrid/api/.*",  null,  100,  null);
 		} catch (ServletException e) {
 			e.printStackTrace();
 			throw e;
@@ -104,7 +105,7 @@ public class LoggedInFilter implements Filter
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-
+				
 				if (!body.toString().isEmpty()){
 
 	        		try {
