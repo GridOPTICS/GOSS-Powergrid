@@ -58,7 +58,7 @@ public class PowergridTestClient {
 		File file = new File("../pnnl.goss.powergrid/resources/118.raw");
 				
 		try {
-			request.setFile(file);
+			request.setPowergridFile(file);
 			Response response = client.getResponse(request);
 			printDataResponse(response);
 		} catch (FileNotFoundException e) {
