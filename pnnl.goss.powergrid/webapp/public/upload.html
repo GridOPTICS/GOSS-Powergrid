@@ -11,7 +11,7 @@
   
 <body>
 
-<form enctype="multipart/form-data" method="post" name="uploadForm">
+<form enctype="multipart/form-data"  name="uploadForm">
 
 	<input type="hidden" name="token" value="" />
 
@@ -122,7 +122,11 @@
 	
 	<div class="row">
 		<div class="large-4 medium-4 columns">
-            <input type="submit" id="submit" class="button small round" id="submit" value="Upload"/>
+		<div>
+		<button id="upload_file">Upload</button>
+</div>
+<!--             <input type="submit" id="submit" class="button small round" id="submit" value="Upload"/> -->
+
         </div>
 	</div>
 	
@@ -140,6 +144,15 @@ $("input[name=access]").click(function(){
 	else{
 		$('#groups').prop('disabled',true)
 	}
+});
+
+$('#upload_file').click(function(){
+	parameters['AuthToken'] = $('#token').val();
+	parameters['description'] = $('#description').val();
+	parameters['name'] = $('#name').val();
+	parameters['access_level'] = $('#access_level').val();
+	
+	validateAndPost();    	
 });
 
 var parameters = {};
@@ -210,6 +223,7 @@ function validateAndPost(){
             success: function(data){
             	console.log('Success');
             	console.log(data.toString());
+            	alert("Got "+data.toString());
 			},
             failure: function(data){
             	console.log('Failure');
@@ -220,7 +234,7 @@ function validateAndPost(){
         });	
 	}
 	else {
-		alert('invalid model file!');
+		alert('Invalid model file!');
 	}
 	
 	
