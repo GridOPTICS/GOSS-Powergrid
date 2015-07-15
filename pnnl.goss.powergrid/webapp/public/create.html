@@ -101,6 +101,9 @@
                 	console.log('Failure');
                     console.log(data.toString());
                     alert("Falure: "+ data.toString());
+                },
+                error: function(a, b, c){
+                    alert(a+ b+ c);
                 }
 
             });	
