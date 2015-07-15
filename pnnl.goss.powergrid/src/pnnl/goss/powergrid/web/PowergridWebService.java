@@ -1,5 +1,7 @@
 package pnnl.goss.powergrid.web;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,6 +18,8 @@ import javax.ws.rs.core.Response;
 
 import org.amdatu.web.rest.doc.Description;
 import org.amdatu.web.rest.doc.ReturnType;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 
 import com.google.gson.JsonObject;
 
@@ -96,7 +100,7 @@ public class PowergridWebService {
 
 		return response;
 	}
-	
+
 	@POST
 	@Path("/ext/{mrid}/{type}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -114,13 +118,13 @@ public class PowergridWebService {
 		"<li>tieline</li></ul>"
 	)
 	@ReturnType(PowergridModel.class)
-	public Response getPowergridExt(String identifier, 
-			@PathParam("mrid") String mrid, 
+	public Response getPowergridExt(String identifier,
+			@PathParam("mrid") String mrid,
 			@PathParam("type") String extensionType,
 			@Context HttpServletRequest req) {
-		
+
 		System.out.println("Retrieving powergrid for mrid: "+ mrid);
-		
+
 		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
 		pgRequest.addExtesion("ext_table", extensionType);
 		Response response = null;
@@ -152,15 +156,15 @@ public class PowergridWebService {
 	@Description(
 		"Returns a PowergridModel formatted as directed.  Currently supported "+
 		"is: <ul><li>matpower</li></ul>")
-	public Response getPowergridFormatted(String identifier, 
-			@PathParam("mrid") String mrid, 
+	public Response getPowergridFormatted(String identifier,
+			@PathParam("mrid") String mrid,
 			@PathParam("format_code") String format,
 			@Context HttpServletRequest req) {
-		
+
 		System.out.println("Retrieving powergrid for mrid: "+ mrid);
-		
+
 		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
-		
+
 		if (format.equalsIgnoreCase("matpower")){
 			pgRequest.addExtesion("format", "MATPOWER");
 		}
@@ -174,7 +178,7 @@ public class PowergridWebService {
 			// NOTE EXITING HERE !
 			return Response.status(Response.Status.BAD_REQUEST)
 					.entity(json).build();
-			
+
 		}
 		Response response = null;
 
@@ -207,19 +211,19 @@ public class PowergridWebService {
 			"The passed data must be a base64 encoded file with "+
 			"associated properties.")
 	@ReturnType(SavePowergridResults.class)
-	public Response create(String identifier,  @Context HttpServletRequest req) {
-		String subject = identifier;
+	public Response create(@Context HttpServletRequest req) {
 		Response response = null;
+		String identifier = (String) req.getAttribute("identifier");
 		JsonObject obj = WebUtil.getRequestJsonBody(req);
 		CreatePowergridRequest createReq = new CreatePowergridRequest();
 		List<String> errors = new ArrayList<>();
 
-		if (!obj.has("powergridName") ||
-				obj.get("powergridName").getAsString().isEmpty()){
-			errors.add("Invalid powergridName specified");
+		if (!obj.has("name") ||
+				obj.get("name").getAsString().isEmpty()){
+			errors.add("Invalid powergrid name specified");
 		}
-		if (!obj.has("powergridContent") ||
-				obj.get("powergridContent").getAsString().isEmpty()){
+		if (!obj.has("model_file_content") ||
+				obj.get("model_file_content").getAsString().isEmpty()){
 			errors.add("Invalid powergridContent specified");
 		}
 
@@ -229,7 +233,37 @@ public class PowergridWebService {
 
 		}
 		else{
+			// Make sure the user has access to do this request.
+			if (!handlers.checkAccess(createReq, identifier)){
+				response = Response.status(Response.Status.UNAUTHORIZED).build();
+			}
+			else{
+				DataResponse res;
+				try{
+					String content = obj.get("model_file_content").getAsString();
+					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);
+					File tmpFile = File.createTempFile("upload", "tmp");
+					FileUtils.writeByteArrayToFile(tmpFile,  decoded);
+					createReq.setPowergridFile(tmpFile);
+					res = (DataResponse)handlers.handle(createReq);
+					if (WebUtil.wasError(res.getData())){
+						response = Response.status(Response.Status.BAD_REQUEST)
+								.entity(res.getData()).build();
+					}
+					else {
 
+						//model = ((PowergridModel)res.getData());
+						//response = Response.status(Response.Status.OK).entity(model).build();
+						response = Response.status(Response.Status.OK).build();
+					}
+
+				} catch (HandlerNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 
 //		if (handlers.checkAccess((Request)pgRequest, subject)){
 //			DataResponse res;
