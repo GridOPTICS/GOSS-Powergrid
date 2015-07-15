@@ -62,7 +62,8 @@
 	pnnl.goss.core.goss-core-server-web,\
 	pnnl.goss.powergrid.goss-powergrid-parser;version=latest,\
 	pnnl.goss.powergrid.goss-powergrid-parser-api;version=latest,\
-	${swagger-runpath}
+	${swagger-runpath},\
+	org.apache.commons.codec
 
 	#${gossserver}
 	#,\
