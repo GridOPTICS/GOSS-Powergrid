@@ -17,36 +17,196 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
 import pnnl.goss.powergrid.parser.api.Property;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
 
 public class PsseParser {
+	public static String HEADERS="headers";
+	public static String BUSES="buses";	
+	public static String GENERATORS="generators";
+	public static String BRANCHES="branches";
+	public static String TRANSFORMER_ADJS= "transformer_adjs";
+	public static String AREAS = "areas";
+	public static String TWO_TERM_DC = "two_term_dc";
+	public static String SWITCHED_SHUNTS = "switched_shunts";
+	public static String IMPEDENCE_CORRECTIONS = "impedance_corrections";
+	public static String MULTI_TERM_DC = "multi_term_dc";
+	public static String MULTI_SECTION_LINE = "multi_section_line";
+	public static String ZONES = "zones";
+	public static String INTER_AREA_TRANSFERS = "iter_area_transfers";
+	public static String OWNERS = "owners";
+	public static String FACTS = "facts";
+	
+	public enum PTI_VERSION{
+		PTI_23
+	}
 
     ResultLog resultLog;
+//    private static String[] sections = {"headings", "buses", "loads", "generator", "branch", "transformer", "area", 
+//    	"two_term_dc", "voltage_src_converter", "switched_shunt", "impedance_correction", "multi_term_dc", 
+//    	"multi_section_line", "zone", "iter_area_transfer", "owner", "fact"};
 
-    public ResultLog parse(BufferedReader br){
+    
+    // Assumes pti-23 sections below
+    private static String[] pti23Sections = {HEADERS, BUSES, GENERATORS, BRANCHES, TRANSFORMER_ADJS,
+    	AREAS, TWO_TERM_DC, SWITCHED_SHUNTS, IMPEDENCE_CORRECTIONS, MULTI_TERM_DC, MULTI_SECTION_LINE,
+    	ZONES, INTER_AREA_TRANSFERS, OWNERS, FACTS};
+    
+    
+    private static String[][] sections = {pti23Sections};
+    
+    JsonObject jsonSections;
+    private PTI_VERSION ptiVersion = null;
+        
+    public ResultLog parse(PTI_VERSION version, BufferedReader br){
     	ResultLog log = new ResultLog();
+    	jsonSections = new JsonObject();
 
-    	Map<String, List<String>> map = parseSections(br);
+    	ptiVersion = version;
+    	Map<String, List<String>> map = readSections(br);
+
+    	
+    	for(String sec: sections[ptiVersion.ordinal()]){
+    		JsonObject newSection = null;
+    		String template = null;
+    		switch(sec){
+    		case "headings":
+    			break;
+    		case "buses":
+    			if (ptiVersion == PTI_VERSION.PTI_23){
+	    			// I,IDE,PL,QL,GL,BL,IA,VM,VA,'NAME',BASKL,ZONE
+	    			template = "iiffffiffsfi";
+    			}
+    			else{
+    				System.out.println("Wooops unknown.");
+    			}
+    			break;
+    		}
+    		
+    		if (template != null) {
+	    		newSection = buildTemplateOrder(template);
+				for(String ln: map.get(sec)){
+					parseLine(ln, newSection);
+				}
+    		} 
+    		else{
+    			jsonSections.add(sec, new JsonObject());
+    		}
+    	}
 
 
     	return log;
     }
+    
+    private JsonObject buildTemplateOrder(String template){
+    	JsonObject obj = new JsonObject();
+    	JsonArray ele = new JsonArray();
+    	
+    	for(int i=0; i<template.length(); i++){
+    		switch (template.charAt(i)){
+    		case 'i':
+    			ele.add(new JsonPrimitive("int"));
+    			break;
+    		case 'f':
+    			ele.add(new JsonPrimitive("float"));
+    			break;
+    		case 's':
+    			ele.add(new JsonPrimitive("string"));
+    			break;
+    		case 'd':
+    			ele.add(new JsonPrimitive("double"));
+    			break;
+    		}
+    	}    		
+    	
+    	obj.add("type_order", ele);
+    	
+    	return obj;
+    }
+    
+    private String dequote(String data){
+    	data = data.replace("'", "");
+    	data = data.replace("\"", "");
+    	return data.trim();
+    }
+    
+    private void parseLine(String line, JsonObject section){
+  	
+    	JsonArray arr = section.getAsJsonArray("type_order");
+    	JsonArray data = section.getAsJsonArray("data");
+    	if (data == null){
+    		data = new JsonArray();
+    		section.add("data", data);
+    	}
+    	    	
+    	Pattern pat = Pattern.compile(",");
+    	String[] items = pat.split(line);
+    	JsonArray newData = new JsonArray();
+    	
+    	for(int i=0; i<items.length;i++){
+    		switch(arr.get(i).getAsString()){
+    		case "int":
+    			newData.add(new JsonPrimitive(Integer.parseInt(items[i].trim())));
+    			break;
+    		case "float": case "double":
+    			newData.add(new JsonPrimitive(Double.parseDouble(items[i].trim())));
+    			break;
+    		case "string":
+    			newData.add(new JsonPrimitive(dequote(items[i])));
+    			break;
+    		}
+    		
+    	}
+    	
+    	data.add(newData);
+    	    	
+    	//return obj;
+    }
+    
+           
 
-    private Map<String, List<String>> parseSections(BufferedReader br){
+    private Map<String, List<String>> readSections(BufferedReader br){
     	Map<String, List<String>> map = new LinkedHashMap<>();
     	String ln = null;
+    	// Section end.
     	Pattern eos = Pattern.compile("^(Q|\\s*0)[\\s]*(/.*)?$");
-
+    	    	
     	try {
+    		int line = 0;
+    		int sectionNum = 0;
+    		String[] section = sections[ptiVersion.ordinal()];
 			while((ln = br.readLine()) != null){
+				// First lines are heading.
+				if (line < 3){
+					if (line == 0){
+						map.put(section[sectionNum], new ArrayList<String>());
+					}
+					map.get(section[sectionNum]).add(ln);
+					line++;
+					continue;
+				}
+								
 				Matcher m = eos.matcher(ln);
+				// if match is found then start new section and close the old one.
+				// TODO modify so that this is dynamic based upon different psse versions.
 				if (m.find()){
-					System.out.println(ln.substring(m.start(), m.end()));
+					sectionNum++;
+					map.put(section[sectionNum], new ArrayList<String>());
+					System.out.println("Section is now: " + section[sectionNum]); //ln.substring(m.start(), m.end()));
 				}
 				else{
-
+					if (line == 3){
+						sectionNum++;
+						map.put(section[sectionNum], new ArrayList<String>());
+					}
+					map.get(section[sectionNum]).add(ln);
 				}
+				line++;
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
