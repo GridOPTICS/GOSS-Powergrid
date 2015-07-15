@@ -28,6 +28,7 @@ import pnnl.goss.powergrid.parser.api.InvalidDataException;
 import pnnl.goss.powergrid.parser.api.ParserResults;
 import pnnl.goss.powergrid.parser.api.ParserService;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
+import pnnl.goss.powergrid.parsers.PsseParser.PTI_VERSION;
 
 import com.google.gson.Gson;
 
@@ -127,7 +128,7 @@ public class ParserServiceImpl implements ParserService{
 
 		PsseParser parser = new PsseParser();
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(dataToParse))){
-			ResultLog log = parser.parse(reader);
+			ResultLog log = parser.parse(PTI_VERSION.PTI_23, reader);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
