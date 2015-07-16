@@ -11,9 +11,7 @@
   
 <body>
 
-<form enctype="multipart/form-data"  name="uploadForm">
 
-	<input type="hidden" name="token" value="" />
 
 	<nav class="top-bar" data-topbar role="navigation">
 	  <ul class="title-area">
@@ -54,6 +52,10 @@
     </div>
 	<br/>
 
+
+
+	<input type="hidden" name="token" value="" />
+	
 	<div class="row">
 		<div class="large-4 columns">
 			<label>Name
@@ -132,7 +134,6 @@
 	
 	<br>
 
-	</form>
 
 <script type="text/javascript">
 
@@ -147,7 +148,8 @@ $("input[name=access]").click(function(){
 });
 
 $('#upload_file').click(function(){
-	parameters['AuthToken'] = $('#token').val();
+	var authToken  = document.cookie.split("=")[1]
+	parameters['AuthToken'] = authToken;
 	parameters['description'] = $('#description').val();
 	parameters['name'] = $('#name').val();
 	parameters['access_level'] = $('#access_level').val();
@@ -178,25 +180,7 @@ function readFile(input) {
              parameters['model_file_name'] = input.files[0].name;
              parameters['model_file_content'] = e.target.result;
              $('#name').val(name + input.files[0].name);
-             
-
-             //$('#base').text( JSON.stringify(pdata) );
-             //uploadFileData = e.target.result;
-
-             //console.log(pdata);
-             /*$.ajax({
-                 type: 'POST',
-                 url: '/jsonrpc',
-                 data: JSON.stringify(pdata),
-                 dataType: 'json',
-                 success: function(data){
-                     $('#results').text('Success');
-                       console.log('success '+data.toString());},
-                 failure: function(data){
-                     $('#results').text('failure');
-                      console.log('failure '+data.toString());}
-
-             });*/
+                    
         };
         
         FR.readAsDataURL( input.files[0] )
@@ -211,7 +195,6 @@ $("#model_file").change(function(){
 });
 
 function validateAndPost(){
-	$('#authToken').value = document.cookie
 	console.log('Posting parameters\n'+ JSON.stringify(parameters));
 	if (parameters['model_file_name'] != null && parameters['model_file_name'].length > 0){
 		$.ajax({
@@ -239,17 +222,6 @@ function validateAndPost(){
 	
 	
 }
-
-$('#submit').click(function(){
-	var authToken  = document.cookie.split("=")[1]
-	parameters['AuthToken'] = authToken;
-	parameters['description'] = $('#description').val();
-	parameters['name'] = $('#name').val();
-	parameters['access_level'] = $("input[name='access']:checked").val();
-	
-	validateAndPost();    	
-});
-
 
 /*
 function submit(){
@@ -331,4 +303,3 @@ function sendFile(evt) {
 
 </script>
 </body>
-<html>

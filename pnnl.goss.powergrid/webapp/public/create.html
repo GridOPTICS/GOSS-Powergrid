@@ -9,7 +9,7 @@
 </head>
 <body>
 <div>
-	Token: <input type="text" id="token" placeholder="Enter auth token" />
+	Token: <input type="text" id="token" placeholder="Enter auth token"  />
 </div>
 <div>
 	Name: <input type="text" id="name" placeholder="Enter powergrid name" /><br/>
@@ -29,6 +29,8 @@
 </div>
 
 <script language="javascript">
+
+
 	var parameters = {};
 	
 	// This event will happen when the user changes the model_file parameter
@@ -113,7 +115,9 @@
     }
     
     $('#upload_file').click(function(){
-    	parameters['AuthToken'] = $('#token').val();
+    alert(document.cookie)
+    
+    	parameters['AuthToken'] = document.cookie.split("=")[1];
     	parameters['description'] = $('#description').val();
     	parameters['name'] = $('#name').val();
     	parameters['access_level'] = $('#access_level').val();
