@@ -1,80 +1,211 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Powergrid Stream</title>
-<script type="text/javascript" src="js/stomp.min.js"></script>
-<script type="text/javascript" src="js/guid.js"></script>
-<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-<script src="//cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
-</head>
+<!doctype html>
+<html class="no-js" lang="en">
+
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Synthetic Data Generation and Repository Scenarios | Upload Model</title>
+    <link rel="stylesheet" href="css/foundation.min.css" />
+	<link rel="stylesheet" href="css/dataTables.foundation.css" />
+    <script src="js/vendor/modernizr.js"></script>
+	<script src="js/jquery-2.1.4.min.js"></script>
+	<script src="js/jquery.dataTables.min.js"></script>
+	<script language="javascript" src="/goss/js/goss-auth.js"></script>
+	
+	
+	
+	
+	
+  </head>
+  
 <body>
-<h1>Powergrid Data</h1>
-<input type="text" id="wsaddr" placeholder="Websocke url" value="ws://localhost:61614" />
-<button id="connect">Connect</button> <button id="disconnect">Disconnect</button><br />
-Model Name: <input type="text" id="name" placeholder="Input model name" /> <br />
-<textarea id="model_data" rows="20" cols="80"></textarea><br />
-<button id="create_model">Create New Model</button><br />
-<button id="list_modelss">List Models</button>
-<div id="status"></div>
-<div id="response"></div>
-<div id="debug"></div>
 
+	<nav class="top-bar" data-topbar role="navigation">
+	  
+	  
+	  <section class="top-bar-section">
+	    <ul class="left">
+	      <li class="has-dropdown"><a href="#">Scenarios</a>
+
+	        <ul class="dropdown">
+	          <li><a href="/powergrid/upload.html">Upload New Model</a></li>
+	          <li><a href="/powergrid/list.html">List Models</a></li>
+	          <li><a href="/powergrid/powergrid.html">List scenarios</a></li>
+	          
+	        </ul>
+	      </li>
+	    </ul>
+	    
+	  </section>
+	</nav>
+
+    <div class="row">
+	  <div class="large-12 columns">
+        <h3>View Power Grid Scenarios</h3>
+      </div>
+    </div>
+	<br/>
+
+	<div class="row">
+	<table id="example" class="display" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Created By</th>
+                <th>File Name</th>
+                <th>Description</th>
+                <th>Details</th>
+                <th>Download</th>
+            </tr>
+        </thead>
+ 
+        <tfoot>
+            <tr>
+	            <th>Id</th>
+	            <th>Name</th>
+	            <th>Created By</th>
+	            <th>File Name</th>
+	            <th>Description</th>
+	            <th>Details</th>
+	            <th>Download</th>
+            </tr>
+        </tfoot>
+ 
+        <tbody>
+            
+        </tbody>
+    </table>
+</div>
 <script type="text/javascript">
-	var client = null;
-	
-	var onChangeStatus = function(new_status){
-		$("#status").html("<pre>"+new_status+"</pre>");
-	}
 
-	var onConnect = function(){
-		onChangeStatus('Connected');
-		client.subscribe("/topic/powergrid/create", onResponse);
-	}
+$(document).ready(function() {
+	
+		
+		/*
+		 * Call web service to get all powergrids createdby / shared with current user.
+		 * Populate table
+		 * 	<th>Id</th>
+	     * 	<th>Name</th>
+	     * 	<th>Created By</th>
+	     *  <th>File Name</th>
+	     *  <th>Description</th>
+	     *  <th>Details</th>
+	     *  <th>Download</th>
+		 */
+		
+		/*$.ajax({
+		    url: '/powergrid/api/list',
+		    type: 'POST',
+		    data: {
+		        authToken: document.cookie.split("=")[1]
+		    },
+		    success: function (response) {
+		        var trHTML = '';
+		        $.each(response, function (i, row) {
+		            trHTML += '<tr><td>' + item.rank + '</td><td>' + item.content + '</td><td>' + item.UID + '</td></tr>';
+		        });
+		        $('#records_table').append(trHTML);
+		    }
+		});*/
+		
+		
+		var jsonData = [{"id":"1","name":"North","created_by":"Poorva Sharma","filename":"north.raw","desc":"this is a test","details":"This is detail"},
+						{"id":"1","name":"South","created_by":"Craig Allwardt","filename":"south.raw","desc":"this is a test","details":"This is detail"},
+						{"id":"1","name":"Grid 118","created_by":"Tara Gibson","filename":"pti118.raw","desc":"this is a test","details":"This is detail"},
+						{"id":"1","name":"Grid 500","created_by":"Craig Allwardt","filename":"cim500.cim","desc":"this is a test","details":"This is detail"},
+						{"id":"1","name":"North","created_by":"Tara Gibson","filename":"Public","desc":"this is a test","details":"This is detail"},
+						{"id":"1","name":"North","created_by":"Craig Allwardt","filename":"Public","desc":"this is a test","details":"This is detail"},
+						{"id":"1","name":"North","created_by":"Poorva Sharma","filename":"Public","desc":"this is a test","details":"This is detail"},
+						{"id":"1","name":"North","created_by":"Mark Rice","filename":"Public","desc":"this is a test","details":"This is detail"}];
+								
+		 var trHTML = '';
+	        $.each(jsonData, function (i, row) {
+	            trHTML += '<tr>'+
+	            			'<td>' + row.id + '</td>'+
+	            			'<td>' + row.name +'</td>'+
+	            			'<td>' + row.created_by + '</td>'+
+	            			'<td>' + row.filename + '</td>'+
+	            			'<td>' + row.desc + '</td>'+
+	            			'<td>' + row.details + '</td>'+
+	            			'<td onclick=download('+row.id+')>' + 'Download' + '</td>'+
+	            			'</tr>';
+	        });
+	        $('#example tbody').append(trHTML);
+		
+	        $('#example').dataTable();
+		
+		
+		
+} );
 
-	var onDisconnect = function() {
-		onChangeStatus('Disconnected');
-	}
+function download(id){
+	
+	alert(id);
+	
+}
 
-	var onResponse = function (message) {
-		$("#response").html("<pre>"+message.boody+"</pre>");
+$("input[name=access]").click(function(){
+   var access = $("input[name='access']:checked").val();
+	if(access=='group'){
+		$('#groups').prop('disabled',false)
+	}
+	else{
+		$('#groups').prop('disabled',true)
+	}
+});
+
+function upload(){
+	var f = fileinput.files[0]; 
+	
+
+}
+
+function sendFile(evt) {
+    var f = fileinput.files[0]; 
+
+    if (f) {
+      var r = new FileReader();
+      r.onload = function(e) { 
+	    var contents = e.target.result;
+		alert(contents)
+        client.send("/topic/synthdata/request/newmodel",{}, contents.toString())
+      }
+      r.readAsText(f);
+    } else { 
+      alert("Failed to load file");
+    }
+  }
+  
+ function genData(evt){
+    var user = sessionStorage.gossUser;
+
+	if (winter.checked) {
+		profile_value = winter.value
+	}else{
+		profile_value = summer.value
 	}
 	
-	var onError = function(error) {
-		onChangeStatus('ERROR: '+error)
-	}
+ 	var request = "{"
+				+ "username:\""+user+"\","
+				+ "modelId:\""+file_id+"\","
+				+ "profile:\""+profile_value+"\","
+				+ "lineOutage:\""+line_outage.value+"\","
+				+ "genOutage:\""+gen_outage.value+"\""
+				+ "}"
+	alert(request)
+	client.send("/topic/synthdata/"+user+"/gendata",{}, request.toString())
+				
+ }
+ 
+ /*
+ function download() {
+			window.open("data:test/text;charset=utf-8," + encodeURIComponent(message.body));
+		}
+*/
 	
-	$("#disconnect").click(function(){
-		client.disconnect();
-	});
-	
-	$("#connect").click(function(){	
-		var socket = $("#wsaddr").val();
-		client = Stomp.client(socket);
-		client.heartbeat.outgoing = 0;
-		client.heartbeat.incoming = 0;
-		
-		client.debug = function(str) {
-			// append the debug log to a #debug div somewhere in the page using JQuery:
-		    $("#debug").append(str);
-		};
-		
-		client.connect('system', 'manager', onConnect, onError);
-		
-		$("#create_model").click(function(){
-			var data = $("#model_data").val();
-			if (data.length == 0){
-				onChangeStatus('Invalid model data.');
-				return;
-			}
-			client.send("/topic/powergrid/create", {}, data);
-			
-		});
-		$("#list_handlers").click(function() {
-			client.send("/topic/fusion/hello/request", {}, 
-					"hello");
-		});
-	});
+
 </script>
 </body>
-</html>
+<html>
