@@ -177,26 +177,18 @@ public class PowergridDaoMySql implements PowergridDao {
 //    		problems.add("ERROR: Shunts are empty");
 //    	}
 //    	else{
-//    		switchedSnunts = insertSwitchedShunts(pgId, data.get("switched_shunts"), problems);
+//    		switchedSnunts = insertSwitchedShunts(pgId, ptiVersion, 
+//    				data.get("switched_shunts").getAsJsonObject(), problems);
 //    	}
-//
-//    	if (data.get("branches") == null) {
-//    		problems.add("ERROR: Branches are empty");
-//    	}
-//    	else{
-//    		branches = insertBranches(pgId, data.get("branches"), problems);
-//    	}
-//
-//
-//    	if (data.get("zone") == null) {
-//    		problems.add("WARN: Zones are empty");
-//    		// Zones must be instantiated for substation to loop over.
-//    		zones = new ArrayList<Zone>();
-//    	}
-//    	else{
-//    		zones = insertZones(pgId, data.get("zone"), problems);
-//    	}
-//
+
+    	if (data.get("branches") == null) {
+    		problems.add("ERROR: Branches are empty");
+    	}
+    	else{
+    		branches = insertBranches(pgId, ptiVersion,
+    				data.get("branches").getAsJsonObject(), problems);
+    	}
+
 //    	if (buses == null){
 //    		problems.add("Substations can't be created!");
 //    	}
@@ -451,9 +443,17 @@ public class PowergridDaoMySql implements PowergridDao {
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
     			namedStmt.setInt("PowergridId", powergridId);
     			
+    			// These properties are available during runtime solved cases.
+    			namedStmt.setDouble("P", 0);
+    			namedStmt.setDouble("Q", 0);
+    			
     			for(int j=0; j<aRow.size(); j++){
     				String modelProperty = ptiFieldNames.get(j).getAsString();
         			String gossProperty = prefixMap.getGossPropertyName("branch", version, modelProperty);
+        			if (gossProperty == null) {
+        				System.err.println("BRANCH: Skipping property because goss_property is null: "+modelProperty);
+        				continue;
+        			}
         			String dataType = ptiDataTypes.get(j).getAsString();
         			System.out.println("Adding "+ modelProperty + " with gossProp "+gossProperty);
         			if (dataType.equals("int")){
