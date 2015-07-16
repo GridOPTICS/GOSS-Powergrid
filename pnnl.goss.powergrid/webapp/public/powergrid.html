@@ -11,6 +11,8 @@
     <script src="js/vendor/modernizr.js"></script>
 	<script src="js/jquery-2.1.4.min.js"></script>
 	<script src="js/jquery.dataTables.min.js"></script>
+	<script src="js/dataTables.foundation.js"></script>
+	<script src="js/foundation.min.js"></script>
 	<script language="javascript" src="/goss/js/goss-auth.js"></script>
 	
 	
@@ -54,9 +56,9 @@
                 <th>Id</th>
                 <th>Name</th>
                 <th>Created By</th>
-                <th>File Name</th>
                 <th>Description</th>
                 <th>Details</th>
+                <th>Status</th>
                 <th>Download</th>
             </tr>
         </thead>
@@ -66,9 +68,9 @@
 	            <th>Id</th>
 	            <th>Name</th>
 	            <th>Created By</th>
-	            <th>File Name</th>
 	            <th>Description</th>
 	            <th>Details</th>
+                <th>Status</th>
 	            <th>Download</th>
             </tr>
         </tfoot>
@@ -78,6 +80,19 @@
         </tbody>
     </table>
 </div>
+
+
+<div id="viewDetail" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+<!--   <h2 id="modalTitle">Details</h2> -->
+  
+  <div id="viewDetailText"></div>
+  
+  
+<!--   <p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p> -->
+  <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
+
 <script type="text/javascript">
 
 $(document).ready(function() {
@@ -89,9 +104,9 @@ $(document).ready(function() {
 		 * 	<th>Id</th>
 	     * 	<th>Name</th>
 	     * 	<th>Created By</th>
-	     *  <th>File Name</th>
 	     *  <th>Description</th>
 	     *  <th>Details</th>
+	     *  <th>Status</th>
 	     *  <th>Download</th>
 		 */
 		
@@ -111,14 +126,14 @@ $(document).ready(function() {
 		});*/
 		
 		
-		var jsonData = [{"id":"1","name":"North","created_by":"Poorva Sharma","filename":"north.raw","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"South","created_by":"Craig Allwardt","filename":"south.raw","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"Grid 118","created_by":"Tara Gibson","filename":"pti118.raw","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"Grid 500","created_by":"Craig Allwardt","filename":"cim500.cim","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"North","created_by":"Tara Gibson","filename":"Public","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"North","created_by":"Craig Allwardt","filename":"Public","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"North","created_by":"Poorva Sharma","filename":"Public","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"North","created_by":"Mark Rice","filename":"Public","desc":"this is a test","details":"This is detail"}];
+		var jsonData = [{"id":"1","name":"North","created_by":"Poorva Sharma","status":"complete","desc":"this is a test","details":"This is detail"},
+						{"id":"2","name":"South","created_by":"Craig Allwardt","status":"complete","desc":"this is a test","details":"This is detail"},
+						{"id":"3","name":"Grid 118","created_by":"Tara Gibson","status":"complete","desc":"this is a test","details":"This is detail"},
+						{"id":"4","name":"Grid 500","created_by":"Craig Allwardt","status":"complete","desc":"this is a test","details":"This is detail"},
+						{"id":"5","name":"North","created_by":"Tara Gibson","status":"complete","desc":"this is a test","details":"This is detail"},
+						{"id":"6","name":"North","created_by":"Craig Allwardt","status":"in-progress","desc":"this is a test","details":"This is detail"},
+						{"id":"7","name":"North","created_by":"Poorva Sharma","status":"error","desc":"this is a test","details":"This is detail"},
+						{"id":"8","name":"North","created_by":"Mark Rice","status":"in-progress","desc":"this is a test","details":"This is detail"}];
 								
 		 var trHTML = '';
 	        $.each(jsonData, function (i, row) {
@@ -126,11 +141,18 @@ $(document).ready(function() {
 	            			'<td>' + row.id + '</td>'+
 	            			'<td>' + row.name +'</td>'+
 	            			'<td>' + row.created_by + '</td>'+
-	            			'<td>' + row.filename + '</td>'+
 	            			'<td>' + row.desc + '</td>'+
-	            			'<td>' + row.details + '</td>'+
-	            			'<td onclick=download('+row.id+')>' + 'Download' + '</td>'+
-	            			'</tr>';
+	            			'<td onclick=viewDetails('+row.id+')>' + '<a>View Details</a>' + '</td>'+
+	            			'<td>' + row.status + '</td>';
+
+	            			if(row.status='complete'){
+	            				trHTML +='<td onclick=download('+row.id+')>' + '<a>Download</a>' + '</td>';
+	            			} else {
+	            				trHTML +='<td ></td>';
+	            			}
+	            			
+	            			
+	            			trHTML +='</tr>';
 	        });
 	        $('#example tbody').append(trHTML);
 		
@@ -143,6 +165,56 @@ $(document).ready(function() {
 function download(id){
 	
 	alert(id);
+	
+}
+
+
+function viewDetails(id){
+// 	alert('show detail '+id);
+	var parameters = {};
+	parameters['AuthToken'] = authToken;
+	console.log('Posting parameters\n'+ JSON.stringify(parameters));
+
+	$.ajax({
+            type: 'POST',
+            url: '/powergrid/api/details/'+id,
+            data: JSON.stringify(parameters),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function(data){
+            	console.log('Success getting details for scenaio '+id);
+            	console.log(data.toString());
+
+				var detailHtml =   '<p class="lead">Details for '+data.name+'</p>';
+
+					
+					
+				detailHtml+=	'<p>Profile: '+data.profile+'</p>'+
+								  '<p>Start Time: '+data.startTime+'</p>'+
+								  '<p>Events:';
+				detailHtml += '<table><tr><th>Time Offset</th><th>Event Type</th></tr>';				  
+				$.each(data.events, function (i, event) {
+					detailHtml += '<tr><td>'+event.timeOffset+'</td><td>'+event.event+'</td></tr>';
+				 });				  
+				detailHtml += '</table>';
+				
+            	$('#viewDetailText').html(detailHtml);
+            	$('#viewDetail').foundation('reveal', 'open');
+			},
+            failure: function(data){
+            	console.log('Failure getting details for scenaio '+id);
+                console.log(data.toString());
+                
+                var detailHtml =   '<p class="lead">Failed to retreive details for scenario'+id+'</p>';
+                detailHtml += '<p>'+data.toString()+'</p>';
+                $('#viewDetailText').html(detailHtml);
+            	$('#viewDetail').foundation('reveal', 'open');
+            }
+
+        });	
+	
+	
+
 	
 }
 
