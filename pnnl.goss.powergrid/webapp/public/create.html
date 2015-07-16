@@ -29,7 +29,13 @@
 </div>
 
 <script language="javascript">
-
+// 	alert(document.cookie);
+	var token = localStorage.getItem("authToken"); //document.cookie.split("=")[1];
+	if(token==null || token=='null'){
+		window.location.replace('/goss/login.html?refer=/powergrid/create.html');
+		
+	}
+// 	alert('token'+token);
 
 	var parameters = {};
 	
@@ -118,9 +124,10 @@
     }
     
     $('#upload_file').click(function(){
-    alert(document.cookie)
+//     alert(document.cookie)
+    	var token = localStorage.getItem("authToken");
     
-    	parameters['AuthToken'] = document.cookie.split("=")[1];
+    	parameters['AuthToken'] = token;
     	parameters['description'] = $('#description').val();
     	parameters['name'] = $('#name').val();
     	parameters['access_level'] = $('#access_level').val();

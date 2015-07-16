@@ -109,6 +109,12 @@ $(document).ready(function() {
 		    }
 		});*/
 		
+		var token = localStorage.getItem("authToken"); 
+		if(token==null || token=='null'){
+			window.location.replace('/goss/login.html?refer=/powergrid/list.html');
+			
+		}
+		
 		
 		var jsonData = [{"id":"1","name":"North","created_by":"Poorva Sharma","filename":"north.raw","desc":"this is a test","details":"This is detail"},
 						{"id":"1","name":"South","created_by":"Craig Allwardt","filename":"south.raw","desc":"this is a test","details":"This is detail"},

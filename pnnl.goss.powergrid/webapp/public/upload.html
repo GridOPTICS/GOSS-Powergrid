@@ -137,6 +137,12 @@
 
 <script type="text/javascript">
 
+var token = localStorage.getItem("authToken"); 
+if(token==null || token=='null'){
+	window.location.replace('/goss/login.html?refer=/powergrid/upload.html');
+	
+}
+
 $("input[name=access]").click(function(){
    var access = $("input[name='access']:checked").val();
 	if(access=='group'){
@@ -148,7 +154,8 @@ $("input[name=access]").click(function(){
 });
 
 $('#upload_file').click(function(){
-	var authToken  = document.cookie.split("=")[1]
+// 	var authToken  = document.cookie.split("=")[1]
+	var authTOken = localStorage.getItem("authToken");
 	parameters['AuthToken'] = authToken;
 	parameters['description'] = $('#description').val();
 	parameters['name'] = $('#name').val();
