@@ -28,8 +28,11 @@ import pnnl.goss.powergrid.parser.api.PropertyGroup;
 public class PsseParser {
 	public static String HEADERS="headers";
 	public static String BUSES="buses";	
+	public static String LOADS = "loads";
 	public static String GENERATORS="generators";
 	public static String BRANCHES="branches";
+	public static String LINES = "lines";
+	public static String TRANSFORMERS = "transformers";
 	public static String TRANSFORMER_ADJS= "transformer_adjs";
 	public static String AREAS = "areas";
 	public static String TWO_TERM_DC = "two_term_dc";
@@ -41,9 +44,11 @@ public class PsseParser {
 	public static String INTER_AREA_TRANSFERS = "iter_area_transfers";
 	public static String OWNERS = "owners";
 	public static String FACTS = "facts";
+	public static String VSC_DC_LINES = "vcs_dc_lines";
 	
 	public enum PTI_VERSION{
-		PTI_23
+		PTI_23,
+		PTI_29
 	}
 
     ResultLog resultLog;
@@ -57,8 +62,12 @@ public class PsseParser {
     	AREAS, TWO_TERM_DC, SWITCHED_SHUNTS, IMPEDENCE_CORRECTIONS, MULTI_TERM_DC, MULTI_SECTION_LINE,
     	ZONES, INTER_AREA_TRANSFERS, OWNERS, FACTS};
     
+    private static String[] pti29Sections = {HEADERS, BUSES, LOADS, GENERATORS, BRANCHES, TRANSFORMERS,
+    	AREAS, TWO_TERM_DC, VSC_DC_LINES, SWITCHED_SHUNTS, IMPEDENCE_CORRECTIONS, MULTI_TERM_DC, MULTI_SECTION_LINE,
+    	ZONES, INTER_AREA_TRANSFERS, OWNERS, FACTS};
     
-    private static String[][] sections = {pti23Sections};
+    
+    private static String[][] sections = {pti23Sections, pti29Sections};
     
     JsonObject jsonSections;
     private PTI_VERSION ptiVersion = null;
@@ -142,7 +151,7 @@ public class PsseParser {
     		}
     		else if (sec.equals(AREAS)){
     			if (ptiVersion == PTI_VERSION.PTI_23){
-	    			names = "I,ISW,PDES,PTOL,'ARNAM'";
+	    			names = "I,ISW,PDES,PTOL,ARNAME";
 	    			template = "iiffs";
     			}
     			else{
