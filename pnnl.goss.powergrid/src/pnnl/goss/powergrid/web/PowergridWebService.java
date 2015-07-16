@@ -32,6 +32,7 @@ import pnnl.goss.powergrid.api.SavePowergridResults;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
+import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 
@@ -210,21 +211,27 @@ public class PowergridWebService {
 	@Description("Parse and store a powergrid model in the database.  The" +
 			"The passed data must be a base64 encoded file with "+
 			"associated properties.")
+	@Produces(MediaType.APPLICATION_JSON)
 	@ReturnType(SavePowergridResults.class)
 	public Response create(@Context HttpServletRequest req) {
 		Response response = null;
 		String identifier = (String) req.getAttribute("identifier");
-		JsonObject obj = WebUtil.getRequestJsonBody(req);
-		CreatePowergridRequest createReq = new CreatePowergridRequest();
+		JsonObject requestBody = WebUtil.getRequestJsonBody(req);
+		
 		List<String> errors = new ArrayList<>();
 
-		if (!obj.has("name") ||
-				obj.get("name").getAsString().isEmpty()){
+		if (!requestBody.has("name") ||
+				requestBody.get("name").getAsString().isEmpty()){
 			errors.add("Invalid powergrid name specified");
 		}
-		if (!obj.has("model_file_content") ||
-				obj.get("model_file_content").getAsString().isEmpty()){
+		if (!requestBody.has("model_file_content") ||
+				requestBody.get("model_file_content").getAsString().isEmpty()){
 			errors.add("Invalid powergridContent specified");
+		}
+		
+		if (!requestBody.has("access_level") ||
+				requestBody.get("access_level").getAsString().isEmpty()){
+			errors.add("Invalid access level specified");
 		}
 
 		if (errors.size() > 0){
@@ -233,28 +240,35 @@ public class PowergridWebService {
 
 		}
 		else{
+			
+			CreatePowergridRequest createReq = new CreatePowergridRequest();
+			
 			// Make sure the user has access to do this request.
 			if (!handlers.checkAccess(createReq, identifier)){
 				response = Response.status(Response.Status.UNAUTHORIZED).build();
 			}
 			else{
+				JsonObject params = new JsonObject();
+				params.addProperty("identifier", identifier);
+				params.addProperty("access_level", requestBody.get("access_level").getAsString());
 				DataResponse res;
 				try{
-					String content = obj.get("model_file_content").getAsString();
+					RequestEnvelope wrappedRequest = new RequestEnvelope(createReq, params);
+					String content = requestBody.get("model_file_content").getAsString();
 					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);
 					File tmpFile = File.createTempFile("upload", "tmp");
 					FileUtils.writeByteArrayToFile(tmpFile,  decoded);
 					createReq.setPowergridFile(tmpFile);
-					res = (DataResponse)handlers.handle(createReq);
+					res = (DataResponse)handlers.handle(wrappedRequest);
 					if (WebUtil.wasError(res.getData())){
 						response = Response.status(Response.Status.BAD_REQUEST)
 								.entity(res.getData()).build();
 					}
 					else {
-
-						//model = ((PowergridModel)res.getData());
-						//response = Response.status(Response.Status.OK).entity(model).build();
-						response = Response.status(Response.Status.OK).build();
+						SavePowergridResults results = ((SavePowergridResults)res.getData());
+						//PowergridModel model = ((PowergridModel)res.getData());
+						response = Response.status(Response.Status.OK).entity(results).build();
+						//response = Response.status(Response.Status.OK).build();
 					}
 
 				} catch (HandlerNotFoundException e) {
