@@ -286,6 +286,52 @@ public class PowergridWebService {
 		}
 		return response;
 	}
+	
+	
+	@POST
+	@Path("/details/{mrid}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Description(
+		"Returns the details for hte scenario. "
+	)
+	@ReturnType(PowergridModel.class)
+	public Response getPowergridExt(String identifier,
+			@PathParam("mrid") String mrid,
+			@Context HttpServletRequest req) {
+
+		System.out.println("Retrieving powergrid details for mrid: "+ mrid);
+		
+		
+		
+		String respStr = "{\"id\":\""+mrid+"\",\"name\":\"Scenario X\",\"profile\":\"winter\",\"startTime\":\"10:01\",\"events\":[{\"timeOffset\":\"5 min\",\"event\":\"line trip\"},{\"timeOffset\":\"10 min\",\"event\":\"line trip\"},{\"timeOffset\":\"12 min\",\"event\":\"generator outage\"}]}";
+		
+		Response response =  Response.status(Response.Status.OK)
+				.entity(respStr).build();
+		
+//		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
+//		pgRequest.addExtesion("ext_table", extensionType);
+//		Response response = null;
+//
+//		if (handlers.checkAccess((Request)pgRequest, identifier)){
+//			DataResponse res;
+//			try {
+//				res = (DataResponse)handlers.handle(pgRequest);
+//				if (WebUtil.wasError(res.getData())){
+//					response = Response.status(Response.Status.BAD_REQUEST)
+//							.entity(res.getData()).build();
+//				}
+//				else {
+//					String data = ((String)res.getData());
+//					response = Response.status(Response.Status.OK).entity(data).build();
+//				}
+//			} catch (HandlerNotFoundException e) {
+//				e.printStackTrace();
+//
+//			}
+//		}
+
+		return response;
+	}
 
 //	@GET
 //	@Path("myPath")
