@@ -62,10 +62,19 @@ public class PsseParser {
     
     JsonObject jsonSections;
     private PTI_VERSION ptiVersion = null;
+    
+    public JsonObject getParsedSections(){
+    	return jsonSections;
+    }
+    
+    public String[] getSections(PTI_VERSION version){
+    	return sections[version.ordinal()];
+    }
         
     public ResultLog parse(PTI_VERSION version, BufferedReader br){
     	ResultLog log = new ResultLog();
     	jsonSections = new JsonObject();
+    	jsonSections.add("version", new JsonPrimitive(version.toString()));
 
     	ptiVersion = version;
     	Map<String, List<String>> map = readSections(br);
@@ -74,33 +83,119 @@ public class PsseParser {
     	for(String sec: sections[ptiVersion.ordinal()]){
     		JsonObject newSection = null;
     		String template = null;
-    		switch(sec){
-    		case "headings":
-    			break;
-    		case "buses":
+    		String names = null;
+    		System.out.println("Dealing with section: "+sec);
+    		if(sec.equals(HEADERS)){
+    			// Header is handled differently than any other section.
     			if (ptiVersion == PTI_VERSION.PTI_23){
-	    			// I,IDE,PL,QL,GL,BL,IA,VM,VA,'NAME',BASKL,ZONE
+    				List<String> lines = map.get(sec);
+    				String line = lines.get(0);
+    				line = line.replace("  ", " ");
+    				
+    				String[] items = line.split("\\s");
+    				newSection = new JsonObject();
+    				newSection.add("IC", new JsonPrimitive(Integer.parseInt(items[0].trim())));
+    				newSection.add("SBASE", new JsonPrimitive(Double.parseDouble(items[1].trim())));
+    				newSection.add("line2", new JsonPrimitive(lines.get(1).trim()));
+    				newSection.add("line3", new JsonPrimitive(lines.get(2).trim()));    				
+    			}
+    			else{
+    				System.out.println("Woops unknown!");
+    			}
+    		}    		
+    		else if(sec.equals(BUSES)){
+    			if (ptiVersion == PTI_VERSION.PTI_23){
+	    			names = "I,IDE,PL,QL,GL,BL,IA,VM,VA,NAME,BASKV,ZONE";
 	    			template = "iiffffiffsfi";
     			}
     			else{
     				System.out.println("Wooops unknown.");
     			}
-    			break;
+
+    		}
+    		else if (sec.equals(GENERATORS)){
+    			if (ptiVersion == PTI_VERSION.PTI_23){
+    				names = "I,ID,PG,QG,QT,QB,VS,IREG,MBASE,ZR,ZX,RT,XT,GTAP,STAT,RMPCT,PT,PB";
+	    			template = "isfffffiffffffifff";
+    			}
+    			else{
+    				System.out.println("Wooops unknown.");
+    			}
+    		}
+    		else if (sec.equals(BRANCHES)){
+    			if (ptiVersion == PTI_VERSION.PTI_23){
+	    			names = "I,J,CKT,R,X,B,RATEA,RATEB,RATEC,RATIO,ANGLE,GI,BI,GJ,BJ,ST";
+	    			template = "iisffffffffffffi";
+    			}
+    			else{
+    				System.out.println("Wooops unknown.");
+    			}
+    		}
+    		else if (sec.equals(TRANSFORMER_ADJS)){
+    			if (ptiVersion == PTI_VERSION.PTI_23){
+	    			names = "I,J,CKT,ICONT,RMA,RMI,VMA,VMI,STEP,TABLE";
+	    			template = "iiifffffi";
+    			}
+    			else{
+    				System.out.println("Wooops unknown.");
+    			}
+    		}
+    		else if (sec.equals(AREAS)){
+    			if (ptiVersion == PTI_VERSION.PTI_23){
+	    			names = "I,ISW,PDES,PTOL,'ARNAM'";
+	    			template = "iiffs";
+    			}
+    			else{
+    				System.out.println("Wooops unknown.");
+    			}
+    		}
+    		else if (sec.equals(TWO_TERM_DC)){
+    			// skip this section
+    		}
+    		else if (sec.equals(SWITCHED_SHUNTS)){
+    			//I,MODSW,VSWHI,VSWLO,SWREM,BINIT,N1,B1,N2,B2...N8,B8
+    			if (ptiVersion == PTI_VERSION.PTI_23){
+	    			template = "iifffff16f";
+    			}
+    			else{
+    				System.out.println("Wooops unknown.");
+    			}
     		}
     		
-    		if (template != null) {
+    		
+    		if (template != null && names != null){
+    			newSection = buildTemplateAndNameOrder(template, names);
+    			for(String ln: map.get(sec)){
+					parseLine(ln, newSection);
+				}
+    		}
+    		else if (template != null) {
 	    		newSection = buildTemplateOrder(template);
 				for(String ln: map.get(sec)){
 					parseLine(ln, newSection);
 				}
     		} 
     		else{
-    			jsonSections.add(sec, new JsonObject());
+    			// The header will produce it's own newSection so only create one
+    			// if it's not been created e.g. if we aren't using it at all.
+    			if (newSection == null){
+    				newSection = new JsonObject();
+    			}
     		}
+    		jsonSections.add(sec, newSection);
     	}
 
-
     	return log;
+    }
+    
+    private JsonObject buildTemplateAndNameOrder(String template, String names){
+    	JsonObject obj = buildTemplateOrder(template);
+    	JsonArray arr = new JsonArray();
+    	for(String n:names.split(",")){
+    		arr.add(new JsonPrimitive(n.trim()));
+    	}
+    	obj.add("pti_names", arr);
+    	return obj;
     }
     
     private JsonObject buildTemplateOrder(String template){
@@ -108,19 +203,35 @@ public class PsseParser {
     	JsonArray ele = new JsonArray();
     	
     	for(int i=0; i<template.length(); i++){
-    		switch (template.charAt(i)){
-    		case 'i':
-    			ele.add(new JsonPrimitive("int"));
-    			break;
-    		case 'f':
-    			ele.add(new JsonPrimitive("float"));
-    			break;
-    		case 's':
-    			ele.add(new JsonPrimitive("string"));
-    			break;
-    		case 'd':
-    			ele.add(new JsonPrimitive("double"));
-    			break;
+    		char ch = template.charAt(i);
+    		int times = 1;
+    		
+    		if (Character.isDigit(ch)){
+    			String sttimes = "";
+    			while(Character.isDigit(ch)){
+    				sttimes += ch;
+    				i++;
+        			ch = template.charAt(i);
+    			}
+    			
+    			times = Integer.parseInt(sttimes);    			
+    		}
+    		
+    		for(int j=0; j<times; j++){
+	    		switch (ch){
+	    		case 'i':
+	    			ele.add(new JsonPrimitive("int"));
+	    			break;
+	    		case 'f':
+	    			ele.add(new JsonPrimitive("float"));
+	    			break;
+	    		case 's':
+	    			ele.add(new JsonPrimitive("string"));
+	    			break;
+	    		case 'd':
+	    			ele.add(new JsonPrimitive("double"));
+	    			break;
+	    		}
     		}
     	}    		
     	
