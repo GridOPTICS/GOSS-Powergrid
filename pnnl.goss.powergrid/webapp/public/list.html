@@ -11,6 +11,7 @@
     <script src="js/vendor/modernizr.js"></script>
 	<script src="js/jquery-2.1.4.min.js"></script>
 	<script src="js/jquery.dataTables.min.js"></script>
+    <script language="javascript" src="/goss/js/goss-auth.js"></script>
 	
 	
 	
@@ -108,12 +109,6 @@ $(document).ready(function() {
 		        $('#records_table').append(trHTML);
 		    }
 		});*/
-		
-		var token = localStorage.getItem("authToken"); 
-		if(token==null || token=='null'){
-			window.location.replace('/goss/login.html?refer=/powergrid/list.html');
-			
-		}
 		
 		
 		var jsonData = [{"id":"1","name":"North","created_by":"Poorva Sharma","filename":"north.raw","desc":"this is a test","details":"This is detail"},

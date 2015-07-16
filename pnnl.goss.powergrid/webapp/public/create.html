@@ -5,6 +5,7 @@
 	<html>
 <head>
     <script language="javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script language="javascript" src="/goss/js/goss-auth.js"></script>
 
 </head>
 <body>
@@ -30,11 +31,7 @@
 
 <script language="javascript">
 // 	alert(document.cookie);
-	var token = localStorage.getItem("authToken"); //document.cookie.split("=")[1];
-	if(token==null || token=='null'){
-		window.location.replace('/goss/login.html?refer=/powergrid/create.html');
-		
-	}
+	
 // 	alert('token'+token);
 
 	var parameters = {};
@@ -125,9 +122,8 @@
     
     $('#upload_file').click(function(){
 //     alert(document.cookie)
-    	var token = localStorage.getItem("authToken");
     
-    	parameters['AuthToken'] = token;
+    	parameters['AuthToken'] = authToken;
     	parameters['description'] = $('#description').val();
     	parameters['name'] = $('#name').val();
     	parameters['access_level'] = $('#access_level').val();

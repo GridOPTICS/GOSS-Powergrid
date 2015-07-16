@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="css/foundation.css" />
     <script src="js/vendor/modernizr.js"></script>
 	<script src="js/jquery-2.1.4.min.js"></script>
+	<script language="javascript" src="/goss/js/goss-auth.js"></script>
+	
   </head>
   
 <body>
@@ -137,11 +139,6 @@
 
 <script type="text/javascript">
 
-var token = localStorage.getItem("authToken"); 
-if(token==null || token=='null'){
-	window.location.replace('/goss/login.html?refer=/powergrid/upload.html');
-	
-}
 
 $("input[name=access]").click(function(){
    var access = $("input[name='access']:checked").val();
@@ -155,7 +152,7 @@ $("input[name=access]").click(function(){
 
 $('#upload_file').click(function(){
 // 	var authToken  = document.cookie.split("=")[1]
-	var authTOken = localStorage.getItem("authToken");
+// 	var authToken = localStorage.getItem("authToken");
 	parameters['AuthToken'] = authToken;
 	parameters['description'] = $('#description').val();
 	parameters['name'] = $('#name').val();

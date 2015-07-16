@@ -11,6 +11,7 @@
     <script src="js/vendor/modernizr.js"></script>
 	<script src="js/jquery-2.1.4.min.js"></script>
 	<script src="js/jquery.dataTables.min.js"></script>
+	<script language="javascript" src="/goss/js/goss-auth.js"></script>
 	
 	
 	
@@ -80,12 +81,6 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
-	var token = localStorage.getItem("authToken");
-// 	alert('token'+token);
-	if(token==null || token=='null'){
-		window.location.replace('/goss/login.html?refer=/powergrid/powergrid.html');
-		
-	}
 	
 		
 		/*
