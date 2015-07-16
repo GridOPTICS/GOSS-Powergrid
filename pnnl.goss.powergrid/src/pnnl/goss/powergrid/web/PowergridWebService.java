@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import org.amdatu.web.rest.doc.Description;
 import org.amdatu.web.rest.doc.ReturnType;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 import com.google.gson.JsonObject;
@@ -256,6 +257,7 @@ public class PowergridWebService {
 					RequestEnvelope wrappedRequest = new RequestEnvelope(createReq, params);
 					String content = requestBody.get("model_file_content").getAsString();
 					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);
+					params.addProperty("md5_content_hash", DigestUtils.md5Hex(decoded));
 					File tmpFile = File.createTempFile("upload", "tmp");
 					FileUtils.writeByteArrayToFile(tmpFile,  decoded);
 					createReq.setPowergridFile(tmpFile);
@@ -267,7 +269,7 @@ public class PowergridWebService {
 					else {
 						SavePowergridResults results = ((SavePowergridResults)res.getData());
 						//PowergridModel model = ((PowergridModel)res.getData());
-						response = Response.status(Response.Status.OK).entity(results).build();
+						response = Response.ok(results).build();
 						//response = Response.status(Response.Status.OK).build();
 					}
 
@@ -296,8 +298,9 @@ public class PowergridWebService {
 //
 //			}
 //		}
-			response = Response.status(Response.Status.OK).build();
+//			response = Response.status(Response.Status.OK).build();
 		}
+		System.out.println(response.toString());
 		return response;
 	}
 
