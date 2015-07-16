@@ -125,7 +125,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	@SuppressWarnings("unused")
 		List<Machine> machines = null;
     	@SuppressWarnings("unused")
-		List<SwitchedShunt> switchedSnunts = null;
+		List<SwitchedShunt> switchedShunts = null;
     	
     	String ptiVersion = data.get("version").getAsString();
 
@@ -190,8 +190,21 @@ public class PowergridDaoMySql implements PowergridDao {
 //    	else{
 //    		substations = insertSubstations(pgId, buses, areas, zones, problems);
 //    	}
-
-    	return new SavePowergridResults(pgUUID, problems);
+    	SavePowergridResults results = new SavePowergridResults(pgUUID, problems);
+    	
+    	results.addProperty("# areas", areas.size());
+    	results.addProperty("# branches", branches.size());
+    	results.addProperty("# buses", buses.size());
+    	results.addProperty("# generators", machines.size());
+    	//results.addProperty("# switched shunts", switchedShunts.size());
+    	results.addProperty("# zones", zones.size());
+    	
+    	double totalGen = 0.0;
+    	for(Machine m: machines){
+    		totalGen+= m.getPgen();
+    	}
+    	results.addProperty("Total Generation", totalGen);
+    	return results;
     }
 
     private String getInsertMark(String mark, int count){
