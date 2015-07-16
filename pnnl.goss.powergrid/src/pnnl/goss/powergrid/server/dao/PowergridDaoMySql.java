@@ -154,23 +154,25 @@ public class PowergridDaoMySql implements PowergridDao {
 					data.get("areas").getAsJsonObject(), problems);
 		}
     	
-//    	if (data.get("areas") == null) {
-//		problems.add("WARN: Areas are empty");
-//		// Areas must be instantiated for substation to loop over.
-//		areas = new ArrayList<Area>();
-//	}
-//	else{
-//		areas = insertAreas(pgId, data.get("areas"), problems);
-//	}
+    	if (data.get("zone") == null) {
+    		problems.add("WARN: Zones are empty");
+    		// Zones must be instantiated for substation to loop over.
+    		zones = new ArrayList<Zone>();
+    	}
+    	else{
+    		zones = insertZones(pgId, ptiVersion,
+    				data.get("zone").getAsJsonObject(), problems);
+    	}
+    
 
-//
-//    	if (data.get("generators") == null) {
-//    		problems.add("ERROR: Generators are empty");
-//    	}
-//    	else{
-//    		machines = insertGenerators(pgId, data.get("generators"), problems);
-//    	}
-//
+    	if (data.get("generators") == null) {
+    		problems.add("ERROR: Generators are empty");
+    	}
+    	else{
+    		machines = insertGenerators(pgId, ptiVersion,
+    				data.get("generators").getAsJsonObject(), problems);
+    	}
+
 //    	if (data.get("switched_shunts") == null) {
 //    		problems.add("ERROR: Shunts are empty");
 //    	}
@@ -240,7 +242,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	System.out.println(name + " "+ output.toString());
     }
 
-    private List<SwitchedShunt> insertSwitchedShunts(int powergridId, List<PropertyGroup> switchedShuntPropertyGroups, List<String> problems){
+    private List<SwitchedShunt> insertSwitchedShunts(int powergridId, String version, JsonObject switchedShunts, List<String> problems){
     	String insert = "INSERT INTO switchedshunt ("+
     			"SwitchedShuntId, PowergridId, BusNumber, Status, BShunt, BInit, ModSw, VswHi, VswLo, " +
     			"SwRem, N1, B1, N2, B2, N3, B3, N4, B4, B5, N5, N6, B6, N7, B7, N8, B8, Mrid) " +
@@ -248,58 +250,99 @@ public class PowergridDaoMySql implements PowergridDao {
     			"@SwitchedShuntId, @PowergridId, @BusNumber, @Status, @BShunt, @BInit, @ModSw, @VswHi, " +
     			"@VswLo, @SwRem, @N1, @B1, @N2, @B2, @N3, @B3, @N4, @B4, @N5, @B5, @N6, @B6, @N7, @B7, " +
     			"@N8, @B8, @Mrid);";
-    	Map<Integer, Integer> busnumberCount = new HashMap<>();
+    	
+    	JsonArray ptiFieldNames = switchedShunts.get("pti_names").getAsJsonArray();
+       	JsonArray ptiDataTypes = switchedShunts.get("type_order").getAsJsonArray();
+       	PrefixMap prefixMap = PrefixMap.instance();
+       	
+    	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
+    		JsonArray dataArray = switchedShunts.get("data").getAsJsonArray();
+    		for(int i=0; i<dataArray.size(); i++) {
+    			JsonArray aRow = dataArray.get(i).getAsJsonArray();
+    			
+    			// Start with properties that aren't in the pti file.
+    			namedStmt.setString("Mrid", UUID.randomUUID().toString());
+    			namedStmt.setInt("PowergridId", powergridId);
+    			
+    			for(int j=0; j<aRow.size(); j++){
+    				String modelProperty = ptiFieldNames.get(j).getAsString();
+        			String gossProperty = prefixMap.getGossPropertyName("switchedshunt", version, modelProperty);
+        			String dataType = ptiDataTypes.get(j).getAsString();
+        			System.out.println("Adding "+ modelProperty + " with gossProp "+gossProperty);
+        			if (dataType.equals("int")){
+        				namedStmt.setInt(gossProperty, aRow.get(j).getAsInt());
+        			}
+        			else if(dataType.equals("float") || dataType.equals("double")){
+        				namedStmt.setDouble(gossProperty, aRow.get(j).getAsDouble());
+        			}
+        			else if (dataType.equals("string")){
+        				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
+        			}        			
+    			}
+    			
+    			for(String missing: namedStmt.getMissing()){
+    				System.out.println("Missing: "+ missing);
+    			}
+    			namedStmt.addBatch();
+	    	}
 
-    	for(PropertyGroup pg: switchedShuntPropertyGroups){
-    		if (!busnumberCount.containsKey(pg.getProperty("busNumber").asInt())){
-    			busnumberCount.put(pg.getProperty("busNumber").asInt(), 0);
-    		}
+    		namedStmt.executeBatch();
+    	} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-    		try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
-    			// Increase the count for this specific bus.
-    			busnumberCount.put(pg.getProperty("busNumber").asInt(),
-    					busnumberCount.get(pg.getProperty("busNumber").asInt())+1);
-
-	    		// This will be auto populated for us.
-	    		namedStmt.setString("SwitchedShuntId",
-	    				busnumberCount.get(pg.getProperty("busNumber").asInt()).toString());
-	    		namedStmt.setInt("PowergridId", powergridId);
-				namedStmt.setInt("BusNumber", pg.getProperty("busNumber").asInt());
-	    		namedStmt.setInt("Status", pg.getProperty("status").asInt());
-	    		namedStmt.setDouble("BShunt", 0); //pg.getProperty("").asDouble());
-	    		namedStmt.setDouble("BInit", pg.getProperty("bInit").asDouble());
-	    		namedStmt.setInt("ModSw", 0); // pg.getProperty("mod").asInt());
-	    		namedStmt.setDouble("VswHi", pg.getProperty("vswHi").asDouble());
-	    		namedStmt.setDouble("VswLo", pg.getProperty("vswLo").asDouble());
-	    		namedStmt.setInt("SwRem", pg.getProperty("swRem").asInt());
-	    		namedStmt.setInt("N1", pg.getProperty("").asInt());
-	    		namedStmt.setDouble("B1", pg.getProperty("").asDouble());
-	    		namedStmt.setInt("N2", pg.getProperty("").asInt());
-	    		namedStmt.setDouble("B2", pg.getProperty("").asDouble());
-	    		namedStmt.setInt("N3", pg.getProperty("").asInt());
-	    		namedStmt.setDouble("B3", pg.getProperty("").asDouble());
-	    		namedStmt.setInt("N4", pg.getProperty("").asInt());
-	    		namedStmt.setDouble("B4", pg.getProperty("").asDouble());
-	    		namedStmt.setInt("N5", pg.getProperty("").asInt());
-	    		namedStmt.setDouble("B5", pg.getProperty("").asDouble());
-	    		namedStmt.setInt("N6", pg.getProperty("").asInt());
-	    		namedStmt.setDouble("B6", pg.getProperty("").asDouble());
-	    		namedStmt.setInt("N7", pg.getProperty("").asInt());
-	    		namedStmt.setDouble("B7", pg.getProperty("").asDouble());
-	    		namedStmt.setInt("N8", pg.getProperty("").asInt());
-	    		namedStmt.setDouble("B8", pg.getProperty("").asDouble());
-	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
-
-				namedStmt.execute();
-
-	    	} catch (SQLException e) {
-				e.printStackTrace();
-			}
-    	}
+//    	Map<Integer, Integer> busnumberCount = new HashMap<>();
+//
+//    	for(PropertyGroup pg: switchedShuntPropertyGroups){
+//    		if (!busnumberCount.containsKey(pg.getProperty("busNumber").asInt())){
+//    			busnumberCount.put(pg.getProperty("busNumber").asInt(), 0);
+//    		}
+//
+//    		try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
+//    			// Increase the count for this specific bus.
+//    			busnumberCount.put(pg.getProperty("busNumber").asInt(),
+//    					busnumberCount.get(pg.getProperty("busNumber").asInt())+1);
+//
+//	    		// This will be auto populated for us.
+//	    		namedStmt.setString("SwitchedShuntId",
+//	    				busnumberCount.get(pg.getProperty("busNumber").asInt()).toString());
+//	    		namedStmt.setInt("PowergridId", powergridId);
+//				namedStmt.setInt("BusNumber", pg.getProperty("busNumber").asInt());
+//	    		namedStmt.setInt("Status", pg.getProperty("status").asInt());
+//	    		namedStmt.setDouble("BShunt", 0); //pg.getProperty("").asDouble());
+//	    		namedStmt.setDouble("BInit", pg.getProperty("bInit").asDouble());
+//	    		namedStmt.setInt("ModSw", 0); // pg.getProperty("mod").asInt());
+//	    		namedStmt.setDouble("VswHi", pg.getProperty("vswHi").asDouble());
+//	    		namedStmt.setDouble("VswLo", pg.getProperty("vswLo").asDouble());
+//	    		namedStmt.setInt("SwRem", pg.getProperty("swRem").asInt());
+//	    		namedStmt.setInt("N1", pg.getProperty("").asInt());
+//	    		namedStmt.setDouble("B1", pg.getProperty("").asDouble());
+//	    		namedStmt.setInt("N2", pg.getProperty("").asInt());
+//	    		namedStmt.setDouble("B2", pg.getProperty("").asDouble());
+//	    		namedStmt.setInt("N3", pg.getProperty("").asInt());
+//	    		namedStmt.setDouble("B3", pg.getProperty("").asDouble());
+//	    		namedStmt.setInt("N4", pg.getProperty("").asInt());
+//	    		namedStmt.setDouble("B4", pg.getProperty("").asDouble());
+//	    		namedStmt.setInt("N5", pg.getProperty("").asInt());
+//	    		namedStmt.setDouble("B5", pg.getProperty("").asDouble());
+//	    		namedStmt.setInt("N6", pg.getProperty("").asInt());
+//	    		namedStmt.setDouble("B6", pg.getProperty("").asDouble());
+//	    		namedStmt.setInt("N7", pg.getProperty("").asInt());
+//	    		namedStmt.setDouble("B7", pg.getProperty("").asDouble());
+//	    		namedStmt.setInt("N8", pg.getProperty("").asInt());
+//	    		namedStmt.setDouble("B8", pg.getProperty("").asDouble());
+//	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
+//
+//				namedStmt.execute();
+//
+//	    	} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+//    	}
 
     	return getSwitchedShunts(powergridId);
     }
-    private List<Machine> insertGenerators(int powergridId, List<PropertyGroup> generatorPropertyGroups, List<String> problems){
+    private List<Machine> insertGenerators(int powergridId, String version, JsonObject generators, List<String> problems){
     	String insert = "INSERT INTO machine (" +
     			"MachineId, PowergridId, BusNumber, PGen, QGen, MaxPGen, MaxQGen, MinPGen,"+
     			"MinQGen, Status, IsSvc, Vs, Ireg, Zr, Zx, Rt, Xt, Gtap, RmPct, Mrid, MBase) "+
@@ -307,44 +350,87 @@ public class PowergridDaoMySql implements PowergridDao {
     			"@MachineId, @PowergridId, @BusNumber, @PGen, @QGen, @MaxPGen, @MaxQGen, " +
     			"@MinPGen, @MinQGen, @Status, @IsSvc, @Vs, @Ireg, @Zr, @Zx, @Rt, @Xt, @Gtap, @RmPct, @Mrid, "+
     			"@MBase);";
-    	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
-
-    		for(PropertyGroup pg: generatorPropertyGroups){
-	    		namedStmt.setString("MachineId", pg.getProperty("machineId").asString());
-				namedStmt.setInt("PowergridId", powergridId);
-				namedStmt.setInt("BusNumber", pg.getProperty("busNumber").asInt());
-				namedStmt.setDouble("PGen", pg.getProperty("pGen").asDouble());
-				namedStmt.setDouble("QGen", pg.getProperty("qGen").asDouble());
-				namedStmt.setDouble("MaxPGen", pg.getProperty("pMax").asDouble());
-				namedStmt.setDouble("MaxQGen", pg.getProperty("qMax").asDouble());
-				namedStmt.setDouble("MinPGen", pg.getProperty("pMin").asDouble());
-				namedStmt.setDouble("MinQGen", pg.getProperty("qMin").asDouble());
-				namedStmt.setDouble("Status", pg.getProperty("status").asInt());
-				namedStmt.setInt("IsSvc", 0);
-				namedStmt.setDouble("Vs", pg.getProperty("vSetPoint").asDouble());
-				namedStmt.setDouble("Ireg", pg.getProperty("iRegBusNumber").asInt());
-				namedStmt.setDouble("Zr", pg.getProperty("zSource").asDouble());
-				namedStmt.setDouble("Zx", pg.getProperty("zTran").asDouble());
-				namedStmt.setDouble("Rt", pg.getProperty("rTran").asDouble());
-				namedStmt.setDouble("Xt", pg.getProperty("xTran").asDouble());
-				namedStmt.setDouble("Gtap", pg.getProperty("gTap").asDouble());
-				namedStmt.setDouble("RmPct", pg.getProperty("rmPcnt").asDouble());
-				namedStmt.setDouble("MBase", 0.0);
-				namedStmt.setString("Mrid", UUID.randomUUID().toString());
-
-				namedStmt.addBatch();
-    		}
+    	
+    	JsonArray ptiFieldNames = generators.get("pti_names").getAsJsonArray();
+       	JsonArray ptiDataTypes = generators.get("type_order").getAsJsonArray();
+       	PrefixMap prefixMap = PrefixMap.instance();
+       	
+    	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
+    		JsonArray dataArray = generators.get("data").getAsJsonArray();
+    		for(int i=0; i<dataArray.size(); i++) {
+    			JsonArray aRow = dataArray.get(i).getAsJsonArray();
+    			
+    			// Start with properties that aren't in the pti file.
+    			namedStmt.setString("Mrid", UUID.randomUUID().toString());
+    			namedStmt.setInt("PowergridId", powergridId);
+    			namedStmt.setInt("IsSvc", 0);
+    			
+    			for(int j=0; j<aRow.size(); j++){
+    				String modelProperty = ptiFieldNames.get(j).getAsString();
+        			String gossProperty = prefixMap.getGossPropertyName("machine", version, modelProperty);
+        			String dataType = ptiDataTypes.get(j).getAsString();
+        			System.out.println("Adding "+ modelProperty + " with gossProp "+gossProperty);
+        			if (dataType.equals("int")){
+        				namedStmt.setInt(gossProperty, aRow.get(j).getAsInt());
+        			}
+        			else if(dataType.equals("float") || dataType.equals("double")){
+        				namedStmt.setDouble(gossProperty, aRow.get(j).getAsDouble());
+        			}
+        			else if (dataType.equals("string")){
+        				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
+        			}        			
+    			}
+    			
+    			for(String missing: namedStmt.getMissing()){
+    				System.out.println("Missing: "+ missing);
+    			}
+    			namedStmt.addBatch();
+	    	}
 
     		namedStmt.executeBatch();
-
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
+    	
+//    	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
+//
+//    		for(PropertyGroup pg: generatorPropertyGroups){
+//	    		namedStmt.setString("MachineId", pg.getProperty("machineId").asString());
+//				namedStmt.setInt("PowergridId", powergridId);
+//				namedStmt.setInt("BusNumber", pg.getProperty("busNumber").asInt());
+//				namedStmt.setDouble("PGen", pg.getProperty("pGen").asDouble());
+//				namedStmt.setDouble("QGen", pg.getProperty("qGen").asDouble());
+//				namedStmt.setDouble("MaxPGen", pg.getProperty("pMax").asDouble());
+//				namedStmt.setDouble("MaxQGen", pg.getProperty("qMax").asDouble());
+//				namedStmt.setDouble("MinPGen", pg.getProperty("pMin").asDouble());
+//				namedStmt.setDouble("MinQGen", pg.getProperty("qMin").asDouble());
+//				namedStmt.setDouble("Status", pg.getProperty("status").asInt());
+//				namedStmt.setInt("IsSvc", 0);
+//				namedStmt.setDouble("Vs", pg.getProperty("vSetPoint").asDouble());
+//				namedStmt.setDouble("Ireg", pg.getProperty("iRegBusNumber").asInt());
+//				namedStmt.setDouble("Zr", pg.getProperty("zSource").asDouble());
+//				namedStmt.setDouble("Zx", pg.getProperty("zTran").asDouble());
+//				namedStmt.setDouble("Rt", pg.getProperty("rTran").asDouble());
+//				namedStmt.setDouble("Xt", pg.getProperty("xTran").asDouble());
+//				namedStmt.setDouble("Gtap", pg.getProperty("gTap").asDouble());
+//				namedStmt.setDouble("RmPct", pg.getProperty("rmPcnt").asDouble());
+//				namedStmt.setDouble("MBase", 0.0);
+//				namedStmt.setString("Mrid", UUID.randomUUID().toString());
+//
+//				namedStmt.addBatch();
+//    		}
+//
+//    		namedStmt.executeBatch();
+//
+//    	} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+
     	return getMachines(powergridId);
     }
 
-    private List<Branch> insertBranches(int powergridId, List<PropertyGroup> branchPropertyGroups, List<String> problems){
+    private List<Branch> insertBranches(int powergridId, String version, JsonObject branches, List<String> problems){
     	String insert = "INSERT INTO branch ("+
     			"PowergridId, FromBusNumber, ToBusNumber, Ckt, R, X, RateA, RateB, RateC, "+
     			"Status, P, Q, Mrid) " +
@@ -352,33 +438,74 @@ public class PowergridDaoMySql implements PowergridDao {
     			"@PowergridId, @FromBusNumber, @ToBusNumber, @Ckt, @R, @X, @RateA, @RateB, "+
     			"@RateC, @Status, @P, @Q, @Mrid);";
 
-    	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
-    		for(PropertyGroup pg: branchPropertyGroups){
-	    		namedStmt.setInt("PowergridId", powergridId);
-	    		namedStmt.setInt("FromBusNumber", pg.getProperty("fromBus").asInt());
-	    		namedStmt.setInt("ToBusNumber", pg.getProperty("toBus").asInt());
-	    		namedStmt.setString("Ckt", pg.getProperty("ckt").asString());
-	    		namedStmt.setDouble("R", pg.getProperty("r").asDouble());
-	    		namedStmt.setDouble("X", pg.getProperty("x").asDouble());
-	    		namedStmt.setDouble("RateA", pg.getProperty("ratingA").asDouble());
-	    		namedStmt.setDouble("RateB", pg.getProperty("ratingB").asDouble());
-	    		namedStmt.setDouble("RateC", pg.getProperty("ratingC").asDouble());
-	    		namedStmt.setInt("Status", pg.getProperty("status").asInt());
+    	JsonArray ptiFieldNames = branches.get("pti_names").getAsJsonArray();
+       	JsonArray ptiDataTypes = branches.get("type_order").getAsJsonArray();
+       	PrefixMap prefixMap = PrefixMap.instance();
+       	
+    	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
+    		JsonArray dataArray = branches.get("data").getAsJsonArray();
+    		for(int i=0; i<dataArray.size(); i++) {
+    			JsonArray aRow = dataArray.get(i).getAsJsonArray();
+    			
+    			// Start with properties that aren't in the pti file.
+    			namedStmt.setString("Mrid", UUID.randomUUID().toString());
+    			namedStmt.setInt("PowergridId", powergridId);
+    			
+    			for(int j=0; j<aRow.size(); j++){
+    				String modelProperty = ptiFieldNames.get(j).getAsString();
+        			String gossProperty = prefixMap.getGossPropertyName("branch", version, modelProperty);
+        			String dataType = ptiDataTypes.get(j).getAsString();
+        			System.out.println("Adding "+ modelProperty + " with gossProp "+gossProperty);
+        			if (dataType.equals("int")){
+        				namedStmt.setInt(gossProperty, aRow.get(j).getAsInt());
+        			}
+        			else if(dataType.equals("float") || dataType.equals("double")){
+        				namedStmt.setDouble(gossProperty, aRow.get(j).getAsDouble());
+        			}
+        			else if (dataType.equals("string")){
+        				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
+        			}        			
+    			}
+    			
+    			for(String missing: namedStmt.getMissing()){
+    				System.out.println("Missing: "+ missing);
+    			}
+    			namedStmt.addBatch();
+	    	}
 
-	    		// Now we need to create a line or transformer depending on the
-	    		// data.
-	    		namedStmt.setDouble("P", 0.0); // pg.getProperty("").asDouble());
-	    		namedStmt.setDouble("Q", 0.0); //pg.getProperty("").asDouble());
-	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
-	    		namedStmt.addBatch();
-    		}
     		namedStmt.executeBatch();
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
+    	
+//    	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
+//    		for(PropertyGroup pg: branchPropertyGroups){
+//	    		namedStmt.setInt("PowergridId", powergridId);
+//	    		namedStmt.setInt("FromBusNumber", pg.getProperty("fromBus").asInt());
+//	    		namedStmt.setInt("ToBusNumber", pg.getProperty("toBus").asInt());
+//	    		namedStmt.setString("Ckt", pg.getProperty("ckt").asString());
+//	    		namedStmt.setDouble("R", pg.getProperty("r").asDouble());
+//	    		namedStmt.setDouble("X", pg.getProperty("x").asDouble());
+//	    		namedStmt.setDouble("RateA", pg.getProperty("ratingA").asDouble());
+//	    		namedStmt.setDouble("RateB", pg.getProperty("ratingB").asDouble());
+//	    		namedStmt.setDouble("RateC", pg.getProperty("ratingC").asDouble());
+//	    		namedStmt.setInt("Status", pg.getProperty("status").asInt());
+//
+//	    		// Now we need to create a line or transformer depending on the
+//	    		// data.
+//	    		namedStmt.setDouble("P", 0.0); // pg.getProperty("").asDouble());
+//	    		namedStmt.setDouble("Q", 0.0); //pg.getProperty("").asDouble());
+//	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
+//	    		namedStmt.addBatch();
+//    		}
+//    		namedStmt.executeBatch();
+//    	} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
 
     	return getBranches(powergridId);
     }
+    
 
     private List<Area> insertAreas(int powergridId, String version, JsonObject areas, List<String> problems){
     	String insert = "INSERT INTO area("
@@ -426,43 +553,67 @@ public class PowergridDaoMySql implements PowergridDao {
 		}
 
     	return getAreas(powergridId);
+    	
+    }
+
+    private List<Zone> insertZones(int powergridId, String version, JsonObject zones, List<String> problems){
+    	String insert = "INSERT INTO zone("
+    			+"PowergridId, ZoneNumber, ZoneName, Mrid)"
+    			+"VALUES(@PowergridId, @ZoneNumber, @ZoneName, @Mrid);";
+    	
+    	JsonArray ptiFieldNames = zones.get("pti_names").getAsJsonArray();
+       	JsonArray ptiDataTypes = zones.get("type_order").getAsJsonArray();
+       	PrefixMap prefixMap = PrefixMap.instance();
+       	
+    	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
+    		JsonArray dataArray = zones.get("data").getAsJsonArray();
+    		for(int i=0; i<dataArray.size(); i++) {
+    			JsonArray aRow = dataArray.get(i).getAsJsonArray();
+    			
+    			// Start with properties that aren't in the pti file.
+    			namedStmt.setString("Mrid", UUID.randomUUID().toString());
+    			namedStmt.setInt("PowergridId", powergridId);
+    			
+    			for(int j=0; j<aRow.size(); j++){
+    				String modelProperty = ptiFieldNames.get(j).getAsString();
+        			String gossProperty = prefixMap.getGossPropertyName("zone", version, modelProperty);
+        			String dataType = ptiDataTypes.get(j).getAsString();
+        			System.out.println("Adding "+ modelProperty + " with gossProp "+gossProperty);
+        			if (dataType.equals("int")){
+        				namedStmt.setInt(gossProperty, aRow.get(j).getAsInt());
+        			}
+        			else if(dataType.equals("float") || dataType.equals("double")){
+        				namedStmt.setDouble(gossProperty, aRow.get(j).getAsDouble());
+        			}
+        			else if (dataType.equals("string")){
+        				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
+        			}        			
+    			}
+    			
+    			for(String missing: namedStmt.getMissing()){
+    				System.out.println("Missing: "+ missing);
+    			}
+    			namedStmt.addBatch();
+	    	}
+
+    		namedStmt.executeBatch();
+    	} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
 
 //    	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
-//    		for(PropertyGroup pg: areaPropertyGroups){
-//    			namedStmt.setInt("PowergridId", powergridId);
-//    			namedStmt.setString("AreaName", pg.getProperty("name").asString());
-//    			namedStmt.setInt("AreaId", pg.getProperty("areaNumber").asInt());
-//    			namedStmt.setInt("Isw", pg.getProperty("isw").asInt());
-//    			namedStmt.setDouble("Pdes", 0);
-//    			namedStmt.setDouble("Ptol", pg.getProperty("pTolerance").asDouble());
-//    			namedStmt.setString("Mrid", UUID.randomUUID().toString());
-//    			namedStmt.addBatch();
+//    		for(PropertyGroup pg: zonePropertyGroups){
+//	    		namedStmt.setInt("PowergridId", powergridId);
+//	    		namedStmt.setInt("ZoneNumber", pg.getProperty("zoneNumber").asInt());
+//	    		namedStmt.setString("ZoneName", pg.getProperty("name").asString());
+//	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
+//	    		namedStmt.addBatch();
 //    		}
 //    		namedStmt.executeBatch();
 //    	} catch (SQLException e) {
 //			e.printStackTrace();
 //		}
-//
-//    	return getAreas(powergridId);
-    }
-
-    private List<Zone> insertZones(int powergridId, List<PropertyGroup> zonePropertyGroups, List<String> problems){
-    	String insert = "INSERT INTO zone("
-    			+"PowergridId, ZoneNumber, ZoneName, Mrid)"
-    			+"VALUES(@PowergridId, @ZoneNumber, @ZoneName, @Mrid);";
-
-    	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
-    		for(PropertyGroup pg: zonePropertyGroups){
-	    		namedStmt.setInt("PowergridId", powergridId);
-	    		namedStmt.setInt("ZoneNumber", pg.getProperty("zoneNumber").asInt());
-	    		namedStmt.setString("ZoneName", pg.getProperty("name").asString());
-	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
-	    		namedStmt.addBatch();
-    		}
-    		namedStmt.executeBatch();
-    	} catch (SQLException e) {
-			e.printStackTrace();
-		}
 
     	return getZones(powergridId);
     }
@@ -474,16 +625,15 @@ public class PowergridDaoMySql implements PowergridDao {
        			"VALUES( " +
        			"@BusNumber, @PowergridId, @SubstationName, @BusName, @BaseKV, @Code, @Pl, @Ql, " +
        			"@Gl, @Bl, @AreaId, @Va, @Vm, @ZoneId, @Mrid)";
-       	
-       	
+       	       	
        	JsonArray ptiFieldNames = buses.get("pti_names").getAsJsonArray();
        	JsonArray ptiDataTypes = buses.get("type_order").getAsJsonArray();
        	PrefixMap prefixMap = PrefixMap.instance();
        	
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
-    		JsonArray busArray = buses.get("data").getAsJsonArray();
-    		for(int i=0; i<busArray.size(); i++) {
-    			JsonArray aRow = busArray.get(i).getAsJsonArray();
+    		JsonArray dataArray = buses.get("data").getAsJsonArray();
+    		for(int i=0; i<dataArray.size(); i++) {
+    			JsonArray aRow = dataArray.get(i).getAsJsonArray();
     			
     			// Start with properties that aren't in the pti file.
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
