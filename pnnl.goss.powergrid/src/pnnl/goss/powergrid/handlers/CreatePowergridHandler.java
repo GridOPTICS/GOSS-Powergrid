@@ -12,6 +12,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.felix.dm.annotation.api.Component;
 import org.apache.felix.dm.annotation.api.ServiceDependency;
 
+import com.google.gson.JsonObject;
+
 import pnnl.goss.core.DataError;
 import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
@@ -75,7 +77,7 @@ public class CreatePowergridHandler implements RequestHandler {
 				response.setData(results);
 			}
 			else{
-				SavePowergridResults saveResult = saveData(pgRequest, results.getGrouopMap());
+				SavePowergridResults saveResult = saveData(pgRequest, results.getSectionMap());
 				response.setData(saveResult);
 			}
 		} catch (InvalidDataException e) {
@@ -90,13 +92,13 @@ public class CreatePowergridHandler implements RequestHandler {
 	}
 
 	private SavePowergridResults saveData(CreatePowergridRequest request,
-			Map<String, List<PropertyGroup>> parsedData) {
+			JsonObject parsedData) {
 		DataSourcePooledJdbc obj = (DataSourcePooledJdbc)datasourceRegistry.get("goss.powergrids.north");
 		//DataSourceObject obj = datasourceRegistry.get("goss.powergrids");
 		PowergridDaoMySql mydata = new PowergridDaoMySql(obj);
 		
 		// PowergridDaoMySql mydata = new PowergridDaoMySql((DataSource) obj);
-		return mydata.createPowergrid(request.getPowergridName(), parsedData);
+		return mydata.createPowergrid(request.getPowergridName(),  parsedData);
 	}
 
 }
