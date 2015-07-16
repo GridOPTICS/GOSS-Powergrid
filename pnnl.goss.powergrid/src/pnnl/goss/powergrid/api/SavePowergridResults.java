@@ -3,13 +3,18 @@ package pnnl.goss.powergrid.api;
 import java.io.Serializable;
 import java.util.List;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
 public class SavePowergridResults implements Serializable{
 	
 	private static final long serialVersionUID = 1538240556922528221L;
-	private final List<String> errorsAndWarnings;
-	private final String powergridGuid;
-	private final boolean success;
+	private List<String> errorsAndWarnings;
+	private String powergridGuid;
+	private boolean success;
+	private JsonObject propertyMap = new JsonObject();
 	
+		
 	public SavePowergridResults(String guid, 
 			List<String> errorsAndWarnings ){
 		this.success = (guid != null);
@@ -28,5 +33,20 @@ public class SavePowergridResults implements Serializable{
 	public boolean isSuccess() {
 		return success;
 	}
-
+	
+	public void addProperty(String key, String value){
+		propertyMap.addProperty(key, value);
+	}
+	
+	public void addProperty(String key, Double value){
+		propertyMap.addProperty(key, value);
+	}
+	
+	public void addProperty(String key, Boolean value){
+		propertyMap.addProperty(key, value);
+	}
+	
+	public void addProperty(String key, Integer value){
+		propertyMap.add(key, new JsonPrimitive(value));
+	}
 }

@@ -116,8 +116,6 @@ public class ParserServiceImpl implements ParserService{
 			InputStream dataToParse) throws InvalidDataException {
 
 		List<String> problems = new ArrayList<String>();
-		// The return value from the parsing of data.
-		Map<String, List<PropertyGroup>> powergridPropertyMap = null;
 		if (dataToParse == null){
 			problems.add("Null or empty data detected.");
 		}
@@ -127,22 +125,26 @@ public class ParserServiceImpl implements ParserService{
 		}
 
 		PsseParser parser = new PsseParser();
+		ResultLog log = null;
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(dataToParse))){
-			ResultLog log = parser.parse(PTI_VERSION.PTI_23, reader);
+			log = parser.parse(PTI_VERSION.PTI_23, reader);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		
 
 		boolean errorsFound = false;
-		for(String s: problems){
+		for(String s: log.getLog()){
 			if(s.toUpperCase().startsWith("ERR")) {
 				errorsFound = true;
 				break;
 			}
 		}
 
-		return new ParserResults(powergridPropertyMap, problems,
-				errorsFound);
+		return new ParserResults(parser.getParsedSections(),parser.getSections(PTI_VERSION.PTI_23),
+				log.getLog(), errorsFound);
+		
 //		// TODO for now we only support pti23 input files.
 //		ParserDefinition def = new ParserDefinition();
 //		def.setLineSeperated(true);

@@ -6,12 +6,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,6 +101,16 @@ public class NamedParamStatement implements AutoCloseable {
     			orderMap.get(s).add(i);
     		}
     	}
+    }
+    
+    public Collection<String> getMissing(){
+    	List<String> items = new ArrayList<>();
+    	for(Entry<String, List<Integer>> item: orderMap.entrySet()){
+    		if (item.getValue().size() > 0){
+    			items.add(item.getKey());
+    		}
+    	}
+    	return items;
     }
     
     
