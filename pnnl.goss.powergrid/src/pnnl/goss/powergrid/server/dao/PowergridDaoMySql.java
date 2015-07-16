@@ -52,6 +52,8 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -88,6 +90,8 @@ import pnnl.goss.powergrid.parser.api.PropertyGroup;
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class PowergridDaoMySql implements PowergridDao {
@@ -96,9 +100,20 @@ public class PowergridDaoMySql implements PowergridDao {
     protected DataSourcePooledJdbc pooledDatasource;
     private AlertContext alertContext;
     private PowergridTimingOptions powergridTimingOptions;
+    
 
     public SavePowergridResults createPowergrid(String powergridName,
-    		Map<String, List<PropertyGroup>> data){
+    		JsonObject data){
+    	
+    	if (PrefixMap.instance() == null){
+    		try (Connection connection = pooledDatasource.getConnection()){
+    			PrefixMap.instance(connection);
+    		} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		
+    	}
 
     	// TODO Start passing problems to the various insert statements.
     	List<String> problems = new ArrayList<>();
@@ -116,61 +131,76 @@ public class PowergridDaoMySql implements PowergridDao {
 		List<Machine> machines = null;
     	@SuppressWarnings("unused")
 		List<SwitchedShunt> switchedSnunts = null;
+    	
+    	String ptiVersion = data.get("version").getAsString();
 
     	if (data.get("buses") == null) {
     		problems.add("ERROR: Buses are empty");
     		problems.add("ERROR: Substations are empty");
     	}
     	else{
-    		buses = insertBuses(pgId, data.get("buses"), problems);
+    		buses = insertBuses(pgId, ptiVersion,
+    				data.get("buses").getAsJsonObject(), problems);
 
-    	}
-
-    	if (data.get("generators") == null) {
-    		problems.add("ERROR: Generators are empty");
-    	}
-    	else{
-    		machines = insertGenerators(pgId, data.get("generators"), problems);
-    	}
-
-    	if (data.get("switched_shunts") == null) {
-    		problems.add("ERROR: Shunts are empty");
-    	}
-    	else{
-    		switchedSnunts = insertSwitchedShunts(pgId, data.get("switched_shunts"), problems);
-    	}
-
-    	if (data.get("branches") == null) {
-    		problems.add("ERROR: Branches are empty");
-    	}
-    	else{
-    		branches = insertBranches(pgId, data.get("branches"), problems);
     	}
 
     	if (data.get("areas") == null) {
-    		problems.add("WARN: Areas are empty");
-    		// Areas must be instantiated for substation to loop over.
-    		areas = new ArrayList<Area>();
-    	}
-    	else{
-    		areas = insertAreas(pgId, data.get("areas"), problems);
-    	}
+			problems.add("WARN: Areas are empty");
+			// Areas must be instantiated for substation to loop over.
+			areas = new ArrayList<Area>();
+		}
+		else{
+			areas = insertAreas(pgId, ptiVersion, 
+					data.get("areas").getAsJsonObject(), problems);
+		}
+    	
+//    	if (data.get("areas") == null) {
+//		problems.add("WARN: Areas are empty");
+//		// Areas must be instantiated for substation to loop over.
+//		areas = new ArrayList<Area>();
+//	}
+//	else{
+//		areas = insertAreas(pgId, data.get("areas"), problems);
+//	}
 
-    	if (data.get("zone") == null) {
-    		problems.add("WARN: Zones are empty");
-    		// Zones must be instantiated for substation to loop over.
-    		zones = new ArrayList<Zone>();
-    	}
-    	else{
-    		zones = insertZones(pgId, data.get("zone"), problems);
-    	}
-
-    	if (buses == null){
-    		problems.add("Substations can't be created!");
-    	}
-    	else{
-    		substations = insertSubstations(pgId, buses, areas, zones, problems);
-    	}
+//
+//    	if (data.get("generators") == null) {
+//    		problems.add("ERROR: Generators are empty");
+//    	}
+//    	else{
+//    		machines = insertGenerators(pgId, data.get("generators"), problems);
+//    	}
+//
+//    	if (data.get("switched_shunts") == null) {
+//    		problems.add("ERROR: Shunts are empty");
+//    	}
+//    	else{
+//    		switchedSnunts = insertSwitchedShunts(pgId, data.get("switched_shunts"), problems);
+//    	}
+//
+//    	if (data.get("branches") == null) {
+//    		problems.add("ERROR: Branches are empty");
+//    	}
+//    	else{
+//    		branches = insertBranches(pgId, data.get("branches"), problems);
+//    	}
+//
+//
+//    	if (data.get("zone") == null) {
+//    		problems.add("WARN: Zones are empty");
+//    		// Zones must be instantiated for substation to loop over.
+//    		zones = new ArrayList<Zone>();
+//    	}
+//    	else{
+//    		zones = insertZones(pgId, data.get("zone"), problems);
+//    	}
+//
+//    	if (buses == null){
+//    		problems.add("Substations can't be created!");
+//    	}
+//    	else{
+//    		substations = insertSubstations(pgId, buses, areas, zones, problems);
+//    	}
 
     	return new SavePowergridResults(pgUUID, problems);
     }
@@ -350,29 +380,70 @@ public class PowergridDaoMySql implements PowergridDao {
     	return getBranches(powergridId);
     }
 
-    private List<Area> insertAreas(int powergridId, List<PropertyGroup> areaPropertyGroups, List<String> problems){
+    private List<Area> insertAreas(int powergridId, String version, JsonObject areas, List<String> problems){
     	String insert = "INSERT INTO area("
     			+"PowergridId,AreaName,AreaId,Isw,Pdes,Ptol,Mrid)"
     			+"VALUES(@PowergridId,@AreaName,@AreaId,@Isw,@Pdes,@Ptol,@Mrid);";
-
-
-    	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
-    		for(PropertyGroup pg: areaPropertyGroups){
-    			namedStmt.setInt("PowergridId", powergridId);
-    			namedStmt.setString("AreaName", pg.getProperty("name").asString());
-    			namedStmt.setInt("AreaId", pg.getProperty("areaNumber").asInt());
-    			namedStmt.setInt("Isw", pg.getProperty("isw").asInt());
-    			namedStmt.setDouble("Pdes", 0);
-    			namedStmt.setDouble("Ptol", pg.getProperty("pTolerance").asDouble());
+    	
+    	JsonArray ptiFieldNames = areas.get("pti_names").getAsJsonArray();
+       	JsonArray ptiDataTypes = areas.get("type_order").getAsJsonArray();
+       	PrefixMap prefixMap = PrefixMap.instance();
+       	
+    	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
+    		JsonArray areaArray = areas.get("data").getAsJsonArray();
+    		for(int i=0; i<areaArray.size(); i++) {
+    			JsonArray aRow = areaArray.get(i).getAsJsonArray();
+    			
+    			// Start with properties that aren't in the pti file.
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
+    			namedStmt.setInt("PowergridId", powergridId);
+    			
+    			for(int j=0; j<aRow.size(); j++){
+    				String modelProperty = ptiFieldNames.get(j).getAsString();
+        			String gossProperty = prefixMap.getGossPropertyName("area", version, modelProperty);
+        			String dataType = ptiDataTypes.get(j).getAsString();
+        			System.out.println("Adding "+ modelProperty + " with gossProp "+gossProperty);
+        			if (dataType.equals("int")){
+        				namedStmt.setInt(gossProperty, aRow.get(j).getAsInt());
+        			}
+        			else if(dataType.equals("float") || dataType.equals("double")){
+        				namedStmt.setDouble(gossProperty, aRow.get(j).getAsDouble());
+        			}
+        			else if (dataType.equals("string")){
+        				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
+        			}        			
+    			}
+    			
+    			for(String missing: namedStmt.getMissing()){
+    				System.out.println("Missing: "+ missing);
+    			}
     			namedStmt.addBatch();
-    		}
+	    	}
+
     		namedStmt.executeBatch();
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
     	return getAreas(powergridId);
+
+//    	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
+//    		for(PropertyGroup pg: areaPropertyGroups){
+//    			namedStmt.setInt("PowergridId", powergridId);
+//    			namedStmt.setString("AreaName", pg.getProperty("name").asString());
+//    			namedStmt.setInt("AreaId", pg.getProperty("areaNumber").asInt());
+//    			namedStmt.setInt("Isw", pg.getProperty("isw").asInt());
+//    			namedStmt.setDouble("Pdes", 0);
+//    			namedStmt.setDouble("Ptol", pg.getProperty("pTolerance").asDouble());
+//    			namedStmt.setString("Mrid", UUID.randomUUID().toString());
+//    			namedStmt.addBatch();
+//    		}
+//    		namedStmt.executeBatch();
+//    	} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//
+//    	return getAreas(powergridId);
     }
 
     private List<Zone> insertZones(int powergridId, List<PropertyGroup> zonePropertyGroups, List<String> problems){
@@ -395,35 +466,50 @@ public class PowergridDaoMySql implements PowergridDao {
 
     	return getZones(powergridId);
     }
-
-    private List<Bus> insertBuses(int powergridId, List<PropertyGroup> busPropertyGroups, List<String> problems){
+  
+    private List<Bus> insertBuses(int powergridId, String version, JsonObject buses, List<String> problems){
        	String insert = "INSERT INTO bus("+
        			"BusNumber, PowergridId, SubstationName, BusName, BaseKV, Code, Pl, Ql, Gl, Bl, AreaId, Va, " +
        			"Vm, ZoneId, Mrid) " +
        			"VALUES( " +
        			"@BusNumber, @PowergridId, @SubstationName, @BusName, @BaseKV, @Code, @Pl, @Ql, " +
        			"@Gl, @Bl, @AreaId, @Va, @Vm, @ZoneId, @Mrid)";
-
-
+       	
+       	
+       	JsonArray ptiFieldNames = buses.get("pti_names").getAsJsonArray();
+       	JsonArray ptiDataTypes = buses.get("type_order").getAsJsonArray();
+       	PrefixMap prefixMap = PrefixMap.instance();
+       	
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
-    		for(PropertyGroup pg: busPropertyGroups){
-    			namedStmt.setInt("BusNumber", pg.getProperty("busNumber").asInt());
+    		JsonArray busArray = buses.get("data").getAsJsonArray();
+    		for(int i=0; i<busArray.size(); i++) {
+    			JsonArray aRow = busArray.get(i).getAsJsonArray();
+    			
+    			// Start with properties that aren't in the pti file.
+    			namedStmt.setString("Mrid", UUID.randomUUID().toString());
     			namedStmt.setInt("PowergridId", powergridId);
     			// This will get filled in during the insertSubstation method.
     			namedStmt.setNullString("SubstationName");
-    			namedStmt.setString("BusName", pg.getProperty("name").asString());
-    			namedStmt.setDouble("BaseKV", pg.getProperty("baseKv").asDouble());
-    			namedStmt.setInt("Code", pg.getProperty("busType").asInt());
-    			// Rollup of all the loads on a bus...
-    			namedStmt.setDouble("Pl", pg.getProperty("pLoad").asDouble());
-    			namedStmt.setDouble("Ql", pg.getProperty("qLoad").asDouble());
-    			namedStmt.setDouble("Gl", pg.getProperty("gShunt").asDouble());
-    			namedStmt.setDouble("Bl", pg.getProperty("bShunt").asDouble());
-    			namedStmt.setInt("AreaId", pg.getProperty("area").asInt());
-    			namedStmt.setDouble("Va", pg.getProperty("vMag").asDouble());
-    			namedStmt.setDouble("Vm", pg.getProperty("vAng").asDouble());
-    			namedStmt.setInt("ZoneId", pg.getProperty("zone").asInt());
-    			namedStmt.setString("Mrid", UUID.randomUUID().toString());
+    			
+    			for(int j=0; j<aRow.size(); j++){
+    				String modelProperty = ptiFieldNames.get(j).getAsString();
+        			String gossProperty = prefixMap.getGossPropertyName("bus", version, modelProperty);
+        			String dataType = ptiDataTypes.get(j).getAsString();
+        			System.out.println("Adding "+ modelProperty + " with gossProp "+gossProperty);
+        			if (dataType.equals("int")){
+        				namedStmt.setInt(gossProperty, aRow.get(j).getAsInt());
+        			}
+        			else if(dataType.equals("float") || dataType.equals("double")){
+        				namedStmt.setDouble(gossProperty, aRow.get(j).getAsDouble());
+        			}
+        			else if (dataType.equals("string")){
+        				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
+        			}        			
+    			}
+    			
+    			for(String missing: namedStmt.getMissing()){
+    				System.out.println("Missing: "+ missing);
+    			}
     			namedStmt.addBatch();
 	    	}
 
