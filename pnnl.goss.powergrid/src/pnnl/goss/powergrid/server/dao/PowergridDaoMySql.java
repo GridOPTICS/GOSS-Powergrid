@@ -44,6 +44,9 @@
 */
 package pnnl.goss.powergrid.server.dao;
 
+import java.security.InvalidParameterException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -61,6 +64,7 @@ import java.util.UUID;
 
 import javax.naming.ConfigurationException;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +99,7 @@ public class PowergridDaoMySql implements PowergridDao {
     protected DataSourcePooledJdbc pooledDatasource;
     private AlertContext alertContext;
     private PowergridTimingOptions powergridTimingOptions;
-    
+        
 
     public SavePowergridResults createPowergrid(String powergridName,
     		JsonObject data){
@@ -109,11 +113,22 @@ public class PowergridDaoMySql implements PowergridDao {
 			}
     		
     	}
-
+    	
+    	JsonObject params = data.get("params").getAsJsonObject();
+    	String identifier = params.get("identifier").getAsString();
+    	String accessLevel = params.get("access_level").getAsString();
+    	String md5Hash = params.get("md5_content_hash").getAsString();
+    	
+    	if (identifier == null || accessLevel == null || md5Hash == null){
+    		throw new InvalidParameterException("Invalid identifier, access_level, and/or md5_content_hash specified");
+    	}
+    	
     	// TODO Start passing problems to the various insert statements.
     	List<String> problems = new ArrayList<>();
     	String pgUUID = UUID.randomUUID().toString();
-    	int pgId = insertPowerGrid(pgUUID, powergridName, problems);
+    	
+    	int pgId = insertPowerGrid(pgUUID, powergridName, "GLOBAL", "PTI_23", "ORIGINAL_FILENAME", md5Hash,
+    			accessLevel,  identifier, problems);
 
     	List<Bus> buses = null;
     	@SuppressWarnings("unused")
@@ -810,7 +825,8 @@ public class PowergridDaoMySql implements PowergridDao {
     	return getSubstations(pgId);
     }
 
-    private int insertPowerGrid(String uuid, String name, List<String> problems){
+    private int insertPowerGrid(String uuid, String name, String coordinateSystem, String originalFormatVersion,
+    		String originalFilename, String md5Hash, String accessLevel, String createdBy, List<String> problems){
     	List<Powergrid> grids = getAvailablePowergrids();
     	int maxPg = 0;
     	for(Powergrid g: grids){
@@ -818,18 +834,34 @@ public class PowergridDaoMySql implements PowergridDao {
     			maxPg = g.getPowergridId();
     		}
     	}
+    	
+    	
+    	try {
+			MessageDigest digest = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
-    	String insert = "INSERT INTO powergrid(PowergridId, Name,CoordinateSystem,Mrid) VALUES(?,?,?,?);";
+    	String insert = "INSERT INTO powergrid(PowergridId, Name, CoordinateSystem, Mrid, OriginalFileMd5, OriginalFormat," +
+    						"OriginalFilename, AccessLevel, CreatedBy) " +
+    					"VALUES(@PowergridId, @Name, @CoordinateSystem, @Mrid, @FileHash, @OriginalFormat, "+
+    						"@OriginalFilename, @AccessLevel, @CreatedBy);";
 
     	int pgId = maxPg + 1;
-    	try(Connection conn = pooledDatasource.getConnection()){
-    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
-    			stmt.setInt(1, pgId);
-    			stmt.setString(2, name);
-    			stmt.setString(3,  "");
-    			stmt.setString(4, uuid);
-    			stmt.execute();
-    		}
+    	try(NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
+    	
+    		stmt.setInt("PowergridId", pgId);
+    		stmt.setString("Name", name);
+    		stmt.setString("CoordinateSystem", coordinateSystem);
+    		stmt.setString("Mrid", uuid);
+    		stmt.setString("OriginalFormat",  originalFormatVersion);
+    		stmt.setString("OriginalFilename", originalFilename);
+    		stmt.setString("AccessLevel", accessLevel);
+    		stmt.setString("CreatedBy", uuid);
+    		stmt.setString("FileHash",  md5Hash);
+    		stmt.execute();
+    		
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
