@@ -133,7 +133,7 @@ $(document).ready(function() {
 	            			'<td onclick=viewDetails('+row.id+')>' + '<a>View Details</a>' + '</td>'+
 	            			'<td>' + row.status + '</td>';
 
-	            			if(row.status='complete'){
+	            			if(row.status=='complete'){
 	            				trHTML +='<td onclick=download('+row.id+')>' + '<a>Download</a>' + '</td>';
 	            			} else {
 	            				trHTML +='<td ></td>';
