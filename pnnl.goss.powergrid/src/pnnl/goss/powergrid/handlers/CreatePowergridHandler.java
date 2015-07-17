@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.felix.dm.annotation.api.Component;
 import org.apache.felix.dm.annotation.api.ServiceDependency;
@@ -81,6 +82,13 @@ public class CreatePowergridHandler implements RequestHandler {
 				response.setData(results);
 			}
 			else{
+				// Add access control and variables to the results map
+				JsonObject params = new JsonObject();
+				params.addProperty("access_level", pgRequest.getAccessLevel());
+				params.addProperty("original_filename", pgRequest.getOriginalFilename());
+				params.addProperty("md5_content_hash", DigestUtils.md5Hex(pgRequest.getPowergridContent()));
+				params.addProperty("description", pgRequest.getDescription());
+				results.getSectionMap().add("params", params);
 				SavePowergridResults saveResult = saveData(pgRequest, results.getSectionMap());
 				response.setData(saveResult);
 			}

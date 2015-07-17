@@ -135,9 +135,10 @@ public class PowergridDaoMySql implements PowergridDao {
     	}
 
     	JsonObject params = data.get("params").getAsJsonObject();
-    	String identifier = params.get("identifier").getAsString();
     	String accessLevel = params.get("access_level").getAsString();
     	String md5Hash = params.get("md5_content_hash").getAsString();
+    	String origFilename = params.get("original_filename").getAsString();
+    	String description = params.get("description").getAsString();
 
     	if (identifier == null || accessLevel == null || md5Hash == null){
     		throw new InvalidParameterException("Invalid identifier, access_level, and/or md5_content_hash specified");
@@ -147,8 +148,8 @@ public class PowergridDaoMySql implements PowergridDao {
     	List<String> problems = new ArrayList<>();
     	String pgUUID = UUID.randomUUID().toString();
 
-    	int pgId = insertPowerGrid(pgUUID, powergridName, "GLOBAL", "PTI_23", "ORIGINAL_FILENAME", md5Hash,
-    			accessLevel, problems);
+    	int pgId = insertPowerGrid(pgUUID, powergridName,"GLOBAL", "PTI_23", origFilename, md5Hash,
+    			accessLevel, description, problems);
 
     	List<Bus> buses = null;
     	@SuppressWarnings("unused")
@@ -846,7 +847,7 @@ public class PowergridDaoMySql implements PowergridDao {
     }
 
     private int insertPowerGrid(String uuid, String name, String coordinateSystem, String originalFormatVersion,
-    		String originalFilename, String md5Hash, String accessLevel, List<String> problems){
+    		String originalFilename, String md5Hash, String accessLevel, String description, List<String> problems){
     	List<Powergrid> grids = getAvailablePowergrids();
     	int maxPg = 0;
     	for(Powergrid g: grids){
@@ -864,9 +865,9 @@ public class PowergridDaoMySql implements PowergridDao {
 		}
 
     	String insert = "INSERT INTO powergrid(PowergridId, Name, CoordinateSystem, Mrid, OriginalFileMd5, OriginalFormat," +
-    						"OriginalFilename, AccessLevel, CreatedBy) " +
+    						"OriginalFilename, AccessLevel, CreatedBy, Description) " +
     					"VALUES(@PowergridId, @Name, @CoordinateSystem, @Mrid, @FileHash, @OriginalFormat, "+
-    						"@OriginalFilename, @AccessLevel, @CreatedBy);";
+    						"@OriginalFilename, @AccessLevel, @CreatedBy, @Description);";
 
     	int pgId = maxPg + 1;
     	boolean success = false;
@@ -881,6 +882,7 @@ public class PowergridDaoMySql implements PowergridDao {
     		stmt.setString("AccessLevel", accessLevel);
     		stmt.setString("CreatedBy", identifier);
     		stmt.setString("FileHash",  md5Hash);
+    		stmt.setString("Description", description);
     		stmt.execute();
     		success = true;
 

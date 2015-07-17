@@ -270,13 +270,14 @@ public class PowergridWebService {
 			else{
 				JsonObject params = new JsonObject();
 				subjectService.addRequest(createReq, identifier);
-				params.addProperty("access_level", requestBody.get("access_level").getAsString());
+				createReq.setAccessLevel(requestBody.get("access_level").getAsString());
+				createReq.setOriginalFilename("original_file.raw");
+				createReq.setDescription(requestBody.get("description").getAsString());
 				DataResponse res;
 				try{
-					//RequestEnvelope wrappedRequest = new RequestEnvelope(createReq, params);
+					
 					String content = requestBody.get("model_file_content").getAsString();
-					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);
-					params.addProperty("md5_content_hash", DigestUtils.md5Hex(decoded));
+					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);					
 					File tmpFile = File.createTempFile("upload", "tmp");
 					FileUtils.writeByteArrayToFile(tmpFile,  decoded);
 					createReq.setPowergridFile(tmpFile);

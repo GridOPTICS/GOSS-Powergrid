@@ -17,6 +17,34 @@ public class CreatePowergridRequest extends Request {
 	private String coordinateSystem;
 	private String powergridName;
 	private String importVersion;
+	private String accessLevel;
+	private String originalFilename;
+	private String description;
+		
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getAccessLevel() {
+		return accessLevel;
+	}
+
+	public void setAccessLevel(String accessLevel) {
+		this.accessLevel = accessLevel;
+	}
+
+	public String getOriginalFilename() {
+		return originalFilename;
+	}
+
+	public void setOriginalFilename(String originalFilename) {
+		this.originalFilename = originalFilename;
+	}
 
 	public CreatePowergridRequest() {
 		importVersion = "PSSE_23";
