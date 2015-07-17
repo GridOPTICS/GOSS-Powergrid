@@ -177,7 +177,7 @@ function viewDetails(id){
 
 	$.ajax({
             type: 'POST',
-            url: '/powergrid/api/details/'+id,
+            url: '/powergrid/api/scenario_details/'+id,
             data: JSON.stringify(parameters),
             dataType: 'json',
             contentType: 'application/json',
