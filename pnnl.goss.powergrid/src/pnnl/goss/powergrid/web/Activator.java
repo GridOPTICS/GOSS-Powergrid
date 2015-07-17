@@ -22,6 +22,15 @@ public class Activator extends DependencyActivatorBase {
 						.setService(PowergridService.class))
 				.add(createServiceDependency()
 						.setService(RequestSubjectService.class)));
+		manager.add(createComponent()
+				.setInterface(Object.class.getName(), null)
+				.setImplementation(SyntheticDataWebService.class)
+				.add(createServiceDependency()
+						.setService(RequestHandlerRegistry.class))
+				.add(createServiceDependency()
+						.setService(PowergridService.class))
+				.add(createServiceDependency()
+						.setService(RequestSubjectService.class)));
 //		manager.add(createComponent()
 //				.setInterface(Filter.class.getName(), null)
 //				.setImplementation(LoggedInFilter.class)

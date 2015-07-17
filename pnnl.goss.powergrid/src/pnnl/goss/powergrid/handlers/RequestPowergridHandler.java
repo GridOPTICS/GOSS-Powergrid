@@ -218,7 +218,7 @@ public class RequestPowergridHandler implements RequestHandler {
         DataSourcePooledJdbc datasource = dataSourceEntries.getDataSourceByPowergrid(requestPowergrid.getMrid());
 
         String identifier = subjectService.getIdentity(request);
-        
+
         if(requestPowergrid.getPowergridName()== null && request instanceof RequestPowergridList){
         	return getAvailablePowergrids(identifier);
         }
@@ -274,16 +274,16 @@ public class RequestPowergridHandler implements RequestHandler {
 //    	case BRANCHES:
 //    		response.setData((Serializable) dao.getBranches(grid.getPowergridId()));
 //    		break;
-    	case BUSES:
+    	case BUS:
     		response.setData((Serializable) dao.getBuses(grid.getPowergridId()));
     		break;
-    	case SWITCHED_SHUNTS:
+    	case SHUNT:
     		response.setData((Serializable) dao.getSwitchedShunts(grid.getPowergridId()));
     		break;
-    	case MACHINES:
+    	case GENERATOR:
     		response.setData((Serializable) dao.getMachines(grid.getPowergridId()));
     		break;
-    	case LOADS:
+    	case LOAD:
     		response.setData((Serializable) dao.getLoads(grid.getPowergridId()));
     		break;
     	}
