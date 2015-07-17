@@ -42,18 +42,19 @@ public class AllPowergridService implements PowergridService {
     }
 
 	@Override
-	public List<Powergrid> getPowergrids(JsonObject params) {
+	public List<Powergrid> getPowergrids(String identifier) {
 		List<Powergrid> availablePowergrids = new ArrayList<>();
-
-		String identifier = params.get("identifier").getAsString();
 
 		for(String k: dataSourceEntries.getDataSourceKeys()){
 			DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByKey(k);
     		PowergridDao dao = new PowergridDaoMySql(ds, identifier);
     		for(Powergrid g:dao.getAvailablePowergrids()){
-    			mridToDatasourceKeyMap.put(g.getMrid(), k);
-    			mridToPowergridMap.put(g.getMrid(), g);
-    			availablePowergrids.add(g);
+    			if (identifier == null || "public".equalsIgnoreCase(g.getAccessLevel()) ||
+    					(identifier.equals(g.getCreatedBy()) && "private".equalsIgnoreCase(g.getAccessLevel()))) {
+	    			mridToDatasourceKeyMap.put(g.getMrid(), k);
+	    			mridToPowergridMap.put(g.getMrid(), g);
+	    			availablePowergrids.add(g);
+    			}
     		}
     	}
 
@@ -61,12 +62,12 @@ public class AllPowergridService implements PowergridService {
 	}
 
 	@Override
-	public PowergridModel getPowergridModel(String mrid, JsonObject params) {
+	public PowergridModel getPowergridModel(String mrid, String identifier) {
 		PowergridModel model = null;
 		// Load the powergrid map so we know which datasource to look
 		// up the powergrid model from.
 		if (mridToDatasourceKeyMap.isEmpty()){
-			getPowergrids(params);
+			getPowergrids(identifier);
 		}
 
 		if (mridToDatasourceKeyMap.containsKey(mrid)){
@@ -80,7 +81,7 @@ public class AllPowergridService implements PowergridService {
 	}
 
 	@Override
-	public PowergridModel getPowergridModel(String mrid, String timestep, JsonObject params) {
+	public PowergridModel getPowergridModel(String mrid, String timestep, String identifier) {
 		// TODO Auto-generated method stub
 		return null;
 	}

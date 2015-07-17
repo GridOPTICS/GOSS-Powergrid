@@ -6,42 +6,68 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Synthetic Data Generation and Repository | Upload Model</title>
+    
     <link rel="stylesheet" href="css/foundation.min.css" />
 	<link rel="stylesheet" href="css/dataTables.foundation.css" />
     <script src="js/vendor/modernizr.js"></script>
-	<script src="js/jquery-2.1.4.min.js"></script>
-	<script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/jquery-2.1.4.min.js"></script>
+    
+    <!-- For Data Table-->
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/dataTables.foundation.js"></script>
+    
+    <!-- For Top Bar -->
+    <script src="js/foundation.min.js"></script>
+  	<script src="js/foundation/foundation.topbar.js"></script>
+  	
     <script language="javascript" src="/goss/js/goss-auth.js"></script>
-	
-	
-	
-	
 	
   </head>
   
+
 <body>
 
-	<nav class="top-bar" data-topbar role="navigation">
-	  
-	  
-	  <section class="top-bar-section">
-	    <ul class="left">
-	      <li class="has-dropdown"><a href="#">Models</a>
+<nav class="top-bar" data-topbar role="navigation">
+<ul class="title-area">
+  <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+</ul>
 
-	        <ul class="dropdown">
-	          <li><a href="/powergrid/upload.html">Upload New Model</a></li>
-	          <li><a href="/powergrid/list.html">List Models</a></li>
-	          
-	        </ul>
-	      </li>
-	    </ul>
-	    
-	  </section>
-	</nav>
+<section class="top-bar-section">
+  <ul class="left">
+    
+    <li class="has-dropdown">
+      <a href="#">New</a>
+      <ul class="dropdown">
+        <li><a href="upload.html">New Model</a></li>
+        <li><a href="create_scenario.html">New Scenario</a></li>
+      </ul>
+    </li>
+    
+    <li class="has-dropdown">
+    <a href="#">List</a>
+    <ul class="dropdown">
+      <li><a href="list.html">List Models</a></li>
+      <li><a href="powergrid.html">List Scenarios</a></li>
+    </ul>
+  </li>
+  </ul>
+
+  <!-- Left Nav Section -->
+  <ul class="right">
+  <li class="has-dropdown">
+  <a href="#">Settings</a>
+	<ul class="dropdown">
+	  <li><a href="#">Change Password</a></li>
+	  <li class="active"><a href="http://localhost:8181/goss/logout.html">Sign Out</a></li>
+	</ul>
+	</li>
+  </ul>
+</section>
+</nav>
 
     <div class="row">
 	  <div class="large-12 columns">
-        <h3>View Power Grid Model</h3>
+        <h3>View Power Grid Models</h3>
       </div>
     </div>
 	<br/>
@@ -81,7 +107,7 @@
 
 $(document).ready(function() {
 	
-		
+	$(document).foundation();
 		
 		/*
 		 * Call web service to get all powergrids createdby / shared with current user.

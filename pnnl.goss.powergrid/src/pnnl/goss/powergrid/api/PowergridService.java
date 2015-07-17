@@ -20,7 +20,7 @@ public interface PowergridService {
      *
      * @return A list of {@link Powergrid} objects.
      */
-    public List<Powergrid> getPowergrids(JsonObject params);
+    public List<Powergrid> getPowergrids(String identifier);
 
     /**
      * Returns the powergrid model for the specified mrid.
@@ -28,7 +28,7 @@ public interface PowergridService {
      * @param mrid
      * @return A {@link PowergridModel} object
      */
-    public PowergridModel getPowergridModel(String mrid, JsonObject params);
+    public PowergridModel getPowergridModel(String mrid, String identifier);
 
     /**
      * Returns the {@link PowergridModel} for the specified mrid
@@ -38,5 +38,5 @@ public interface PowergridService {
      * @param timestep
      * @return
      */
-    public PowergridModel getPowergridModel(String mrid, String timestep, JsonObject params);
+    public PowergridModel getPowergridModel(String mrid, String timestep, String identifier);
 }

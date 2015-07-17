@@ -1,0 +1,242 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Synthetic Data Generation and Repository | Upload Model</title>
+    <link rel="stylesheet" href="css/foundation.css" />
+    <script src="js/vendor/modernizr.js"></script>
+	<script src="js/jquery-2.1.4.min.js"></script>
+
+	 <!-- For Top Bar -->
+	    <script src="js/foundation.min.js"></script>
+	  	<script src="js/foundation/foundation.topbar.js"></script>
+	  	
+	    <script language="javascript" src="/goss/js/goss-auth.js"></script>
+	
+  </head>
+  
+<body>
+
+
+
+<nav class="top-bar" data-topbar role="navigation">
+<ul class="title-area">
+  <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+</ul>
+
+<section class="top-bar-section">
+  <ul class="left">
+    
+    <li class="has-dropdown">
+      <a href="#">New</a>
+      <ul class="dropdown">
+        <li><a href="upload.html">New Model</a></li>
+        <li><a href="create_scenario.html">New Scenario</a></li>
+      </ul>
+    </li>
+    
+    <li class="has-dropdown">
+    <a href="#">List</a>
+    <ul class="dropdown">
+      <li><a href="list.html">List Models</a></li>
+      <li><a href="powergrid.html">List Scenarios</a></li>
+    </ul>
+  </li>
+  </ul>
+
+  <!-- Left Nav Section -->
+  <ul class="right">
+  <li class="has-dropdown">
+  <a href="#">Settings</a>
+	<ul class="dropdown">
+	  <li><a href="#">Change Password</a></li>
+	  <li class="active"><a href="http://localhost:8181/goss/logout.html">Sign Out</a></li>
+	</ul>
+	</li>
+  </ul>
+</section>
+</nav>
+
+    <div class="row">
+	  <div class="large-12 columns">
+        <h3>Create Scenario</h3>
+      </div>
+    </div>
+	<br/>
+
+	<div class="row">
+		<div class="large-4 columns">
+			<label>Name
+				<input type="text" id="name"/>
+			</label>
+		</div>
+	</div>
+	
+	<div class="row" id="attributes_div">
+		<div class="large-8 medium-8 columns">
+		
+		
+	<div class="row">
+		<div class="large-4 columns">
+		  <label>Select Profile:</label>
+		  <input type="radio" id="profileWinter" name="profile" value="winter" checked><label for="profileWinter">Winter</label>
+		  <input type="radio" id="profileSummer" name="profile" value="summer" ><label for="profileSummer">Summer</label>
+		</div>
+		<div class="large-8 columns">
+			<div class="large-6 columns">
+				<label>Scenario Start Time
+					<input type="text" id="startTime" placeholder="hh:ss"/>
+				</label>
+			</div>
+		</div>
+	</div>
+		
+		
+		<!--	<div class="row">
+				<div class="large-6 medium-6 columns">
+				<br>
+				Select Load Profile:
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="large-6 medium-6 columns">
+					<input type="radio" id="winter" name="profile" value="winter" checked>Winter (January 1, from 00:00 to 23:59)<br>
+				</div>
+				<div class="large-6 medium-6 columns">
+					<input type="radio" id="summer" name="profile" value="summer">Summer (August 1, from 00:00 to 23:59)
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="large-2 columns">
+					<label>Start Time
+						<input type="text" id="startTime" placeholder="hh:ss"/>
+					</label>
+				</div>
+			</div>-->
+			
+	<div class="row">
+		<div class="large-4 medium-4 columns">
+			<input type="button" id="addEvents" class="button round info tiny" id="addEvents" value="Add Events"/> 
+		</div>
+	</div>
+			
+			
+	<div class="row" id="eventsDiv">
+		<div id="internalDiv">
+			<div class="large-6 medium-6 columns">
+				<label>Event:</label>
+			</div>
+			<div class="large-4 medium-4 columns">
+				<label>Time Offset (<60:00)</label>
+			</div>
+			<div class="large-2 medium-2 columns" id="buttonDiv">
+				<label>Delete</label>
+			</div>
+		</div>
+	</div>
+			
+	<div class="row" id="eventsDiv">
+		<div id="internalDiv">
+			<div class="large-6 medium-6 columns">
+				<select id="events" class="eventsClass">
+					<option value="default">Select Event</option>
+					<option value="lineOutage">Line Outage</option>
+					<option value="genOutage">Generator Outage</option>
+				</select>
+			</div>
+			<div class="large-4 medium-4 columns">
+				<input type="text" id="timeOffset" class="timeOffsetClass" placeholder="mm:ss" />
+			</div>
+			<div class="large-2 medium-2 columns" id="buttonDiv">
+				<input type="button" class="button round alert tiny" value="-" onclick="removeEvent(this);"/> 
+			</div>
+		</div>
+	</div>	
+	</div>
+	
+	<div class="row">
+		<div class="large-8 columns">
+		  <label>Description
+			<textarea rows="5" id="description" placeholder="Model Description in few lines"></textarea>
+		  </label>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="large-4 medium-4 columns">
+		<input type="button" id="upload_file" class="button small round" value="Generate Scenario"/> 
+		</div>
+	</div>
+	
+	       
+
+        
+	</div>
+	
+	
+
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+	$(document).foundation();
+});
+
+$('#addEvents').click(function(){
+
+	var eventHTML = "<div id=\"internalDiv\">"+
+						"<div class=\"large-6 medium-6 columns\">"+
+							"<select id=\"events\" class=\"eventsClass\">"+
+								"<option value=\"default\">Select Event</option>"+
+								"<option value=\"UW\">Line Outage</option>"+
+								"<option value=\"NASPI\">Generator Outage</option>"+
+							"</select>"+
+						"</div>"+
+						"<div class=\"large-4 medium-4 columns\">"+
+							"<input type=\"text\" id=\"timeOffset\" class=\"timeOffsetClass\" placeholder=\"mm:ss\" />"+
+						"</div>"+
+						"<div class=\"large-2 medium-2 columns\" id=\"buttonDiv\">"+
+							"<input type=\"button\" class=\"button round alert tiny\" value=\"-\" onclick=\"removeEvent(this);\"/>"+
+						"</div>"+
+					"</div>";
+	
+	$( "#eventsDiv" ).append( eventHTML);
+
+});
+
+function removeEvent(element){
+	$(element).parent().parent().remove();
+}
+
+function createRequestData(){
+	
+	
+
+}
+
+function callWebService(requestData){
+/*
+	$.ajax({
+		    url: '/powergrid/api/create/scenario',
+		    type: 'POST',
+		    data: {
+		        authToken: document.cookie.split("=")[1]
+		    },
+		    success: function (response) {
+		        var trHTML = '';
+		        $.each(response, function (i, row) {
+		            trHTML += '<tr><td>' + item.rank + '</td><td>' + item.content + '</td><td>' + item.UID + '</td></tr>';
+		        });
+		        $('#records_table').append(trHTML);
+		    }
+		});*/
+
+
+
+}
+
+</script>
+</body>

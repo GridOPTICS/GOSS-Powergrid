@@ -8,6 +8,13 @@
     <script src="js/vendor/modernizr.js"></script>
 	<script src="js/jquery-2.1.4.min.js"></script>
 	<script language="javascript" src="/goss/js/goss-auth.js"></script>
+	<script src="js/foundation.min.js"></script>
+  	<script src="js/foundation.topbar.js"></script>
+	<link rel="stylesheet" href="css/foundation.min.css" />
+	
+	<!-- For Top Bar -->
+	<script src="js/foundation/foundation.topbar.js"></script>
+	
 	
   </head>
   
@@ -15,41 +22,47 @@
 
 
 
-	<nav class="top-bar" data-topbar role="navigation">
-	  <ul class="title-area">
-		<li class="name">
-		  <h1><a href="#">New</a></h1>
-		</li>
-		 <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
-		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
-	  </ul>
-	  
-	  <ul class="title-area">
-		<li class="name">
-		  <h1><a href="#">Download</a></h1>
-		</li>
-		 <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
-		<li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
-	  </ul>
+<nav class="top-bar" data-topbar role="navigation">
+<ul class="title-area">
+  <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+</ul>
 
-	  <section class="top-bar-section">
-		<!-- Right Nav Section -->
-		<ul class="right">
-		  <li class="has-dropdown">
-			<a href="#">Settings</a>
-			<ul class="dropdown">
-			  <li><a href="#">Change Password</a></li>
-			  <li class="active"><a href="#">Sign Out</a></li>
-			</ul>
-		  </li>
-		</ul>
+<section class="top-bar-section">
+  <ul class="left">
+    
+    <li class="has-dropdown">
+      <a href="#">New</a>
+      <ul class="dropdown">
+        <li><a href="upload.html">New Model</a></li>
+        <li><a href="create_scenario.html">New Scenario</a></li>
+      </ul>
+    </li>
+    
+    <li class="has-dropdown">
+    <a href="#">List</a>
+    <ul class="dropdown">
+      <li><a href="list.html">List Models</a></li>
+      <li><a href="powergrid.html">List Scenarios</a></li>
+    </ul>
+  </li>
+  </ul>
 
-	  </section>
-	</nav>
+  <!-- Left Nav Section -->
+  <ul class="right">
+  <li class="has-dropdown">
+  <a href="#">Settings</a>
+	<ul class="dropdown">
+	  <li><a href="#">Change Password</a></li>
+	  <li class="active"><a href="http://localhost:8181/goss/logout.html">Sign Out</a></li>
+	</ul>
+	</li>
+  </ul>
+</section>
+</nav>
 
     <div class="row">
 	  <div class="large-12 columns">
-        <h3>Upload New Power Grid Model</h3>
+        <h3>New Power Grid Model</h3>
       </div>
     </div>
 	<br/>
@@ -139,6 +152,9 @@
 
 <script type="text/javascript">
 
+$(document).ready(function() {
+	$(document).foundation();
+});
 
 $("input[name=access]").click(function(){
    var access = $("input[name='access']:checked").val();
@@ -148,6 +164,8 @@ $("input[name=access]").click(function(){
 	else{
 		$('#groups').prop('disabled',true)
 	}
+	
+	console.log(authToken);
 });
 
 $('#upload_file').click(function(){
@@ -199,8 +217,12 @@ $("#model_file").change(function(){
 });
 
 function validateAndPost(){
+console.log(authToken);
 	console.log('Posting parameters\n'+ JSON.stringify(parameters));
 	if (parameters['model_file_name'] != null && parameters['model_file_name'].length > 0){
+		localStorage.setItem("modelId", 15);
+        	window.location.replace('/powergrid/view.html');
+	/*
 		$.ajax({
             type: 'POST',
             url: '/powergrid/api/create',
@@ -211,6 +233,10 @@ function validateAndPost(){
             	console.log('Success');
             	console.log(data.toString());
             	alert("Got "+data.toString());
+            	//get id from success data
+            	localStorage.setItem("modelId", 15);
+        		window.location.replace('/powergrid/view.html);
+            	
 			},
             failure: function(data){
             	console.log('Failure');
@@ -218,7 +244,7 @@ function validateAndPost(){
                 alert("Falure: "+ data.toString());
             }
 
-        });	
+        });	*/
 	}
 	else {
 		alert('Invalid model file!');
@@ -226,84 +252,6 @@ function validateAndPost(){
 	
 	
 }
-
-/*
-function submit(){
-	
-	$('#authToken').value = document.cookie
-	
-	var form = document.forms.namedItem("uploadForm");
-	form.addEventListener('submit', function(ev) {
-
-	  var oOutput = document.querySelector("div"),
-	      oData = new FormData(form);
-
-	  var oReq = new XMLHttpRequest();
-	  oReq.open("POST", "http://localhost:8181/powergrid/create", true);
-	  oReq.onload = function(oEvent) {
-	    if (oReq.status == 200) {
-	      oOutput.innerHTML = "Uploaded!";
-	    } else {
-	      oOutput.innerHTML = "Error " + oReq.status + " occurred when trying to upload your file.<br \/>";
-	    }
-	  };
-
-	  oReq.send(oData);
-	  ev.preventDefault();
-	}, false);
-	
-	
-	
-}
-
-function upload(){
-	var f = fileinput.files[0]; 
-	
-
-}
-
-function sendFile(evt) {
-    var f = fileinput.files[0]; 
-
-    if (f) {
-      var r = new FileReader();
-      r.onload = function(e) { 
-	    var contents = e.target.result;
-		alert(contents)
-        client.send("/topic/synthdata/request/newmodel",{}, contents.toString())
-      }
-      r.readAsText(f);
-    } else { 
-      alert("Failed to load file");
-    }
-  }
-  
- function genData(evt){
-    var user = sessionStorage.gossUser;
-
-	if (winter.checked) {
-		profile_value = winter.value
-	}else{
-		profile_value = summer.value
-	}
-	
- 	var request = "{"
-				+ "username:\""+user+"\","
-				+ "modelId:\""+file_id+"\","
-				+ "profile:\""+profile_value+"\","
-				+ "lineOutage:\""+line_outage.value+"\","
-				+ "genOutage:\""+gen_outage.value+"\""
-				+ "}"
-	alert(request)
-	client.send("/topic/synthdata/"+user+"/gendata",{}, request.toString())
-				
- }
- 
- function download() {
-			window.open("data:test/text;charset=utf-8," + encodeURIComponent(message.body));
-		}
-		*/
-	
 
 </script>
 </body>

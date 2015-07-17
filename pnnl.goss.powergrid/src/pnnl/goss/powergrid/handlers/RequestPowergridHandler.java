@@ -174,9 +174,9 @@ public class RequestPowergridHandler implements RequestHandler {
     			!grid.getMrid().isEmpty());
     }
 
-    private DataResponse getAvailablePowergrids(JsonObject params){
+    private DataResponse getAvailablePowergrids(String identifier){
 
-    	availablePowergrids = new PowergridList(powergridService.getPowergrids(params));
+    	availablePowergrids = new PowergridList(powergridService.getPowergrids(identifier));
 
         DataResponse response = new DataResponse(availablePowergrids);
         return response;
@@ -217,12 +217,10 @@ public class RequestPowergridHandler implements RequestHandler {
         log.debug("using datasource: " + PowergridDataSourceEntries.class.getName());
         DataSourcePooledJdbc datasource = dataSourceEntries.getDataSourceByPowergrid(requestPowergrid.getMrid());
 
+        String identifier = subjectService.getIdentity(request);
+        
         if(requestPowergrid.getPowergridName()== null && request instanceof RequestPowergridList){
-        	if (env != null){
-        		return getAvailablePowergrids(env.getParams());
-        	}
-
-            return getAvailablePowergrids();
+        	return getAvailablePowergrids(identifier);
         }
 
         // Make sure there is a valid name.

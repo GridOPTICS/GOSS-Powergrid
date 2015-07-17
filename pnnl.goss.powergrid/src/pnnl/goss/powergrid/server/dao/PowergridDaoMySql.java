@@ -955,12 +955,12 @@ public class PowergridDaoMySql implements PowergridDao {
 	                item.setPowergridId(rs.getInt(1));
 	                item.setName(rs.getString(2));
 	                item.setMrid(rs.getString("pg.mrid"));
-	                props.addProperty("description", rs.getString("description"));
-        			props.addProperty("Original Format", rs.getString("OriginalFormat"));
-        			props.addProperty("Access Level", rs.getString("AccessLevel"));
-        			props.addProperty("Created By", rs.getString("CreatedBy"));
-        			props.addProperty("Created On", rs.getString("createdOn")); //.getTimestamp("CreatedOn").toLocalDateTime().toString());
-        			item.setOtherProperties(props);
+	                item.setDescription(rs.getString("description"));
+	                item.setOriginalFilename(rs.getString("OriginalFilename"));
+	                item.setAccessLevel(rs.getString("AccessLevel"));
+	                item.setCreatedBy(rs.getString("CreatedBy"));
+	                item.setCreatedOn(rs.getString("createdOn"));
+	                
 	                grids.add(item);
 	            }
         	}
@@ -1428,12 +1428,12 @@ public class PowergridDaoMySql implements PowergridDao {
         			grid.setPowergridId(rs.getInt("PowergridId"));
         			grid.setName(rs.getString("name"));
         			grid.setMrid(rs.getString("mrid"));
-        			props.addProperty("description", rs.getString("description"));
-        			props.addProperty("Original Format", rs.getString("OriginalFormat"));
-        			props.addProperty("Access Level", rs.getString("AccessLevel"));
-        			props.addProperty("Created By", rs.getString("CreatedBy"));
-        			props.addProperty("Created On", rs.getString("createdOn")); //.getTimestamp("CreatedOn").toLocalDateTime().toString());
-        			grid.setOtherProperties(props);
+        			grid.setDescription(rs.getString("description"));
+        			grid.setOriginalFilename(rs.getString("OriginalFilename"));
+        			grid.setAccessLevel(rs.getString("AccessLevel"));
+        			grid.setCreatedBy(rs.getString("CreatedBy"));
+        			grid.setCreatedOn(rs.getString("CreatedOn"));
+        			
         		}
     		}
         } catch (SQLException e) {
