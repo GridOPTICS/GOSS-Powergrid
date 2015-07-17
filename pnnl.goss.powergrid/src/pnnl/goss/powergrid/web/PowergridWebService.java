@@ -32,6 +32,7 @@ import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.SavePowergridResults;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
+import pnnl.goss.powergrid.parser.api.RequestSubjectService;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
 import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
@@ -43,6 +44,8 @@ public class PowergridWebService {
 
 	private volatile RequestHandlerRegistry handlers;
 
+	private volatile RequestSubjectService subjectService;
+
 	@POST
 	@Path("/list")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -51,28 +54,25 @@ public class PowergridWebService {
 		"Using the mrid the application can then post a request for a specific " +
 		"PowergridModel instance or lists of it's components.")
 	public Response list(@Context HttpServletRequest request){
-		
+
 		JsonObject jsonBody = WebUtil.getRequestJsonBody(request);
 		RequestPowergridList reqList = new RequestPowergridList();
-		
-		String identifier = (String) request.getAttribute("identifier");	
+
+		String identifier = (String) request.getAttribute("identifier");
 		List<Powergrid> data = null;
 		Response response= null;
-		
+
 		if (handlers.checkAccess((Request)reqList, identifier)){
-			JsonObject params = new JsonObject();
-			params.addProperty("identifier", identifier);
-			
-			RequestEnvelope env = new RequestEnvelope(reqList, params);
+			subjectService.addRequest(reqList, identifier);
 			DataResponse res;
-			
+
 			try {
-				
-				res = (DataResponse)handlers.handle(env);
+
+				res = (DataResponse)handlers.handle(reqList);
 				if(WebUtil.wasError(res)){
 					response = Response.status(Response.Status.BAD_REQUEST)
 							.entity(res.getData()).build();
-				}else{					
+				}else{
 					data = ((PowergridList)res.getData()).toList();
 					response = Response.ok(data).build();
 				}
@@ -100,6 +100,7 @@ public class PowergridWebService {
 
 		if (handlers.checkAccess((Request)pgRequest, subject)){
 			DataResponse res;
+			subjectService.addRequest(pgRequest, identifier);
 			try {
 				res = (DataResponse)handlers.handle(pgRequest);
 				if (WebUtil.wasError(res.getData())){
@@ -149,6 +150,7 @@ public class PowergridWebService {
 
 		if (handlers.checkAccess((Request)pgRequest, identifier)){
 			DataResponse res;
+			subjectService.addRequest(pgRequest, identifier);
 			try {
 				res = (DataResponse)handlers.handle(pgRequest);
 				if (WebUtil.wasError(res.getData())){
@@ -202,6 +204,7 @@ public class PowergridWebService {
 
 		if (handlers.checkAccess((Request)pgRequest, identifier)){
 			DataResponse res;
+			subjectService.addRequest(pgRequest, identifier);
 			try {
 				res = (DataResponse)handlers.handle(pgRequest);
 				if (WebUtil.wasError(res.getData())){
@@ -234,7 +237,7 @@ public class PowergridWebService {
 		Response response = null;
 		String identifier = (String) req.getAttribute("identifier");
 		JsonObject requestBody = WebUtil.getRequestJsonBody(req);
-		
+
 		List<String> errors = new ArrayList<>();
 
 		if (!requestBody.has("name") ||
@@ -245,7 +248,7 @@ public class PowergridWebService {
 				requestBody.get("model_file_content").getAsString().isEmpty()){
 			errors.add("Invalid powergridContent specified");
 		}
-		
+
 		if (!requestBody.has("access_level") ||
 				requestBody.get("access_level").getAsString().isEmpty()){
 			errors.add("Invalid access level specified");
@@ -257,27 +260,27 @@ public class PowergridWebService {
 
 		}
 		else{
-			
+
 			CreatePowergridRequest createReq = new CreatePowergridRequest();
-			
+
 			// Make sure the user has access to do this request.
 			if (!handlers.checkAccess(createReq, identifier)){
 				response = Response.status(Response.Status.UNAUTHORIZED).build();
 			}
 			else{
 				JsonObject params = new JsonObject();
-				params.addProperty("identifier", identifier);
+				subjectService.addRequest(createReq, identifier);
 				params.addProperty("access_level", requestBody.get("access_level").getAsString());
 				DataResponse res;
 				try{
-					RequestEnvelope wrappedRequest = new RequestEnvelope(createReq, params);
+					//RequestEnvelope wrappedRequest = new RequestEnvelope(createReq, params);
 					String content = requestBody.get("model_file_content").getAsString();
 					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);
 					params.addProperty("md5_content_hash", DigestUtils.md5Hex(decoded));
 					File tmpFile = File.createTempFile("upload", "tmp");
 					FileUtils.writeByteArrayToFile(tmpFile,  decoded);
 					createReq.setPowergridFile(tmpFile);
-					res = (DataResponse)handlers.handle(wrappedRequest);
+					res = (DataResponse)handlers.handle(createReq);
 					if (WebUtil.wasError(res.getData())){
 						response = Response.status(Response.Status.BAD_REQUEST)
 								.entity(res.getData()).build();
@@ -297,11 +300,11 @@ public class PowergridWebService {
 				}
 			}
 		}
-		
+
 		return response;
 	}
-	
-	
+
+
 	@POST
 	@Path("/details/{mrid}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -314,14 +317,14 @@ public class PowergridWebService {
 			@Context HttpServletRequest req) {
 
 		System.out.println("Retrieving powergrid details for mrid: "+ mrid);
-		
-		
-		
+
+
+
 		String respStr = "{\"id\":\""+mrid+"\",\"name\":\"Scenario X\",\"profile\":\"winter\",\"startTime\":\"10:01\",\"events\":[{\"timeOffset\":\"5 min\",\"event\":\"line trip\"},{\"timeOffset\":\"10 min\",\"event\":\"line trip\"},{\"timeOffset\":\"12 min\",\"event\":\"generator outage\"}]}";
-		
+
 		Response response =  Response.status(Response.Status.OK)
 				.entity(respStr).build();
-		
+
 //		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
 //		pgRequest.addExtesion("ext_table", extensionType);
 //		Response response = null;

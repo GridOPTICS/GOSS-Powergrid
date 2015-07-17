@@ -29,6 +29,7 @@ import pnnl.goss.powergrid.parser.api.InvalidDataException;
 import pnnl.goss.powergrid.parser.api.ParserResults;
 import pnnl.goss.powergrid.parser.api.ParserService;
 import pnnl.goss.powergrid.parser.api.PropertyGroup;
+import pnnl.goss.powergrid.parser.api.RequestSubjectService;
 import pnnl.goss.powergrid.parsers.ParserServiceImpl;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
 import pnnl.goss.powergrid.server.PowergridDataSources;
@@ -42,6 +43,9 @@ public class CreatePowergridHandler implements RequestHandler {
 
 	@ServiceDependency
 	private volatile ParserService parserService;
+
+	@ServiceDependency
+	private volatile RequestSubjectService subjectService;
 
 	// private PowergridDataSource datasource = new
 	// PowergridDataSource("powergrid", "manager",
@@ -68,11 +72,11 @@ public class CreatePowergridHandler implements RequestHandler {
 		DataResponse response = new DataResponse();
 
 		try {
-			
+
 			ParserResults results = parserService.parse(
 					"PsseDefinitions",
 					IOUtils.toInputStream(pgRequest.getPowergridContent()));
-			
+
 			if (results.hasErrors()){
 				response.setData(results);
 			}
@@ -95,8 +99,8 @@ public class CreatePowergridHandler implements RequestHandler {
 			JsonObject parsedData) {
 		DataSourcePooledJdbc obj = (DataSourcePooledJdbc)datasourceRegistry.get("goss.powergrids.north");
 		//DataSourceObject obj = datasourceRegistry.get("goss.powergrids");
-		PowergridDaoMySql mydata = new PowergridDaoMySql(obj);
-		
+		PowergridDaoMySql mydata = new PowergridDaoMySql(obj, subjectService.getIdentity(request));
+
 		// PowergridDaoMySql mydata = new PowergridDaoMySql((DataSource) obj);
 		return mydata.createPowergrid(request.getPowergridName(),  parsedData);
 	}

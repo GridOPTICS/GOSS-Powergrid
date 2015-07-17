@@ -11,7 +11,7 @@
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-     
+
     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -56,35 +56,35 @@ public class RequestPowergrid extends Request {
 	String name = null;
 	String mrid = null;
 	Map<String, Object> extensions = new HashMap<>();
-	
+
 	public void addExtesion(String key, Object value){
 		extensions.put(key, value);
 	}
-	
+
 	public Map<String, Object> getExtensions(){
 		return extensions;
 	}
-	
+
 	/**
 	 * Request a powergrid with the passed mrid associated with it.  The
-	 * server will manage the "where" this data is located in order to fulfill 
-	 * the request. 
-	 * 
+	 * server will manage the "where" this data is located in order to fulfill
+	 * the request.
+	 *
 	 * @param mrid
 	 */
 	public RequestPowergrid(String mrid){
 		this.mrid = mrid;
 	}
-	
+
 	public String getMrid(){
 		return this.mrid;
 	}
-	
+
 	/**
 	 * <p>
 	 * Request the powergrid with the name of
 	 * </p>
-	 * 
+	 *
 	 */
 	public String getPowergridName() {
 		return name;

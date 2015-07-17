@@ -13,10 +13,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
 
+import pnnl.goss.core.server.DataSourcePooledJdbc;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.PowergridService;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.handlers.RequestPowergridHandler;
+import pnnl.goss.powergrid.parser.api.RequestSubjectService;
 import pnnl.goss.powergrid.server.dao.PowergridDao;
 import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
 
@@ -25,6 +27,9 @@ public class AllPowergridService implements PowergridService {
 
 	@ServiceDependency
 	private volatile PowergridDataSourceEntries dataSourceEntries;
+
+	@ServiceDependency
+	private volatile RequestSubjectService subjectService;
 
 	private volatile Map<String, String> mridToDatasourceKeyMap = new HashMap<>();
 	private volatile Map<String, Powergrid> mridToPowergridMap = new HashMap<>();
@@ -39,12 +44,13 @@ public class AllPowergridService implements PowergridService {
 	@Override
 	public List<Powergrid> getPowergrids(JsonObject params) {
 		List<Powergrid> availablePowergrids = new ArrayList<>();
-		
+
 		String identifier = params.get("identifier").getAsString();
 
 		for(String k: dataSourceEntries.getDataSourceKeys()){
-    		PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByKey(k));
-    		for(Powergrid g:dao.getAvailablePowergrids(identifier)){
+			DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByKey(k);
+    		PowergridDao dao = new PowergridDaoMySql(ds, identifier);
+    		for(Powergrid g:dao.getAvailablePowergrids()){
     			mridToDatasourceKeyMap.put(g.getMrid(), k);
     			mridToPowergridMap.put(g.getMrid(), g);
     			availablePowergrids.add(g);
@@ -65,7 +71,8 @@ public class AllPowergridService implements PowergridService {
 
 		if (mridToDatasourceKeyMap.containsKey(mrid)){
 			String dsKey = mridToDatasourceKeyMap.get(mrid);
-			PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByKey(dsKey));
+			DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(dsKey);
+			PowergridDao dao = null; // new PowergridDaoMySql(ds, iden);
 			model = dao.getPowergridModel(mridToPowergridMap.get(mrid).getPowergridId());
 		}
 
