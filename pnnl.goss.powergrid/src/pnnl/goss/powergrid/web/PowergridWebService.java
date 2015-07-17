@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -307,13 +308,13 @@ public class PowergridWebService {
 
 
 	@POST
-	@Path("/details/{mrid}")
+	@Path("/scenario_details/{mrid}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Description(
 		"Returns the details for hte scenario. "
 	)
 	@ReturnType(PowergridModel.class)
-	public Response getPowergridExt(String identifier,
+	public Response getScenarioDetails(String identifier,
 			@PathParam("mrid") String mrid,
 			@Context HttpServletRequest req) {
 
@@ -325,6 +326,61 @@ public class PowergridWebService {
 
 		Response response =  Response.status(Response.Status.OK)
 				.entity(respStr).build();
+
+//		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
+//		pgRequest.addExtesion("ext_table", extensionType);
+//		Response response = null;
+//
+//		if (handlers.checkAccess((Request)pgRequest, identifier)){
+//			DataResponse res;
+//			try {
+//				res = (DataResponse)handlers.handle(pgRequest);
+//				if (WebUtil.wasError(res.getData())){
+//					response = Response.status(Response.Status.BAD_REQUEST)
+//							.entity(res.getData()).build();
+//				}
+//				else {
+//					String data = ((String)res.getData());
+//					response = Response.status(Response.Status.OK).entity(data).build();
+//				}
+//			} catch (HandlerNotFoundException e) {
+//				e.printStackTrace();
+//
+//			}
+//		}
+
+		return response;
+	}
+	
+	@POST
+	@Path("/model_details/{mrid}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Description(
+		"Returns the details for hte scenario. "
+	)
+	@ReturnType(PowergridModel.class)
+	public Response getModelDetails(String identifier,
+			@PathParam("mrid") String mrid,
+			@Context HttpServletRequest req) {
+
+		System.out.println("Retrieving powergrid details for mrid: "+ mrid);
+
+		HashMap<String, String> modelDetails = new HashMap<String, String>();
+		
+		modelDetails.put("1", "{\"id\":\"1\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");
+		modelDetails.put("2", "{\"id\":\"2\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");
+		modelDetails.put("3", "{\"id\":\"3\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");
+		modelDetails.put("4", "{\"id\":\"4\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");
+		modelDetails.put("5", "{\"id\":\"5\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");
+		modelDetails.put("6", "{\"id\":\"6\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");
+		modelDetails.put("7", "{\"id\":\"7\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");
+		modelDetails.put("8", "{\"id\":\"8\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");
+
+//		"{\"id\":\"1\",\"name\":\"North\",\"created_by\":\"Poorva Sharma\",\"filename\":\"north.raw\",\"desc\":\"this is a test\",\"details":\"This is detail\"}";
+//		String respStr = "{\"id\":\""+mrid+"\",\"name\":\"Scenario X\",\"profile\":\"winter\",\"startTime\":\"10:01\",\"events\":[{\"timeOffset\":\"5 min\",\"event\":\"line trip\"},{\"timeOffset\":\"10 min\",\"event\":\"line trip\"},{\"timeOffset\":\"12 min\",\"event\":\"generator outage\"}]}";
+
+		Response response =  Response.status(Response.Status.OK)
+				.entity(modelDetails.get(mrid)).build();
 
 //		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
 //		pgRequest.addExtesion("ext_table", extensionType);

@@ -83,6 +83,8 @@
                 <th>Description</th>
                 <th>Details</th>
                 <th>Download</th>
+                <th>Create Scenario</th>
+                <th>Share</th>
             </tr>
         </thead>
  
@@ -95,6 +97,8 @@
 	            <th>Description</th>
 	            <th>Details</th>
 	            <th>Download</th>
+	            <th>Create Scenario</th>
+                <th>Share</th>
             </tr>
         </tfoot>
  
@@ -103,6 +107,48 @@
         </tbody>
     </table>
 </div>
+<div id="viewDetail" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+  <div id="viewDetailText"></div>
+  <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
+<div id="viewUserAccess" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+	<p class="lead">Modify Access for Model </p>
+	<div class="row" id="attributes_div">
+		<div class="large-8 medium-8 columns">
+		
+			<div class="row">
+				<div class="large-6 medium-6 columns">
+				<br>
+				Select User Access:
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="large-2 columns">
+					<input type="radio" id="public" name="access" value="public" checked>Public
+				</div>
+				<div class="large-2 columns">
+					<input type="radio" id="private" name="access" value="private">Private
+				</div>
+				<div class="large-2 columns">
+					<input type="radio" id="group" name="access" value="group">Group:
+				</div>
+				<div class="large-6 columns">
+					<select id="groups" disabled="true">
+						<option value="pnnl">PNNL</option>
+						<option value="UW">UW</option>
+						<option value="NASPI">NASPI</option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+	 <a class="close-reveal-modal" aria-label="Save">&#215;</a>
+	 <button id="save_model_access" onclick=save_access()>Save</button>
+
+</div>
+
 <script type="text/javascript">
 
 $(document).ready(function() {
@@ -138,13 +184,13 @@ $(document).ready(function() {
 		
 		
 		var jsonData = [{"id":"1","name":"North","created_by":"Poorva Sharma","filename":"north.raw","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"South","created_by":"Craig Allwardt","filename":"south.raw","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"Grid 118","created_by":"Tara Gibson","filename":"pti118.raw","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"Grid 500","created_by":"Craig Allwardt","filename":"cim500.cim","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"North","created_by":"Tara Gibson","filename":"Public","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"North","created_by":"Craig Allwardt","filename":"Public","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"North","created_by":"Poorva Sharma","filename":"Public","desc":"this is a test","details":"This is detail"},
-						{"id":"1","name":"North","created_by":"Mark Rice","filename":"Public","desc":"this is a test","details":"This is detail"}];
+						{"id":"2","name":"South","created_by":"Craig Allwardt","filename":"south.raw","desc":"this is a test","details":"This is detail"},
+						{"id":"3","name":"Grid 118","created_by":"Tara Gibson","filename":"pti118.raw","desc":"this is a test","details":"This is detail"},
+						{"id":"4","name":"Grid 500","created_by":"Craig Allwardt","filename":"cim500.cim","desc":"this is a test","details":"This is detail"},
+						{"id":"5","name":"North","created_by":"Tara Gibson","filename":"Public","desc":"this is a test","details":"This is detail"},
+						{"id":"6","name":"North","created_by":"Craig Allwardt","filename":"Public","desc":"this is a test","details":"This is detail"},
+						{"id":"7","name":"North","created_by":"Poorva Sharma","filename":"Public","desc":"this is a test","details":"This is detail"},
+						{"id":"8","name":"North","created_by":"Mark Rice","filename":"Public","desc":"this is a test","details":"This is detail"}];
 								
 		 var trHTML = '';
 	        $.each(jsonData, function (i, row) {
@@ -154,8 +200,10 @@ $(document).ready(function() {
 	            			'<td>' + row.created_by + '</td>'+
 	            			'<td>' + row.filename + '</td>'+
 	            			'<td>' + row.desc + '</td>'+
-	            			'<td>' + row.details + '</td>'+
-	            			'<td onclick=download('+row.id+')>' + 'Download' + '</td>'+
+	            			'<td onclick=viewDetails('+row.id+')><a>View Details</a></td>'+
+	            			'<td onclick=download('+row.id+')><a>Download</a></td>'+
+	            			'<td onclick=createScenario('+row.id+')><a>Create Scenario</a></td>'+
+	            			'<td onclick=share('+row.id+')><a>Share</a></td>'+
 	            			'</tr>';
 	        });
 	        $('#example tbody').append(trHTML);
@@ -169,6 +217,65 @@ $(document).ready(function() {
 function download(id){
 	
 	alert(id);
+	
+}
+
+function createScenario(id){
+	window.location.replace("/powergrid/create_scenario.html?model="+id);
+	
+}
+
+function share(id){
+	$('#viewUserAccess').foundation('reveal', 'open');
+	
+}
+
+function save_access(){
+	//TODO save settings
+	$('#viewUserAccess').foundation('reveal', 'close');
+
+}
+function viewDetails(id){
+	var parameters = {};
+	parameters['AuthToken'] = authToken;
+// 	console.log('Posting parameters\n'+ JSON.stringify(parameters));
+
+	$.ajax({
+            type: 'POST',
+            url: '/powergrid/api/model_details/'+id,
+            data: JSON.stringify(parameters),
+            dataType: 'json',
+            contentType: 'application/json',
+            success: function(data){
+            	console.log('Success getting details for model '+id);
+            	console.log(data.toString());
+
+				var detailHtml =   '<p class="lead">Details for Model '+data.name+'</p>';
+
+					
+					
+				detailHtml+=	'<p>Format: '+data.format+'</p>'+
+								  '<p>User Access: '+data.useraccess+'</p>'+
+								  '<p>Filename: '+data.filename+'</p>'+
+								  '<p>Description:'+data.desc+'</p>';
+				
+            	$('#viewDetailText').html(detailHtml);
+            	$('#viewDetail').foundation('reveal', 'open');
+			},
+            failure: function(data){
+            	console.log('Failure getting details for scenaio '+id);
+                console.log(data.toString());
+                
+                var detailHtml =   '<p class="lead">Failed to retreive details for model'+id+'</p>';
+                detailHtml += '<p>'+data.toString()+'</p>';
+                $('#viewDetailText').html(detailHtml);
+            	$('#viewDetail').foundation('reveal', 'open');
+            }
+
+        });	
+	
+	
+
 	
 }
 
