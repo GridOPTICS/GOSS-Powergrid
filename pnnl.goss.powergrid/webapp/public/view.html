@@ -1,0 +1,148 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Synthetic Data Generation and Repository | Upload Model</title>
+    <link rel="stylesheet" href="css/foundation.min.css" />
+    <script src="js/vendor/modernizr.js"></script>
+	<script src="js/jquery-2.1.4.min.js"></script>
+	<script src="js/foundation.min.js"></script>
+	<script language="javascript" src="/goss/js/goss-auth.js"></script>
+	
+	<!-- For Top Bar -->
+	<script src="js/foundation/foundation.topbar.js"></script>
+  	
+  </head>
+  
+<body>
+
+
+
+<nav class="top-bar" data-topbar role="navigation">
+<ul class="title-area">
+  <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+</ul>
+
+<section class="top-bar-section">
+  <ul class="left">
+    
+    <li class="has-dropdown">
+      <a href="#">New</a>
+      <ul class="dropdown">
+        <li><a href="upload.html">New Model</a></li>
+        <li><a href="create_scenario.html">New Scenario</a></li>
+      </ul>
+    </li>
+    
+    <li class="has-dropdown">
+    <a href="#">List</a>
+    <ul class="dropdown">
+      <li><a href="list.html">List Models</a></li>
+      <li><a href="powergrid.html">List Scenarios</a></li>
+    </ul>
+  </li>
+  </ul>
+
+  <!-- Left Nav Section -->
+  <ul class="right">
+  <li class="has-dropdown">
+  <a href="#">Settings</a>
+	<ul class="dropdown">
+	  <li><a href="#">Change Password</a></li>
+	  <li class="active"><a href="http://localhost:8181/goss/logout.html">Sign Out</a></li>
+	</ul>
+	</li>
+  </ul>
+</section>
+</nav>
+
+    <div class="row">
+	  <div class="large-12 columns">
+        <h3>View Power Grid Model</h3>
+      </div>
+    </div>
+	<br/>
+
+
+
+	<input type="hidden" name="token" value="" />
+	
+	<div class="row">
+	<div class="large-6 columns">
+		<div class="large-6 columns">
+			<label>Name
+				<input type="text" id="name" value="Greek 118" disabled/>
+			</label>
+		</div>
+		<div class="large-6 columns">
+		  <label>Format
+		  <input type="text" id="format" value="PTI(23,26,29,31)" disabled/>
+			
+		  </label>
+		</div>
+		</div>
+	</div>
+	
+	<div class="row">
+	<div class="large-6 columns">
+		<div class="large-6 columns">
+			<label>User Access
+			<input type="text" id="name" value="Public" disabled/>
+			</label>
+		</div>
+		<div class="large-6 columns">
+		  <label>Filename
+		  <label onclick=viewFile()><a href="GreekPti_v29.raw" data-reveal-id="myModal">Greepti118.raw</a></label>
+		  
+		  
+		  </label>
+		</div>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="large-8 columns">
+		  <label>Description
+			<textarea rows="5" id="description" value="This is a test Description" disabled></textarea>
+		  </label>
+		</div>
+	</div>
+	
+	<div class="row">
+		<div class="large-4 medium-4 columns">
+			<div>
+				<button id="upload_file">Upload</button>
+			</div>
+        </div>
+	</div>
+	
+	<div id="viewFileDiv" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+	<div id="viewFileText"></div>
+	<a class="close-reveal-modal" aria-label="Close">&#215;</a>
+	</div>
+	
+	<br>
+
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+	$(document).foundation();
+});
+
+function viewFile(){
+	 var fileHtml = ' <div id="myModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">'+
+	   '<h2 id="modalTitle">Awesome. I have it.</h2>'+
+	   '<p class="lead">Your couch.  It is mine.</p>'+
+	   '<p>This calls viewFile web service and display details.</p>'+
+	   '<a class="close-reveal-modal" aria-label="Close">&#215;</a>'+
+	 '</div>';
+	
+	 
+	 $('#viewFileDiv').html(fileHtml);
+ 	$('#viewFileText').foundation('reveal', 'open');
+}
+
+</script>
+</body>
