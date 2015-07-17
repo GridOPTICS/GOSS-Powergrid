@@ -8,6 +8,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.google.gson.JsonObject;
+
 import pnnl.goss.powergrid.datamodel.Powergrid;
 
 public interface PowergridService {
@@ -18,7 +20,7 @@ public interface PowergridService {
      *
      * @return A list of {@link Powergrid} objects.
      */
-    public List<Powergrid> getPowergrids();
+    public List<Powergrid> getPowergrids(JsonObject params);
 
     /**
      * Returns the powergrid model for the specified mrid.
@@ -26,7 +28,7 @@ public interface PowergridService {
      * @param mrid
      * @return A {@link PowergridModel} object
      */
-    public PowergridModel getPowergridModel(String mrid);
+    public PowergridModel getPowergridModel(String mrid, JsonObject params);
 
     /**
      * Returns the {@link PowergridModel} for the specified mrid
@@ -36,5 +38,5 @@ public interface PowergridService {
      * @param timestep
      * @return
      */
-    public PowergridModel getPowergridModel(String mrid, String timestep);
+    public PowergridModel getPowergridModel(String mrid, String timestep, JsonObject params);
 }

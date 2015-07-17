@@ -99,6 +99,25 @@ public class PowergridDaoMySql implements PowergridDao {
     protected DataSourcePooledJdbc pooledDatasource;
     private AlertContext alertContext;
     private PowergridTimingOptions powergridTimingOptions;
+    
+    List<String> getUserGroups(String identifier){
+    	List<String> groups = new ArrayList<>();
+    	String select = "SELECT goss_group FROM goss_user_group WHERE goss_identifier=@identifier;";
+    	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), select)){
+    		namedStmt.setString("identifier", identifier);
+    		
+    		try(ResultSet rs = namedStmt.executeQuery()){
+    			while(rs.next()){
+    				groups.add(rs.getString("goss_group"));
+    			}
+    		}
+    	
+	    } catch (SQLException e) {
+			e.printStackTrace();
+		}
+    	
+    	return groups;
+    }
         
 
     public SavePowergridResults createPowergrid(String powergridName,
@@ -827,7 +846,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
     private int insertPowerGrid(String uuid, String name, String coordinateSystem, String originalFormatVersion,
     		String originalFilename, String md5Hash, String accessLevel, String createdBy, List<String> problems){
-    	List<Powergrid> grids = getAvailablePowergrids();
+    	List<Powergrid> grids = getAvailablePowergrids(null);
     	int maxPg = 0;
     	for(Powergrid g: grids){
     		if(g.getPowergridId() > maxPg){
@@ -849,6 +868,7 @@ public class PowergridDaoMySql implements PowergridDao {
     						"@OriginalFilename, @AccessLevel, @CreatedBy);";
 
     	int pgId = maxPg + 1;
+    	boolean success = false;
     	try(NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
     	
     		stmt.setInt("PowergridId", pgId);
@@ -861,10 +881,25 @@ public class PowergridDaoMySql implements PowergridDao {
     		stmt.setString("CreatedBy", uuid);
     		stmt.setString("FileHash",  md5Hash);
     		stmt.execute();
+    		success = true;
     		
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
+    	
+    	if (!(accessLevel.equalsIgnoreCase("private") || accessLevel.equalsIgnoreCase("public")) &&
+    			success){
+    		insert = "INSERT INTO goss_powergrid_group(powergrid_id, goss_group) VALUES(@powergridId, @groupID);";
+    		try(NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
+    			stmt.setInt("powergridId", pgId);
+    			stmt.setString("groupID", accessLevel);
+    			stmt.execute();
+        		success = true;
+        		
+        	} catch (SQLException e) {
+    			e.printStackTrace();
+    		}
+    	}
 
     	return pgId;
     }
@@ -902,18 +937,26 @@ public class PowergridDaoMySql implements PowergridDao {
         alertContext.addContextElement(new AlertContextItem(AlertSeverity.SEVERITY_WARN, AlertType.ALERTTYPE_SUBSTATION, 0.05, "+- % nominal buses"));
     }
 
-    public List<Powergrid> getAvailablePowergrids() {
+    public List<Powergrid> getAvailablePowergrids(String identifier) {
         List<Powergrid> grids = new ArrayList<Powergrid>();
+        List<String> groups = getUserGroups(identifier);
 
-        String dbQuery = "select pg.powergridId, pg.Name, a.mrid from powergrid pg inner join area a on pg.Powergridid=a.PowergridId";
+        String dbQuery = "select pg.*, a.mrid from powergrid pg inner join area a on pg.Powergridid=a.PowergridId";
 
         try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	try (ResultSet rs = stmt.executeQuery()) {
 	            while (rs.next()) {
+	            	JsonObject props = new JsonObject();
 	                Powergrid item = new Powergrid();
 	                item.setPowergridId(rs.getInt(1));
 	                item.setName(rs.getString(2));
-	                item.setMrid(rs.getString("mrid"));
+	                item.setMrid(rs.getString("pg.mrid"));
+	                props.addProperty("description", rs.getString("description"));
+        			props.addProperty("Original Format", rs.getString("OriginalFormat"));
+        			props.addProperty("Access Level", rs.getString("AccessLevel"));
+        			props.addProperty("Created By", rs.getString("CreatedBy"));
+        			props.addProperty("Created On", rs.getString("createdOn")); //.getTimestamp("CreatedOn").toLocalDateTime().toString());
+        			item.setOtherProperties(props);
 	                grids.add(item);
 	            }
         	}
@@ -925,8 +968,8 @@ public class PowergridDaoMySql implements PowergridDao {
         return grids;
     }
 
-    public List<String> getPowergridNames() {
-        List<Powergrid> grids = getAvailablePowergrids();
+    public List<String> getPowergridNames(String identifier) {
+        List<Powergrid> grids = getAvailablePowergrids(identifier);
         List<String> names = new ArrayList<String>();
         for (Powergrid g : grids) {
             names.add(g.getName());
@@ -938,23 +981,6 @@ public class PowergridDaoMySql implements PowergridDao {
         String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN area a ON pg.PowergridId=a.PowergridId where pg.PowergridId = " + powergridId;
         Powergrid grid = new Powergrid();
 
-        try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
-        	try (ResultSet rs = stmt.executeQuery()){
-	            rs.next();
-	            grid.setPowergridId(rs.getInt(1));
-	            grid.setName(rs.getString(2));
-	            grid.setMrid(rs.getString("mrid"));
-        	}
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return grid;
-    }
-
-    public Powergrid getPowergridByName(String powergridName) {
-        String dbQuery = "select * from powergrid where name = '" + powergridName + "'";
-        Powergrid grid = new Powergrid();
         try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	try (ResultSet rs = stmt.executeQuery()){
 	            rs.next();
@@ -1387,16 +1413,23 @@ public class PowergridDaoMySql implements PowergridDao {
 
     @Override
     public Powergrid getPowergridByMrid(String mrid) {
-    	String dbQuery = "select pg.PowergridId, pg.Name, pg.Mrid from powergrid pg where pg.Mrid=@Mrid";
+    	String dbQuery = "select * from powergrid pg where Mrid=@Mrid";
         Powergrid grid = new Powergrid();
+        JsonObject props = new JsonObject();
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setString("Mrid", mrid);
-        	try(ResultSet rs = namedStmt.executeQuery()){        		
+        	try(ResultSet rs = namedStmt.executeQuery()){
         		if (rs.first()){
         			grid.setPowergridId(rs.getInt("PowergridId"));
         			grid.setName(rs.getString("name"));
         			grid.setMrid(rs.getString("mrid"));
+        			props.addProperty("description", rs.getString("description"));
+        			props.addProperty("Original Format", rs.getString("OriginalFormat"));
+        			props.addProperty("Access Level", rs.getString("AccessLevel"));
+        			props.addProperty("Created By", rs.getString("CreatedBy"));
+        			props.addProperty("Created On", rs.getString("createdOn")); //.getTimestamp("CreatedOn").toLocalDateTime().toString());
+        			grid.setOtherProperties(props);
         		}
     		}
         } catch (SQLException e) {
@@ -1429,5 +1462,4 @@ public class PowergridDaoMySql implements PowergridDao {
 
 		return jsonObj;
 	}
-
 }

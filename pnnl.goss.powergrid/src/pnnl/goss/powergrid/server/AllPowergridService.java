@@ -11,6 +11,8 @@ import org.apache.felix.dm.annotation.api.Start;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonObject;
+
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.PowergridService;
 import pnnl.goss.powergrid.datamodel.Powergrid;
@@ -35,12 +37,14 @@ public class AllPowergridService implements PowergridService {
     }
 
 	@Override
-	public List<Powergrid> getPowergrids() {
+	public List<Powergrid> getPowergrids(JsonObject params) {
 		List<Powergrid> availablePowergrids = new ArrayList<>();
+		
+		String identifier = params.get("identifier").getAsString();
 
 		for(String k: dataSourceEntries.getDataSourceKeys()){
     		PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByKey(k));
-    		for(Powergrid g:dao.getAvailablePowergrids()){
+    		for(Powergrid g:dao.getAvailablePowergrids(identifier)){
     			mridToDatasourceKeyMap.put(g.getMrid(), k);
     			mridToPowergridMap.put(g.getMrid(), g);
     			availablePowergrids.add(g);
@@ -51,12 +55,12 @@ public class AllPowergridService implements PowergridService {
 	}
 
 	@Override
-	public PowergridModel getPowergridModel(String mrid) {
+	public PowergridModel getPowergridModel(String mrid, JsonObject params) {
 		PowergridModel model = null;
 		// Load the powergrid map so we know which datasource to look
 		// up the powergrid model from.
 		if (mridToDatasourceKeyMap.isEmpty()){
-			getPowergrids();
+			getPowergrids(params);
 		}
 
 		if (mridToDatasourceKeyMap.containsKey(mrid)){
@@ -69,7 +73,7 @@ public class AllPowergridService implements PowergridService {
 	}
 
 	@Override
-	public PowergridModel getPowergridModel(String mrid, String timestep) {
+	public PowergridModel getPowergridModel(String mrid, String timestep, JsonObject params) {
 		// TODO Auto-generated method stub
 		return null;
 	}

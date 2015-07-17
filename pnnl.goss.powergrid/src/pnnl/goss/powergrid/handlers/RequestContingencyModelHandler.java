@@ -107,7 +107,7 @@ public class RequestContingencyModelHandler implements RequestHandler {
 
 		DataSourcePooledJdbc datasource = dataSourceEntries.getDataSourceByPowergrid(requestPowergrid.getMrid());
 		PowergridDao dao = new PowergridDaoMySql(datasource); //PowergridDataSources.instance().getConnectionPool(datasourceKey));
-		Powergrid grid = dao.getPowergridByName(requestPowergrid.getPowergridName());
+		Powergrid grid = null; // dao.getPowergridByName(requestPowergrid.getPowergridName());
 		
 		if (request instanceof RequestContingencyModel) {
 			int powergridId = grid.getPowergridId();

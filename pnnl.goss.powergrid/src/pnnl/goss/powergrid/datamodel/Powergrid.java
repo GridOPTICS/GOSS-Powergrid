@@ -14,6 +14,7 @@ import pnnl.goss.powergrid.api.topology.IdentifiedObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.JsonObject;
 
 @JsonIgnoreProperties({ "powergridId",
 	"setPowergridId", "setCoordinateSystem", "coordinateSystem",
@@ -54,11 +55,21 @@ public class Powergrid
      * The identifing element for this object.
      */
     private IdentifiedObject identifiedObject;
+    
+    private JsonObject otherProperties;
 
     public Powergrid(){
     	// TODO Remove hard coding here!
     	sbase=100.0;
     	caseIdentifier = "Greek-118-North";
+    }
+    
+    public void setOtherProperties(JsonObject object){
+    	otherProperties = object;
+    }
+    
+    public JsonObject getOtherProperties(){
+    	return otherProperties;
     }
 
 

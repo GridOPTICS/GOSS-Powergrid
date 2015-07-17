@@ -50,16 +50,32 @@ public class PowergridWebService {
 		"Returns a list of Powergrid instances which contains it's mrid.  " +
 		"Using the mrid the application can then post a request for a specific " +
 		"PowergridModel instance or lists of it's components.")
-	public Collection<Powergrid> list(String identifier, @Context HttpServletRequest request){
-		System.out.println("Listing powergrids. "+ identifier);
+	public Response list(@Context HttpServletRequest request){
+		
+		JsonObject jsonBody = WebUtil.getRequestJsonBody(request);
 		RequestPowergridList reqList = new RequestPowergridList();
-		String subject = identifier;
+		
+		String identifier = (String) request.getAttribute("identifier");	
 		List<Powergrid> data = null;
-		if (handlers.checkAccess((Request)reqList, subject)){
+		Response response= null;
+		
+		if (handlers.checkAccess((Request)reqList, identifier)){
+			JsonObject params = new JsonObject();
+			params.addProperty("identifier", identifier);
+			
+			RequestEnvelope env = new RequestEnvelope(reqList, params);
 			DataResponse res;
+			
 			try {
-				res = (DataResponse)handlers.handle(reqList);
-				data = ((PowergridList)res.getData()).toList();
+				
+				res = (DataResponse)handlers.handle(env);
+				if(WebUtil.wasError(res)){
+					response = Response.status(Response.Status.BAD_REQUEST)
+							.entity(res.getData()).build();
+				}else{					
+					data = ((PowergridList)res.getData()).toList();
+					response = Response.ok(data).build();
+				}
 			} catch (HandlerNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -67,7 +83,7 @@ public class PowergridWebService {
 			}
 		}
 
-		return data;
+		return response;
 	}
 
 	@POST
@@ -280,27 +296,8 @@ public class PowergridWebService {
 					e.printStackTrace();
 				}
 			}
-
-//		if (handlers.checkAccess((Request)pgRequest, subject)){
-//			DataResponse res;
-//			try {
-//				res = (DataResponse)handlers.handle(pgRequest);
-//				if (WebUtil.wasError(res.getData())){
-//					response = Response.status(Response.Status.BAD_REQUEST)
-//							.entity(res.getData()).build();
-//				}
-//				else {
-//					model = ((PowergridModel)res.getData());
-//					response = Response.status(Response.Status.OK).entity(model).build();
-//				}
-//			} catch (HandlerNotFoundException e) {
-//				e.printStackTrace();
-//
-//			}
-//		}
-//			response = Response.status(Response.Status.OK).build();
 		}
-		System.out.println(response.toString());
+		
 		return response;
 	}
 	

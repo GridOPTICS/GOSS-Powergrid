@@ -75,6 +75,7 @@ import pnnl.goss.powergrid.formatters.MatPowerFormatter;
 import pnnl.goss.powergrid.formatters.PowergridFormatter;
 import pnnl.goss.powergrid.formatters.PyPowerFormatter;
 import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
+import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.requests.RequestPowergridPart;
@@ -167,12 +168,18 @@ public class RequestPowergridHandler implements RequestHandler {
     			!grid.getMrid().isEmpty());
     }
 
-    private DataResponse getAvailablePowergrids(){
+    private DataResponse getAvailablePowergrids(JsonObject params){
 
-    	availablePowergrids = new PowergridList(powergridService.getPowergrids());
+    	availablePowergrids = new PowergridList(powergridService.getPowergrids(params));
 
         DataResponse response = new DataResponse(availablePowergrids);
         return response;
+    }
+    
+    private DataResponse getAvailablePowergrids(){
+
+    	return getAvailablePowergrids(null);
+    	
     }
 
 //    private DataResponse getAllPowergrids(){
@@ -187,18 +194,28 @@ public class RequestPowergridHandler implements RequestHandler {
 
     public DataResponse getResponse(Request request) {
         DataResponse response = null;
+        Request subRequest = request;
+        RequestEnvelope env = null;
+        if (request instanceof RequestEnvelope){
+        	env = ((RequestEnvelope) request);
+        	subRequest = ((RequestEnvelope) request).getWrappedRequest();       	
+        } 
 
         // All of the requests must stem from RequestPowergrid.
-        if (!(request instanceof RequestPowergrid)){
+        if (!(subRequest instanceof RequestPowergrid)){
             response = new DataResponse(new DataError("Unkown request: " + request.getClass().getName()));
             return response;
         }
 
-        RequestPowergrid requestPowergrid = (RequestPowergrid)request;
+        RequestPowergrid requestPowergrid = (RequestPowergrid)subRequest;
         log.debug("using datasource: " + PowergridDataSourceEntries.class.getName());
         DataSourcePooledJdbc datasource = dataSourceEntries.getDataSourceByPowergrid(requestPowergrid.getMrid());
 
         if(requestPowergrid.getPowergridName()== null && request instanceof RequestPowergridList){
+        	if (env != null){
+        		return getAvailablePowergrids(env.getParams());
+        	}
+        	
             return getAvailablePowergrids();
         }
 
@@ -295,6 +312,7 @@ public class RequestPowergridHandler implements RequestHandler {
 		auths.put(RequestPowergridTimeStep.class, AuthorizeAll.class);
 		auths.put(RequestPowergridList.class, AuthorizeAll.class);
 		auths.put(RequestPowergridTimeStepValues.class, AuthorizeAll.class);
+		auths.put(RequestEnvelope.class, AuthorizeAll.class);
 		return auths;
 	}
 }

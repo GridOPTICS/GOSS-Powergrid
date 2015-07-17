@@ -64,16 +64,8 @@ import pnnl.goss.powergrid.datamodel.Transformer;
 import pnnl.goss.powergrid.datamodel.Zone;
 
 public interface PowergridDao {
-	/**
-	 * <p>
-	 * A list of powergrid names in the datasouce
-	 * </p>
-	 * @return
-	 */
-	List<String> getPowergridNames();
-
+	
 	Powergrid getPowergridByMrid(String mrid);
-	Powergrid getPowergridByName(String powergridName);
 	Powergrid getPowergridById(int powergridId);
 	/**
 	 * Returns the context of an alert.
@@ -85,7 +77,7 @@ public interface PowergridDao {
 
 	PowergridModel getPowergridModel(int powergridId);
 	PowergridModel getPowergridModelAtTime(int powergridId, Timestamp timestep);
-	List<Powergrid> getAvailablePowergrids();
+	List<Powergrid> getAvailablePowergrids(String identifier);
 	
 	List<Timestamp> getTimeSteps(int powergridId);
 	List<Area> getAreas(int powergridId);
