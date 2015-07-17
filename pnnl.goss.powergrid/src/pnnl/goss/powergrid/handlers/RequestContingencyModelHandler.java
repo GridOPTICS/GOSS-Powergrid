@@ -11,7 +11,7 @@
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-     
+
     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -78,7 +78,7 @@ import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
 
 @Component
 public class RequestContingencyModelHandler implements RequestHandler {
-	
+
 	@ServiceDependency
 	private volatile PowergridDataSourceEntries dataSourceEntries;
 
@@ -96,7 +96,7 @@ public class RequestContingencyModelHandler implements RequestHandler {
 		}
 
 		RequestPowergrid requestPowergrid = (RequestPowergrid) request;
-		
+
 		//TODO change logic to be if not mrid do lookup on powergrid name if not found then register error.
 
 		// Make sure there is a valid name.
@@ -106,9 +106,9 @@ public class RequestContingencyModelHandler implements RequestHandler {
 		}
 
 		DataSourcePooledJdbc datasource = dataSourceEntries.getDataSourceByPowergrid(requestPowergrid.getMrid());
-		PowergridDao dao = new PowergridDaoMySql(datasource); //PowergridDataSources.instance().getConnectionPool(datasourceKey));
-		Powergrid grid = dao.getPowergridByName(requestPowergrid.getPowergridName());
-		
+		PowergridDao dao = null; // new PowergridDaoMySql(datasource); //PowergridDataSources.instance().getConnectionPool(datasourceKey));
+		Powergrid grid = null; // dao.getPowergridByName(requestPowergrid.getPowergridName());
+
 		if (request instanceof RequestContingencyModel) {
 			int powergridId = grid.getPowergridId();
 			List<Timestamp> timesteps = null;
@@ -137,7 +137,7 @@ public class RequestContingencyModelHandler implements RequestHandler {
 
 			for (Contingency contingency : contingencies) {
 				try {
-					model.addContingency(contingency, getContingencyBranchesOut(datasource.getConnection(), powergridId, 
+					model.addContingency(contingency, getContingencyBranchesOut(datasource.getConnection(), powergridId,
 							contingency.getContingencyId()));
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -153,9 +153,9 @@ public class RequestContingencyModelHandler implements RequestHandler {
 				model.setTimeSteps(timesteps);
 			}
 		}
-		
+
 		response = new DataResponse(model);
-		
+
 		return response;
 	}
 
@@ -165,8 +165,8 @@ public class RequestContingencyModelHandler implements RequestHandler {
 		try (Statement stmt = connection.createStatement()) {
 			String dbQuery = "select * from contingencybranchesout where contingencyid=" + contingencyId + " AND powergridId=" + powergridId;
 			try (ResultSet rs = stmt.executeQuery(dbQuery.toLowerCase())){
-				
-	
+
+
 				while (rs.next()) {
 					ContingencyBranchOut branchesOut = new ContingencyBranchOut();
 					branchesOut.setPowergridId(rs.getInt(3));

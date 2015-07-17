@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import org.amdatu.web.rest.doc.Description;
 import org.amdatu.web.rest.doc.ReturnType;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 import com.google.gson.JsonObject;
@@ -31,7 +32,9 @@ import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.SavePowergridResults;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
+import pnnl.goss.powergrid.parser.api.RequestSubjectService;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
+import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 
@@ -41,6 +44,8 @@ public class PowergridWebService {
 
 	private volatile RequestHandlerRegistry handlers;
 
+	private volatile RequestSubjectService subjectService;
+
 	@POST
 	@Path("/list")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -48,16 +53,29 @@ public class PowergridWebService {
 		"Returns a list of Powergrid instances which contains it's mrid.  " +
 		"Using the mrid the application can then post a request for a specific " +
 		"PowergridModel instance or lists of it's components.")
-	public Collection<Powergrid> list(String identifier, @Context HttpServletRequest request){
-		System.out.println("Listing powergrids. "+ identifier);
+	public Response list(@Context HttpServletRequest request){
+
+		JsonObject jsonBody = WebUtil.getRequestJsonBody(request);
 		RequestPowergridList reqList = new RequestPowergridList();
-		String subject = identifier;
+
+		String identifier = (String) request.getAttribute("identifier");
 		List<Powergrid> data = null;
-		if (handlers.checkAccess((Request)reqList, subject)){
+		Response response= null;
+
+		if (handlers.checkAccess((Request)reqList, identifier)){
+			subjectService.addRequest(reqList, identifier);
 			DataResponse res;
+
 			try {
+
 				res = (DataResponse)handlers.handle(reqList);
-				data = ((PowergridList)res.getData()).toList();
+				if(WebUtil.wasError(res)){
+					response = Response.status(Response.Status.BAD_REQUEST)
+							.entity(res.getData()).build();
+				}else{
+					data = ((PowergridList)res.getData()).toList();
+					response = Response.ok(data).build();
+				}
 			} catch (HandlerNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -65,7 +83,7 @@ public class PowergridWebService {
 			}
 		}
 
-		return data;
+		return response;
 	}
 
 	@POST
@@ -82,6 +100,7 @@ public class PowergridWebService {
 
 		if (handlers.checkAccess((Request)pgRequest, subject)){
 			DataResponse res;
+			subjectService.addRequest(pgRequest, identifier);
 			try {
 				res = (DataResponse)handlers.handle(pgRequest);
 				if (WebUtil.wasError(res.getData())){
@@ -131,6 +150,7 @@ public class PowergridWebService {
 
 		if (handlers.checkAccess((Request)pgRequest, identifier)){
 			DataResponse res;
+			subjectService.addRequest(pgRequest, identifier);
 			try {
 				res = (DataResponse)handlers.handle(pgRequest);
 				if (WebUtil.wasError(res.getData())){
@@ -184,6 +204,7 @@ public class PowergridWebService {
 
 		if (handlers.checkAccess((Request)pgRequest, identifier)){
 			DataResponse res;
+			subjectService.addRequest(pgRequest, identifier);
 			try {
 				res = (DataResponse)handlers.handle(pgRequest);
 				if (WebUtil.wasError(res.getData())){
@@ -210,21 +231,27 @@ public class PowergridWebService {
 	@Description("Parse and store a powergrid model in the database.  The" +
 			"The passed data must be a base64 encoded file with "+
 			"associated properties.")
+	@Produces(MediaType.APPLICATION_JSON)
 	@ReturnType(SavePowergridResults.class)
 	public Response create(@Context HttpServletRequest req) {
 		Response response = null;
 		String identifier = (String) req.getAttribute("identifier");
-		JsonObject obj = WebUtil.getRequestJsonBody(req);
-		CreatePowergridRequest createReq = new CreatePowergridRequest();
+		JsonObject requestBody = WebUtil.getRequestJsonBody(req);
+
 		List<String> errors = new ArrayList<>();
 
-		if (!obj.has("name") ||
-				obj.get("name").getAsString().isEmpty()){
+		if (!requestBody.has("name") ||
+				requestBody.get("name").getAsString().isEmpty()){
 			errors.add("Invalid powergrid name specified");
 		}
-		if (!obj.has("model_file_content") ||
-				obj.get("model_file_content").getAsString().isEmpty()){
+		if (!requestBody.has("model_file_content") ||
+				requestBody.get("model_file_content").getAsString().isEmpty()){
 			errors.add("Invalid powergridContent specified");
+		}
+
+		if (!requestBody.has("access_level") ||
+				requestBody.get("access_level").getAsString().isEmpty()){
+			errors.add("Invalid access level specified");
 		}
 
 		if (errors.size() > 0){
@@ -233,15 +260,24 @@ public class PowergridWebService {
 
 		}
 		else{
+
+			CreatePowergridRequest createReq = new CreatePowergridRequest();
+
 			// Make sure the user has access to do this request.
 			if (!handlers.checkAccess(createReq, identifier)){
 				response = Response.status(Response.Status.UNAUTHORIZED).build();
 			}
 			else{
+				JsonObject params = new JsonObject();
+				subjectService.addRequest(createReq, identifier);
+				createReq.setAccessLevel(requestBody.get("access_level").getAsString());
+				createReq.setOriginalFilename("original_file.raw");
+				createReq.setDescription(requestBody.get("description").getAsString());
 				DataResponse res;
 				try{
-					String content = obj.get("model_file_content").getAsString();
-					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);
+					
+					String content = requestBody.get("model_file_content").getAsString();
+					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);					
 					File tmpFile = File.createTempFile("upload", "tmp");
 					FileUtils.writeByteArrayToFile(tmpFile,  decoded);
 					createReq.setPowergridFile(tmpFile);
@@ -251,10 +287,10 @@ public class PowergridWebService {
 								.entity(res.getData()).build();
 					}
 					else {
-
-						//model = ((PowergridModel)res.getData());
-						//response = Response.status(Response.Status.OK).entity(model).build();
-						response = Response.status(Response.Status.OK).build();
+						SavePowergridResults results = ((SavePowergridResults)res.getData());
+						//PowergridModel model = ((PowergridModel)res.getData());
+						response = Response.ok(results).build();
+						//response = Response.status(Response.Status.OK).build();
 					}
 
 				} catch (HandlerNotFoundException e) {
@@ -264,30 +300,12 @@ public class PowergridWebService {
 					e.printStackTrace();
 				}
 			}
-
-//		if (handlers.checkAccess((Request)pgRequest, subject)){
-//			DataResponse res;
-//			try {
-//				res = (DataResponse)handlers.handle(pgRequest);
-//				if (WebUtil.wasError(res.getData())){
-//					response = Response.status(Response.Status.BAD_REQUEST)
-//							.entity(res.getData()).build();
-//				}
-//				else {
-//					model = ((PowergridModel)res.getData());
-//					response = Response.status(Response.Status.OK).entity(model).build();
-//				}
-//			} catch (HandlerNotFoundException e) {
-//				e.printStackTrace();
-//
-//			}
-//		}
-			response = Response.status(Response.Status.OK).build();
 		}
+
 		return response;
 	}
-	
-	
+
+
 	@POST
 	@Path("/details/{mrid}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -300,14 +318,14 @@ public class PowergridWebService {
 			@Context HttpServletRequest req) {
 
 		System.out.println("Retrieving powergrid details for mrid: "+ mrid);
-		
-		
-		
+
+
+
 		String respStr = "{\"id\":\""+mrid+"\",\"name\":\"Scenario X\",\"profile\":\"winter\",\"startTime\":\"10:01\",\"events\":[{\"timeOffset\":\"5 min\",\"event\":\"line trip\"},{\"timeOffset\":\"10 min\",\"event\":\"line trip\"},{\"timeOffset\":\"12 min\",\"event\":\"generator outage\"}]}";
-		
+
 		Response response =  Response.status(Response.Status.OK)
 				.entity(respStr).build();
-		
+
 //		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
 //		pgRequest.addExtesion("ext_table", extensionType);
 //		Response response = null;

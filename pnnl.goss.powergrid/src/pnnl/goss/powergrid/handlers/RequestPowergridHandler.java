@@ -74,7 +74,9 @@ import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.formatters.MatPowerFormatter;
 import pnnl.goss.powergrid.formatters.PowergridFormatter;
 import pnnl.goss.powergrid.formatters.PyPowerFormatter;
+import pnnl.goss.powergrid.parser.api.RequestSubjectService;
 import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
+import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.requests.RequestPowergridPart;
@@ -86,23 +88,27 @@ import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
 
 @Component
 public class RequestPowergridHandler implements RequestHandler {
-	
+
 	public static String POWERGRID_EXT = "ext_table";
 	public static String FORMAT_EXT = "format";
-	
+
 	public static String EXT_SHUNTS = "switchedshunt";
-	
+
 	@ServiceDependency
 	private volatile PowergridService powergridService;
 
 	@ServiceDependency
 	private volatile PowergridDataSourceEntries dataSourceEntries;
 
+	@ServiceDependency
+	private volatile RequestSubjectService subjectService;
+
     private static Logger log = LoggerFactory.getLogger(RequestPowergridHandler.class);
     private static PowergridList availablePowergrids = null;
 
     private DataResponse getPowergridModleAtTimestepResponse(RequestPowergridTimeStep request) {
-    	PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByPowergrid(request.getMrid()));
+    	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
+    	PowergridDao dao = new PowergridDaoMySql(ds, subjectService.getIdentity(request));
 
     	Powergrid grid = dao.getPowergridByMrid(request.getMrid());
 
@@ -121,16 +127,17 @@ public class RequestPowergridHandler implements RequestHandler {
     private DataResponse getPowergridModelResponse(RequestPowergrid request) {
 
     	Map<String, Object> extensions = request.getExtensions();
-    	PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByPowergrid(request.getMrid()));
+    	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
+    	PowergridDao dao = new PowergridDaoMySql(ds, subjectService.getIdentity(request));
     	Powergrid grid = dao.getPowergridByMrid(request.getMrid());
-    	
+
     	DataResponse response = new DataResponse();
 
         if (isPowergridSet(grid)) {
 	    	if (extensions.containsKey(POWERGRID_EXT)){
 	    		String extTable = (String) extensions.get(POWERGRID_EXT);
 	    		JsonObject json = dao.getExtension(grid.getPowergridId(), extTable);
-	    		response.setData(json.toString());	    		
+	    		response.setData(json.toString());
 	    	}
 	    	else if(extensions.containsKey(FORMAT_EXT)) {
 	    		String formatType = (String) extensions.get(FORMAT_EXT);
@@ -138,7 +145,7 @@ public class RequestPowergridHandler implements RequestHandler {
 	    		PowergridFormatter formatter = null;
 	    		if (formatType.equals("MATPOWER")){
 	    			formatter = new MatPowerFormatter();
-	    		} 
+	    		}
 	    		else if(formatType.equals("PYPOWER")){
 	    			formatter = new PyPowerFormatter();
 	    		}
@@ -148,7 +155,7 @@ public class RequestPowergridHandler implements RequestHandler {
 	    		else{
 	    			response.setData(new DataError("Invalid formatter type specified."));
 	    		}
-	    		
+
 	    	}
 	    	else{
 	    		PowergridModel model = dao.getPowergridModel(grid.getPowergridId());
@@ -167,12 +174,18 @@ public class RequestPowergridHandler implements RequestHandler {
     			!grid.getMrid().isEmpty());
     }
 
-    private DataResponse getAvailablePowergrids(){
+    private DataResponse getAvailablePowergrids(String identifier){
 
-    	availablePowergrids = new PowergridList(powergridService.getPowergrids());
+    	availablePowergrids = new PowergridList(powergridService.getPowergrids(identifier));
 
         DataResponse response = new DataResponse(availablePowergrids);
         return response;
+    }
+
+    private DataResponse getAvailablePowergrids(){
+
+    	return getAvailablePowergrids(null);
+
     }
 
 //    private DataResponse getAllPowergrids(){
@@ -187,19 +200,27 @@ public class RequestPowergridHandler implements RequestHandler {
 
     public DataResponse getResponse(Request request) {
         DataResponse response = null;
+        Request subRequest = request;
+        RequestEnvelope env = null;
+        if (request instanceof RequestEnvelope){
+        	env = ((RequestEnvelope) request);
+        	subRequest = ((RequestEnvelope) request).getWrappedRequest();
+        }
 
         // All of the requests must stem from RequestPowergrid.
-        if (!(request instanceof RequestPowergrid)){
+        if (!(subRequest instanceof RequestPowergrid)){
             response = new DataResponse(new DataError("Unkown request: " + request.getClass().getName()));
             return response;
         }
 
-        RequestPowergrid requestPowergrid = (RequestPowergrid)request;
+        RequestPowergrid requestPowergrid = (RequestPowergrid)subRequest;
         log.debug("using datasource: " + PowergridDataSourceEntries.class.getName());
         DataSourcePooledJdbc datasource = dataSourceEntries.getDataSourceByPowergrid(requestPowergrid.getMrid());
 
+        String identifier = subjectService.getIdentity(request);
+        
         if(requestPowergrid.getPowergridName()== null && request instanceof RequestPowergridList){
-            return getAvailablePowergrids();
+        	return getAvailablePowergrids(identifier);
         }
 
         // Make sure there is a valid name.
@@ -241,8 +262,8 @@ public class RequestPowergridHandler implements RequestHandler {
     }
 
     private DataResponse getPowergridPartType(RequestPowergridPart request) {
-
-    	PowergridDao dao = new PowergridDaoMySql(dataSourceEntries.getDataSourceByPowergrid(request.getMrid()));
+    	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
+    	PowergridDao dao = new PowergridDaoMySql(ds, subjectService.getIdentity(request));
     	DataResponse response = new DataResponse();
 
     	Powergrid grid = dao.getPowergridByMrid(request.getMrid());

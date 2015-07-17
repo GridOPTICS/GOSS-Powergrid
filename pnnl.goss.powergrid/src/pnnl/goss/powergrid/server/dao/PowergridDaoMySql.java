@@ -44,6 +44,9 @@
 */
 package pnnl.goss.powergrid.server.dao;
 
+import java.security.InvalidParameterException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -61,6 +64,7 @@ import java.util.UUID;
 
 import javax.naming.ConfigurationException;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,11 +99,31 @@ public class PowergridDaoMySql implements PowergridDao {
     protected DataSourcePooledJdbc pooledDatasource;
     private AlertContext alertContext;
     private PowergridTimingOptions powergridTimingOptions;
-    
+    private String identifier;
+
+    List<String> getUserGroups(){
+    	List<String> groups = new ArrayList<>();
+    	String select = "SELECT goss_group FROM goss_user_group WHERE goss_identifier=@identifier;";
+    	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), select)){
+    		namedStmt.setString("identifier", identifier);
+
+    		try(ResultSet rs = namedStmt.executeQuery()){
+    			while(rs.next()){
+    				groups.add(rs.getString("goss_group"));
+    			}
+    		}
+
+	    } catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+    	return groups;
+    }
+
 
     public SavePowergridResults createPowergrid(String powergridName,
     		JsonObject data){
-    	
+
     	if (PrefixMap.instance() == null){
     		try (Connection connection = pooledDatasource.getConnection()){
     			PrefixMap.instance(connection);
@@ -107,13 +131,25 @@ public class PowergridDaoMySql implements PowergridDao {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-    		
+
+    	}
+
+    	JsonObject params = data.get("params").getAsJsonObject();
+    	String accessLevel = params.get("access_level").getAsString();
+    	String md5Hash = params.get("md5_content_hash").getAsString();
+    	String origFilename = params.get("original_filename").getAsString();
+    	String description = params.get("description").getAsString();
+
+    	if (identifier == null || accessLevel == null || md5Hash == null){
+    		throw new InvalidParameterException("Invalid identifier, access_level, and/or md5_content_hash specified");
     	}
 
     	// TODO Start passing problems to the various insert statements.
     	List<String> problems = new ArrayList<>();
     	String pgUUID = UUID.randomUUID().toString();
-    	int pgId = insertPowerGrid(pgUUID, powergridName, problems);
+
+    	int pgId = insertPowerGrid(pgUUID, powergridName,"GLOBAL", "PTI_23", origFilename, md5Hash,
+    			accessLevel, description, problems);
 
     	List<Bus> buses = null;
     	@SuppressWarnings("unused")
@@ -126,7 +162,7 @@ public class PowergridDaoMySql implements PowergridDao {
 		List<Machine> machines = null;
     	@SuppressWarnings("unused")
 		List<SwitchedShunt> switchedShunts = null;
-    	
+
     	String ptiVersion = data.get("version").getAsString();
 
     	if (data.get("buses") == null) {
@@ -145,10 +181,10 @@ public class PowergridDaoMySql implements PowergridDao {
 			areas = new ArrayList<Area>();
 		}
 		else{
-			areas = insertAreas(pgId, ptiVersion, 
+			areas = insertAreas(pgId, ptiVersion,
 					data.get("areas").getAsJsonObject(), problems);
 		}
-    	
+
     	if (data.get("zone") == null) {
     		problems.add("WARN: Zones are empty");
     		// Zones must be instantiated for substation to loop over.
@@ -158,7 +194,7 @@ public class PowergridDaoMySql implements PowergridDao {
     		zones = insertZones(pgId, ptiVersion,
     				data.get("zone").getAsJsonObject(), problems);
     	}
-    
+
 
     	if (data.get("generators") == null) {
     		problems.add("ERROR: Generators are empty");
@@ -172,7 +208,7 @@ public class PowergridDaoMySql implements PowergridDao {
 //    		problems.add("ERROR: Shunts are empty");
 //    	}
 //    	else{
-//    		switchedSnunts = insertSwitchedShunts(pgId, ptiVersion, 
+//    		switchedSnunts = insertSwitchedShunts(pgId, ptiVersion,
 //    				data.get("switched_shunts").getAsJsonObject(), problems);
 //    	}
 
@@ -191,14 +227,14 @@ public class PowergridDaoMySql implements PowergridDao {
 //    		substations = insertSubstations(pgId, buses, areas, zones, problems);
 //    	}
     	SavePowergridResults results = new SavePowergridResults(pgUUID, problems);
-    	
+
     	results.addProperty("# areas", areas.size());
     	results.addProperty("# branches", branches.size());
     	results.addProperty("# buses", buses.size());
     	results.addProperty("# generators", machines.size());
     	//results.addProperty("# switched shunts", switchedShunts.size());
     	results.addProperty("# zones", zones.size());
-    	
+
     	double totalGen = 0.0;
     	for(Machine m: machines){
     		totalGen+= m.getPgen();
@@ -250,20 +286,20 @@ public class PowergridDaoMySql implements PowergridDao {
     			"@SwitchedShuntId, @PowergridId, @BusNumber, @Status, @BShunt, @BInit, @ModSw, @VswHi, " +
     			"@VswLo, @SwRem, @N1, @B1, @N2, @B2, @N3, @B3, @N4, @B4, @N5, @B5, @N6, @B6, @N7, @B7, " +
     			"@N8, @B8, @Mrid);";
-    	
+
     	JsonArray ptiFieldNames = switchedShunts.get("pti_names").getAsJsonArray();
        	JsonArray ptiDataTypes = switchedShunts.get("type_order").getAsJsonArray();
        	PrefixMap prefixMap = PrefixMap.instance();
-       	
+
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
     		JsonArray dataArray = switchedShunts.get("data").getAsJsonArray();
     		for(int i=0; i<dataArray.size(); i++) {
     			JsonArray aRow = dataArray.get(i).getAsJsonArray();
-    			
+
     			// Start with properties that aren't in the pti file.
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
     			namedStmt.setInt("PowergridId", powergridId);
-    			
+
     			for(int j=0; j<aRow.size(); j++){
     				String modelProperty = ptiFieldNames.get(j).getAsString();
         			String gossProperty = prefixMap.getGossPropertyName("switchedshunt", version, modelProperty);
@@ -277,9 +313,9 @@ public class PowergridDaoMySql implements PowergridDao {
         			}
         			else if (dataType.equals("string")){
         				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
-        			}        			
+        			}
     			}
-    			
+
     			for(String missing: namedStmt.getMissing()){
     				System.out.println("Missing: "+ missing);
     			}
@@ -350,21 +386,21 @@ public class PowergridDaoMySql implements PowergridDao {
     			"@MachineId, @PowergridId, @BusNumber, @PGen, @QGen, @MaxPGen, @MaxQGen, " +
     			"@MinPGen, @MinQGen, @Status, @IsSvc, @Vs, @Ireg, @Zr, @Zx, @Rt, @Xt, @Gtap, @RmPct, @Mrid, "+
     			"@MBase);";
-    	
+
     	JsonArray ptiFieldNames = generators.get("pti_names").getAsJsonArray();
        	JsonArray ptiDataTypes = generators.get("type_order").getAsJsonArray();
        	PrefixMap prefixMap = PrefixMap.instance();
-       	
+
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
     		JsonArray dataArray = generators.get("data").getAsJsonArray();
     		for(int i=0; i<dataArray.size(); i++) {
     			JsonArray aRow = dataArray.get(i).getAsJsonArray();
-    			
+
     			// Start with properties that aren't in the pti file.
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
     			namedStmt.setInt("PowergridId", powergridId);
     			namedStmt.setInt("IsSvc", 0);
-    			
+
     			for(int j=0; j<aRow.size(); j++){
     				String modelProperty = ptiFieldNames.get(j).getAsString();
         			String gossProperty = prefixMap.getGossPropertyName("machine", version, modelProperty);
@@ -378,9 +414,9 @@ public class PowergridDaoMySql implements PowergridDao {
         			}
         			else if (dataType.equals("string")){
         				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
-        			}        			
+        			}
     			}
-    			
+
     			for(String missing: namedStmt.getMissing()){
     				System.out.println("Missing: "+ missing);
     			}
@@ -392,7 +428,7 @@ public class PowergridDaoMySql implements PowergridDao {
 			e.printStackTrace();
 		}
 
-    	
+
 //    	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
 //
 //    		for(PropertyGroup pg: generatorPropertyGroups){
@@ -441,20 +477,20 @@ public class PowergridDaoMySql implements PowergridDao {
     	JsonArray ptiFieldNames = branches.get("pti_names").getAsJsonArray();
        	JsonArray ptiDataTypes = branches.get("type_order").getAsJsonArray();
        	PrefixMap prefixMap = PrefixMap.instance();
-       	
+
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
     		JsonArray dataArray = branches.get("data").getAsJsonArray();
     		for(int i=0; i<dataArray.size(); i++) {
     			JsonArray aRow = dataArray.get(i).getAsJsonArray();
-    			
+
     			// Start with properties that aren't in the pti file.
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
     			namedStmt.setInt("PowergridId", powergridId);
-    			
+
     			// These properties are available during runtime solved cases.
     			namedStmt.setDouble("P", 0);
     			namedStmt.setDouble("Q", 0);
-    			
+
     			for(int j=0; j<aRow.size(); j++){
     				String modelProperty = ptiFieldNames.get(j).getAsString();
         			String gossProperty = prefixMap.getGossPropertyName("branch", version, modelProperty);
@@ -472,9 +508,9 @@ public class PowergridDaoMySql implements PowergridDao {
         			}
         			else if (dataType.equals("string")){
         				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
-        			}        			
+        			}
     			}
-    			
+
     			for(String missing: namedStmt.getMissing()){
     				System.out.println("Missing: "+ missing);
     			}
@@ -485,7 +521,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    	
+
 //    	try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)) {
 //    		for(PropertyGroup pg: branchPropertyGroups){
 //	    		namedStmt.setInt("PowergridId", powergridId);
@@ -513,26 +549,26 @@ public class PowergridDaoMySql implements PowergridDao {
 
     	return getBranches(powergridId);
     }
-    
+
 
     private List<Area> insertAreas(int powergridId, String version, JsonObject areas, List<String> problems){
     	String insert = "INSERT INTO area("
     			+"PowergridId,AreaName,AreaId,Isw,Pdes,Ptol,Mrid)"
     			+"VALUES(@PowergridId,@AreaName,@AreaId,@Isw,@Pdes,@Ptol,@Mrid);";
-    	
+
     	JsonArray ptiFieldNames = areas.get("pti_names").getAsJsonArray();
        	JsonArray ptiDataTypes = areas.get("type_order").getAsJsonArray();
        	PrefixMap prefixMap = PrefixMap.instance();
-       	
+
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
     		JsonArray areaArray = areas.get("data").getAsJsonArray();
     		for(int i=0; i<areaArray.size(); i++) {
     			JsonArray aRow = areaArray.get(i).getAsJsonArray();
-    			
+
     			// Start with properties that aren't in the pti file.
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
     			namedStmt.setInt("PowergridId", powergridId);
-    			
+
     			for(int j=0; j<aRow.size(); j++){
     				String modelProperty = ptiFieldNames.get(j).getAsString();
         			String gossProperty = prefixMap.getGossPropertyName("area", version, modelProperty);
@@ -546,9 +582,9 @@ public class PowergridDaoMySql implements PowergridDao {
         			}
         			else if (dataType.equals("string")){
         				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
-        			}        			
+        			}
     			}
-    			
+
     			for(String missing: namedStmt.getMissing()){
     				System.out.println("Missing: "+ missing);
     			}
@@ -561,27 +597,27 @@ public class PowergridDaoMySql implements PowergridDao {
 		}
 
     	return getAreas(powergridId);
-    	
+
     }
 
     private List<Zone> insertZones(int powergridId, String version, JsonObject zones, List<String> problems){
     	String insert = "INSERT INTO zone("
     			+"PowergridId, ZoneNumber, ZoneName, Mrid)"
     			+"VALUES(@PowergridId, @ZoneNumber, @ZoneName, @Mrid);";
-    	
+
     	JsonArray ptiFieldNames = zones.get("pti_names").getAsJsonArray();
        	JsonArray ptiDataTypes = zones.get("type_order").getAsJsonArray();
        	PrefixMap prefixMap = PrefixMap.instance();
-       	
+
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
     		JsonArray dataArray = zones.get("data").getAsJsonArray();
     		for(int i=0; i<dataArray.size(); i++) {
     			JsonArray aRow = dataArray.get(i).getAsJsonArray();
-    			
+
     			// Start with properties that aren't in the pti file.
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
     			namedStmt.setInt("PowergridId", powergridId);
-    			
+
     			for(int j=0; j<aRow.size(); j++){
     				String modelProperty = ptiFieldNames.get(j).getAsString();
         			String gossProperty = prefixMap.getGossPropertyName("zone", version, modelProperty);
@@ -595,9 +631,9 @@ public class PowergridDaoMySql implements PowergridDao {
         			}
         			else if (dataType.equals("string")){
         				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
-        			}        			
+        			}
     			}
-    			
+
     			for(String missing: namedStmt.getMissing()){
     				System.out.println("Missing: "+ missing);
     			}
@@ -625,7 +661,7 @@ public class PowergridDaoMySql implements PowergridDao {
 
     	return getZones(powergridId);
     }
-  
+
     private List<Bus> insertBuses(int powergridId, String version, JsonObject buses, List<String> problems){
        	String insert = "INSERT INTO bus("+
        			"BusNumber, PowergridId, SubstationName, BusName, BaseKV, Code, Pl, Ql, Gl, Bl, AreaId, Va, " +
@@ -633,22 +669,22 @@ public class PowergridDaoMySql implements PowergridDao {
        			"VALUES( " +
        			"@BusNumber, @PowergridId, @SubstationName, @BusName, @BaseKV, @Code, @Pl, @Ql, " +
        			"@Gl, @Bl, @AreaId, @Va, @Vm, @ZoneId, @Mrid)";
-       	       	
+
        	JsonArray ptiFieldNames = buses.get("pti_names").getAsJsonArray();
        	JsonArray ptiDataTypes = buses.get("type_order").getAsJsonArray();
        	PrefixMap prefixMap = PrefixMap.instance();
-       	
+
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
     		JsonArray dataArray = buses.get("data").getAsJsonArray();
     		for(int i=0; i<dataArray.size(); i++) {
     			JsonArray aRow = dataArray.get(i).getAsJsonArray();
-    			
+
     			// Start with properties that aren't in the pti file.
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
     			namedStmt.setInt("PowergridId", powergridId);
     			// This will get filled in during the insertSubstation method.
     			namedStmt.setNullString("SubstationName");
-    			
+
     			for(int j=0; j<aRow.size(); j++){
     				String modelProperty = ptiFieldNames.get(j).getAsString();
         			String gossProperty = prefixMap.getGossPropertyName("bus", version, modelProperty);
@@ -662,9 +698,9 @@ public class PowergridDaoMySql implements PowergridDao {
         			}
         			else if (dataType.equals("string")){
         				namedStmt.setString(gossProperty, aRow.get(j).getAsString());
-        			}        			
+        			}
     			}
-    			
+
     			for(String missing: namedStmt.getMissing()){
     				System.out.println("Missing: "+ missing);
     			}
@@ -771,7 +807,7 @@ public class PowergridDaoMySql implements PowergridDao {
 		    		namedStmt.setInt("ZoneId", zoneId);
 		    		namedStmt.setString("ZoneName", zoneName);
 	        	}
-	        	
+
 	    		namedStmt.setDouble("Latitude", 0.0);
 	    		namedStmt.setDouble("Longitude", 0.0);
 	    		namedStmt.setString("Mrid", UUID.randomUUID().toString());
@@ -810,7 +846,8 @@ public class PowergridDaoMySql implements PowergridDao {
     	return getSubstations(pgId);
     }
 
-    private int insertPowerGrid(String uuid, String name, List<String> problems){
+    private int insertPowerGrid(String uuid, String name, String coordinateSystem, String originalFormatVersion,
+    		String originalFilename, String md5Hash, String accessLevel, String description, List<String> problems){
     	List<Powergrid> grids = getAvailablePowergrids();
     	int maxPg = 0;
     	for(Powergrid g: grids){
@@ -819,20 +856,53 @@ public class PowergridDaoMySql implements PowergridDao {
     		}
     	}
 
-    	String insert = "INSERT INTO powergrid(PowergridId, Name,CoordinateSystem,Mrid) VALUES(?,?,?,?);";
+
+    	try {
+			MessageDigest digest = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+    	String insert = "INSERT INTO powergrid(PowergridId, Name, CoordinateSystem, Mrid, OriginalFileMd5, OriginalFormat," +
+    						"OriginalFilename, AccessLevel, CreatedBy, Description) " +
+    					"VALUES(@PowergridId, @Name, @CoordinateSystem, @Mrid, @FileHash, @OriginalFormat, "+
+    						"@OriginalFilename, @AccessLevel, @CreatedBy, @Description);";
 
     	int pgId = maxPg + 1;
-    	try(Connection conn = pooledDatasource.getConnection()){
-    		try(PreparedStatement stmt = conn.prepareStatement(insert,  Statement.RETURN_GENERATED_KEYS)){
-    			stmt.setInt(1, pgId);
-    			stmt.setString(2, name);
-    			stmt.setString(3,  "");
-    			stmt.setString(4, uuid);
-    			stmt.execute();
-    		}
+    	boolean success = false;
+    	try(NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
+
+    		stmt.setInt("PowergridId", pgId);
+    		stmt.setString("Name", name);
+    		stmt.setString("CoordinateSystem", coordinateSystem);
+    		stmt.setString("Mrid", uuid);
+    		stmt.setString("OriginalFormat",  originalFormatVersion);
+    		stmt.setString("OriginalFilename", originalFilename);
+    		stmt.setString("AccessLevel", accessLevel);
+    		stmt.setString("CreatedBy", identifier);
+    		stmt.setString("FileHash",  md5Hash);
+    		stmt.setString("Description", description);
+    		stmt.execute();
+    		success = true;
+
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
+
+    	if (!(accessLevel.equalsIgnoreCase("private") || accessLevel.equalsIgnoreCase("public")) &&
+    			success){
+    		insert = "INSERT INTO goss_powergrid_group(powergrid_id, goss_group) VALUES(@powergridId, @groupID);";
+    		try(NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
+    			stmt.setInt("powergridId", pgId);
+    			stmt.setString("groupID", accessLevel);
+    			stmt.execute();
+        		success = true;
+
+        	} catch (SQLException e) {
+    			e.printStackTrace();
+    		}
+    	}
 
     	return pgId;
     }
@@ -842,9 +912,10 @@ public class PowergridDaoMySql implements PowergridDao {
      * The assumption is
      * @param datasource
      */
-    public PowergridDaoMySql(DataSourcePooledJdbc datasource) {
-        log.debug("Creating " + PowergridDaoMySql.class + " with DataSourceObject.");
+    public PowergridDaoMySql(DataSourcePooledJdbc datasource, String identifier) {
+        log.debug("Creating " + PowergridDaoMySql.class + " with identifier: " + identifier);
         this.pooledDatasource = datasource;
+        this.identifier = identifier;
         alertContext = new AlertContext();
         initializeAlertContext();
     }
@@ -872,16 +943,24 @@ public class PowergridDaoMySql implements PowergridDao {
 
     public List<Powergrid> getAvailablePowergrids() {
         List<Powergrid> grids = new ArrayList<Powergrid>();
+        List<String> groups = getUserGroups();
 
-        String dbQuery = "select pg.powergridId, pg.Name, a.mrid from powergrid pg inner join area a on pg.Powergridid=a.PowergridId";
+        String dbQuery = "select pg.*, a.mrid from powergrid pg inner join area a on pg.Powergridid=a.PowergridId";
 
         try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	try (ResultSet rs = stmt.executeQuery()) {
 	            while (rs.next()) {
+	            	JsonObject props = new JsonObject();
 	                Powergrid item = new Powergrid();
 	                item.setPowergridId(rs.getInt(1));
 	                item.setName(rs.getString(2));
-	                item.setMrid(rs.getString("mrid"));
+	                item.setMrid(rs.getString("pg.mrid"));
+	                item.setDescription(rs.getString("description"));
+	                item.setOriginalFilename(rs.getString("OriginalFilename"));
+	                item.setAccessLevel(rs.getString("AccessLevel"));
+	                item.setCreatedBy(rs.getString("CreatedBy"));
+	                item.setCreatedOn(rs.getString("createdOn"));
+	                
 	                grids.add(item);
 	            }
         	}
@@ -893,7 +972,7 @@ public class PowergridDaoMySql implements PowergridDao {
         return grids;
     }
 
-    public List<String> getPowergridNames() {
+    public List<String> getPowergridNames(String identifier) {
         List<Powergrid> grids = getAvailablePowergrids();
         List<String> names = new ArrayList<String>();
         for (Powergrid g : grids) {
@@ -906,23 +985,6 @@ public class PowergridDaoMySql implements PowergridDao {
         String dbQuery = "select pg.PowergridId, pg.Name, a.mrid from powergrid pg INNER JOIN area a ON pg.PowergridId=a.PowergridId where pg.PowergridId = " + powergridId;
         Powergrid grid = new Powergrid();
 
-        try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
-        	try (ResultSet rs = stmt.executeQuery()){
-	            rs.next();
-	            grid.setPowergridId(rs.getInt(1));
-	            grid.setName(rs.getString(2));
-	            grid.setMrid(rs.getString("mrid"));
-        	}
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return grid;
-    }
-
-    public Powergrid getPowergridByName(String powergridName) {
-        String dbQuery = "select * from powergrid where name = '" + powergridName + "'";
-        Powergrid grid = new Powergrid();
         try (NamedParamStatement stmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	try (ResultSet rs = stmt.executeQuery()){
 	            rs.next();
@@ -1355,16 +1417,23 @@ public class PowergridDaoMySql implements PowergridDao {
 
     @Override
     public Powergrid getPowergridByMrid(String mrid) {
-    	String dbQuery = "select pg.PowergridId, pg.Name, pg.Mrid from powergrid pg where pg.Mrid=@Mrid";
+    	String dbQuery = "select * from powergrid pg where Mrid=@Mrid";
         Powergrid grid = new Powergrid();
+        JsonObject props = new JsonObject();
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setString("Mrid", mrid);
-        	try(ResultSet rs = namedStmt.executeQuery()){        		
+        	try(ResultSet rs = namedStmt.executeQuery()){
         		if (rs.first()){
         			grid.setPowergridId(rs.getInt("PowergridId"));
         			grid.setName(rs.getString("name"));
         			grid.setMrid(rs.getString("mrid"));
+        			grid.setDescription(rs.getString("description"));
+        			grid.setOriginalFilename(rs.getString("OriginalFilename"));
+        			grid.setAccessLevel(rs.getString("AccessLevel"));
+        			grid.setCreatedBy(rs.getString("CreatedBy"));
+        			grid.setCreatedOn(rs.getString("CreatedOn"));
+        			
         		}
     		}
         } catch (SQLException e) {
@@ -1397,5 +1466,4 @@ public class PowergridDaoMySql implements PowergridDao {
 
 		return jsonObj;
 	}
-
 }

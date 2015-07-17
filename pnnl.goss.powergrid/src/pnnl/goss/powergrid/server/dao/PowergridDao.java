@@ -11,7 +11,7 @@
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-     
+
     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
@@ -64,20 +64,12 @@ import pnnl.goss.powergrid.datamodel.Transformer;
 import pnnl.goss.powergrid.datamodel.Zone;
 
 public interface PowergridDao {
-	/**
-	 * <p>
-	 * A list of powergrid names in the datasouce
-	 * </p>
-	 * @return
-	 */
-	List<String> getPowergridNames();
 
 	Powergrid getPowergridByMrid(String mrid);
-	Powergrid getPowergridByName(String powergridName);
 	Powergrid getPowergridById(int powergridId);
 	/**
 	 * Returns the context of an alert.
-	 * 
+	 *
 	 * @param powergridId
 	 * @return
 	 */
@@ -86,20 +78,20 @@ public interface PowergridDao {
 	PowergridModel getPowergridModel(int powergridId);
 	PowergridModel getPowergridModelAtTime(int powergridId, Timestamp timestep);
 	List<Powergrid> getAvailablePowergrids();
-	
+
 	List<Timestamp> getTimeSteps(int powergridId);
 	List<Area> getAreas(int powergridId);
 	List<Branch> getBranches(int powergridId);
-	List<Bus> getBuses(int powergridId);	
+	List<Bus> getBuses(int powergridId);
 	List<Line> getLines(int powergridId);
 	List<Load> getLoads(int powergridId);
-	List<Machine> getMachines(int powergridId);	
+	List<Machine> getMachines(int powergridId);
 	List<SwitchedShunt> getSwitchedShunts(int powergridId);
 	List<Substation> getSubstations(int powergridId);
 	List<Transformer> getTransformers(int powergridId);
 	List<Zone> getZones(int powergridId);
-		
+
 	JsonObject getExtension(int poewrgridId, String ext_table);
-	
+
 	void persist(Powergrid powergrid);
 }

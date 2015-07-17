@@ -14,6 +14,7 @@ import pnnl.goss.powergrid.api.topology.IdentifiedObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.JsonObject;
 
 @JsonIgnoreProperties({ "powergridId",
 	"setPowergridId", "setCoordinateSystem", "coordinateSystem",
@@ -54,13 +55,59 @@ public class Powergrid
      * The identifing element for this object.
      */
     private IdentifiedObject identifiedObject;
+    
+    private String createdBy;
+    private String description;
+    private String originalFilename;
+    private String accessLevel;
+    private String createdOn;   
+    
 
-    public Powergrid(){
+    public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getOriginalFilename() {
+		return originalFilename;
+	}
+
+	public void setOriginalFilename(String originalFilename) {
+		this.originalFilename = originalFilename;
+	}
+
+	public String getAccessLevel() {
+		return accessLevel;
+	}
+
+	public void setAccessLevel(String accessLevel) {
+		this.accessLevel = accessLevel;
+	}
+
+	public String getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(String createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	public Powergrid(){
     	// TODO Remove hard coding here!
     	sbase=100.0;
     	caseIdentifier = "Greek-118-North";
     }
-
 
     /**
      * Gets the value of the powergridId property.

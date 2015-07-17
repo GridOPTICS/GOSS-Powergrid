@@ -1,14 +1,12 @@
 package pnnl.goss.powergrid.web;
 
-import javax.servlet.Filter;
-
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.http.HttpService;
 
 import pnnl.goss.core.server.RequestHandlerRegistry;
 import pnnl.goss.powergrid.api.PowergridService;
+import pnnl.goss.powergrid.parser.api.RequestSubjectService;
 
 public class Activator extends DependencyActivatorBase {
 
@@ -21,7 +19,9 @@ public class Activator extends DependencyActivatorBase {
 				.add(createServiceDependency()
 						.setService(RequestHandlerRegistry.class))
 				.add(createServiceDependency()
-						.setService(PowergridService.class)));
+						.setService(PowergridService.class))
+				.add(createServiceDependency()
+						.setService(RequestSubjectService.class)));
 //		manager.add(createComponent()
 //				.setInterface(Filter.class.getName(), null)
 //				.setImplementation(LoggedInFilter.class)
