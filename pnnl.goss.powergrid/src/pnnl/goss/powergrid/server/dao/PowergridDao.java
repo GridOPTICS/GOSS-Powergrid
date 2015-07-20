@@ -83,12 +83,12 @@ public interface PowergridDao {
 	List<Area> getAreas(int powergridId);
 	List<Branch> getBranches(int powergridId);
 	List<Bus> getBuses(int powergridId);
-	List<Line> getLines(int powergridId);
+	List<Branch> getLines(int powergridId);
 	List<Load> getLoads(int powergridId);
 	List<Machine> getMachines(int powergridId);
 	List<SwitchedShunt> getSwitchedShunts(int powergridId);
 	List<Substation> getSubstations(int powergridId);
-	List<Transformer> getTransformers(int powergridId);
+	List<Branch> getTransformers(int powergridId);
 	List<Zone> getZones(int powergridId);
 
 	JsonObject getExtension(int poewrgridId, String ext_table);

@@ -114,7 +114,7 @@ import javax.xml.bind.annotation.XmlType;
     "vma",
     "table1"
 })
-public class Transformer
+public class Transformer extends Branch
     implements Serializable
 {
 

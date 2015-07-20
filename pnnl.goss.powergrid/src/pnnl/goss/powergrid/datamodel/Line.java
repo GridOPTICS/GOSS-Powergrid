@@ -92,7 +92,7 @@ import javax.xml.bind.annotation.XmlType;
     "bj",
     "bcap"
 })
-public class Line
+public class Line extends Branch
     implements Serializable
 {
 

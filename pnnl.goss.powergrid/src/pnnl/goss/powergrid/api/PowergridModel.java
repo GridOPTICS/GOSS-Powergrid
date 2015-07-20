@@ -284,6 +284,7 @@ public class PowergridModel implements Serializable {
 	}
 
 	public void setBranches(List<Branch> branches) {
+		
 		for (Branch item : branches) {
 			addToMap(BRANCHES, item.getMrid(), item);
 		}
