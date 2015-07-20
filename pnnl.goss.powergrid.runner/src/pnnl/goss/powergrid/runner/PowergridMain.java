@@ -92,23 +92,23 @@ public class PowergridMain {
 			Response response = client.getResponse(request);
 			if (!handleError(response)){
 				switch(pt){
-				case BUSES:
+				case BUS:
 					List<Bus> items = (List<Bus>) ((DataResponse) response).getData();
 					System.out.println("Buses:\n" + gson.toJson(items));
 					break;
-				case BRANCHES:
+				case BRANCH:
 					List<Branch> branches = (List<Branch>) ((DataResponse) response).getData();
 					System.out.println("Branches:\n" + gson.toJson(branches));
 					break;
-				case MACHINES:
+				case GENERATOR:
 					List<Machine> machines = (List<Machine>) ((DataResponse) response).getData();
 					System.out.println("Generators:\n" + gson.toJson(machines));
 					break;
-				case LOADS:
+				case LOAD:
 					List<Load> loads = (List<Load>) ((DataResponse) response).getData();
 					System.out.println("Generators:\n" + gson.toJson(loads));
 					break;
-				case SWITCHED_SHUNTS:
+				case SHUNT:
 					List<SwitchedShunt> shunts = (List<SwitchedShunt>) ((DataResponse) response).getData();
 					System.out.println("Switched Shunts:\n" + gson.toJson(shunts));
 					break;
