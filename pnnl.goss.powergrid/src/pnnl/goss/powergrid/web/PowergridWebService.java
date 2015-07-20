@@ -16,6 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.amdatu.web.rest.doc.Description;
 import org.amdatu.web.rest.doc.ReturnType;
@@ -38,6 +39,8 @@ import pnnl.goss.powergrid.requests.CreatePowergridRequest;
 import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
+import pnnl.goss.powergrid.requests.RequestPowergridPart;
+import pnnl.goss.powergrid.requests.RequestPowergridPart.PowergridPartType;
 
 @Path("/powergrid/api")
 @Produces(MediaType.APPLICATION_JSON)
@@ -83,6 +86,54 @@ public class PowergridWebService {
 				data = new ArrayList<>();
 			}
 		}
+
+		return response;
+	}
+
+	@POST
+	@Path("/{mrid}/part/{part}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Description("Returns a list of powergrid elements.  The available list is as follows: "
+			+"<ul><li>bus</li>"
+			+"<li>branch (lines and transformers)</li>"
+			+"<li>line</li>"
+			+"<li>transformer</li>"
+			+"<li>generator</li>"
+			+"<li>load</li>"
+			+"<li>shunt</li></ul>")
+	public Response getPowergridPart(@PathParam("mrid") String powergridMrid,
+			@PathParam("part") String part,
+			@Context HttpServletRequest req){
+
+		Response response = null;
+		RequestPowergridPart pgRequest = null;
+		String identifier = (String)req.getAttribute("identifier");
+		//try{
+		pgRequest = new RequestPowergridPart(powergridMrid, PowergridPartType.valueOf(part.toUpperCase()));
+
+		if (handlers.checkAccess(pgRequest, identifier)){
+			subjectService.addRequest(pgRequest, identifier);
+			DataResponse dataResp;
+			try {
+				dataResp = (DataResponse)handlers.handle(pgRequest);
+
+				if (WebUtil.wasError(dataResp.getData())){
+					response = Response.status(Response.Status.BAD_REQUEST)
+							.entity(dataResp.getData()).build();
+				}
+				else {
+					//model = ((PowergridModel)dataResp.getData());
+					response = Response.status(Response.Status.OK).entity(dataResp.getData()).build();
+				}
+			} catch (HandlerNotFoundException e) {
+				e.printStackTrace();
+
+			}
+		}
+		else{
+			response = Response.status(Status.UNAUTHORIZED).build();
+		}
+
 
 		return response;
 	}
@@ -137,7 +188,6 @@ public class PowergridWebService {
 		"<li>switchedshunt</li>\n"+
 		"<li>tieline</li></ul>"
 	)
-	@ReturnType(PowergridModel.class)
 	public Response getPowergridExt(String identifier,
 			@PathParam("mrid") String mrid,
 			@PathParam("type") String extensionType,
@@ -160,7 +210,7 @@ public class PowergridWebService {
 				}
 				else {
 					String data = ((String)res.getData());
-					response = Response.status(Response.Status.OK).entity(data).build();
+					response = Response.ok(data).build();
 				}
 			} catch (HandlerNotFoundException e) {
 				e.printStackTrace();
@@ -276,9 +326,9 @@ public class PowergridWebService {
 				createReq.setDescription(requestBody.get("description").getAsString());
 				DataResponse res;
 				try{
-					
+
 					String content = requestBody.get("model_file_content").getAsString();
-					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);					
+					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);
 					File tmpFile = File.createTempFile("upload", "tmp");
 					FileUtils.writeByteArrayToFile(tmpFile,  decoded);
 					createReq.setPowergridFile(tmpFile);
@@ -351,7 +401,7 @@ public class PowergridWebService {
 
 		return response;
 	}
-	
+
 	@POST
 	@Path("/model_details/{mrid}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -366,7 +416,7 @@ public class PowergridWebService {
 		System.out.println("Retrieving powergrid details for mrid: "+ mrid);
 
 		HashMap<String, String> modelDetails = new HashMap<String, String>();
-		
+
 		modelDetails.put("1", "{\"id\":\"1\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");
 		modelDetails.put("2", "{\"id\":\"2\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");
 		modelDetails.put("3", "{\"id\":\"3\",\"name\":\"Greek 118\",\"created_by\":\"Poorva Sharma\",\"filename\":\"Greepti118.raw\",\"desc\":\"this is a test\",\"format\":\"PTI(23,26,29,31)\",\"useraccess\":\"Public\"}");

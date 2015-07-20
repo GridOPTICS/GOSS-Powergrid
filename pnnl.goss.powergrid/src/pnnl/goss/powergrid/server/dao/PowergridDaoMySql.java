@@ -1146,12 +1146,12 @@ public class PowergridDaoMySql implements PowergridDao {
             try(ResultSet rs = namedStmt.executeQuery()){
 
 	            while (rs.next()) {
-	                Line line = new Line();
-	                line.setPowergridId(powergridId);
-	                line.setLineId(rs.getInt(1));
-	                line.setBcap(rs.getDouble(4));
-	                line.setBranchId(rs.getInt(3));
-	                items.add(line);
+	                Line item = new Line();
+	                item.setPowergridId(powergridId);
+	                item.setLineId(rs.getInt(1));
+	                item.setBcap(rs.getDouble(4));
+	                item.setBranchId(rs.getInt(3));
+	                items.add(item);
 	            }
             }
         } catch (SQLException e) {
@@ -1170,14 +1170,15 @@ public class PowergridDaoMySql implements PowergridDao {
 
             try(ResultSet rs = namedStmt.executeQuery()){
 	            while (rs.next()) {
-	                Load load = new Load();
-	                load.setPowergridId(powergridId);
-	                load.setBusNumber(rs.getInt(3));
-	                load.setLoadId(rs.getInt(1));
-	                load.setLoadName(rs.getString(4));
-	                load.setPload(rs.getDouble(5));
-	                load.setQload(rs.getDouble(6));
-	                items.add(load);
+	                Load item = new Load();
+	                item.setPowergridId(powergridId);
+	                item.setBusNumber(rs.getInt(3));
+	                item.setLoadId(rs.getInt(1));
+	                item.setLoadName(rs.getString(4));
+	                item.setPload(rs.getDouble(5));
+	                item.setQload(rs.getDouble(6));
+	                item.setMrid(rs.getString("Mrid"));
+	                items.add(item);
 	            }
             }
         } catch (SQLException e) {
@@ -1197,19 +1198,20 @@ public class PowergridDaoMySql implements PowergridDao {
             try(ResultSet rs = namedStmt.executeQuery()){
 
 	            while (rs.next()) {
-	                Machine machine = new Machine();
-	                machine.setPowergridId(powergridId);
-	                machine.setMachineId(rs.getString("MachineId"));
-	                machine.setBusNumber(rs.getInt("BusNumber"));
-	                machine.setIsSvc(rs.getInt("IsSvc"));
-	                machine.setMaxPgen(rs.getDouble("MaxPGen"));
-	                machine.setMaxQgen(rs.getDouble("MaxQGen"));
-	                machine.setMinPgen(rs.getDouble("MinPGen"));
-	                machine.setMinQgen(rs.getDouble("MinQGen"));
-	                machine.setPgen(rs.getDouble("PGen"));
-	                machine.setQgen(rs.getDouble("QGen"));
-	                machine.setStatus(rs.getInt("Status"));
-	                items.add(machine);
+	                Machine item = new Machine();
+	                item.setPowergridId(powergridId);
+	                item.setMachineId(rs.getString("MachineId"));
+	                item.setBusNumber(rs.getInt("BusNumber"));
+	                item.setIsSvc(rs.getInt("IsSvc"));
+	                item.setMaxPgen(rs.getDouble("MaxPGen"));
+	                item.setMaxQgen(rs.getDouble("MaxQGen"));
+	                item.setMinPgen(rs.getDouble("MinPGen"));
+	                item.setMinQgen(rs.getDouble("MinQGen"));
+	                item.setPgen(rs.getDouble("PGen"));
+	                item.setQgen(rs.getDouble("QGen"));
+	                item.setStatus(rs.getInt("Status"));
+	                item.setMrid(rs.getString("Mrid"));
+	                items.add(item);
 	            }
             }
         } catch (SQLException e) {
@@ -1229,14 +1231,15 @@ public class PowergridDaoMySql implements PowergridDao {
             try(ResultSet rs = namedStmt.executeQuery()){
 
 	            while (rs.next()) {
-	                SwitchedShunt shunt = new SwitchedShunt();
-	                shunt.setPowergridId(powergridId);
-	                shunt.setBinit(rs.getDouble("BInit"));
-	                shunt.setBshunt(rs.getDouble("BShunt"));
-	                shunt.setBusNumber(rs.getInt("BusNumber"));
-	                shunt.setStatus(rs.getInt("Status"));
-	                shunt.setSwitchedShuntId(rs.getString("SwitchedShuntId"));
-	                items.add(shunt);
+	                SwitchedShunt item = new SwitchedShunt();
+	                item.setPowergridId(powergridId);
+	                item.setBinit(rs.getDouble("BInit"));
+	                item.setBshunt(rs.getDouble("BShunt"));
+	                item.setBusNumber(rs.getInt("BusNumber"));
+	                item.setStatus(rs.getInt("Status"));
+	                item.setSwitchedShuntId(rs.getString("SwitchedShuntId"));
+	                item.setMrid(rs.getString("Mrid"));
+	                items.add(item);
 	            }
             }
         } catch (SQLException e) {
@@ -1284,13 +1287,13 @@ public class PowergridDaoMySql implements PowergridDao {
 
             try(ResultSet rs = namedStmt.executeQuery()){
 	            while (rs.next()) {
-	                Transformer transformer = new Transformer();
-	                transformer.setPowergridId(powergridId);
-	                transformer.setBranchId(rs.getInt(3));
-	                transformer.setRatio(rs.getDouble(4));
-	                transformer.setTapPosition(rs.getDouble(5));
-	                transformer.setTransformerId(rs.getInt(1));
-	                items.add(transformer);
+	                Transformer item = new Transformer();
+	                item.setPowergridId(powergridId);
+	                item.setBranchId(rs.getInt(3));
+	                item.setRatio(rs.getDouble(4));
+	                item.setTapPosition(rs.getDouble(5));
+	                item.setTransformerId(rs.getInt(1));
+	                items.add(item);
 	            }
             }
         } catch (SQLException e) {
