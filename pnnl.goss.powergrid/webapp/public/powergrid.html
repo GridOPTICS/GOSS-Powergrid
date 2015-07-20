@@ -81,7 +81,10 @@
                 <th>Description</th>
                 <th>Details</th>
                 <th>Status</th>
+                <th>Share</th>
                 <th>Download</th>
+                
+                
             </tr>
         </thead>
  
@@ -93,7 +96,9 @@
 	            <th>Description</th>
 	            <th>Details</th>
                 <th>Status</th>
-	            <th>Download</th>
+                <th>Share</th>
+                <th>Download</th>
+	            
             </tr>
         </tfoot>
  
@@ -112,6 +117,43 @@
   
 <!--   <p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p> -->
   <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
+<div id="viewUserAccess" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+<p class="lead">Modify Access for Scenario </p>
+<div class="row" id="attributes_div">
+	<div class="large-8 medium-8 columns">
+	
+		<div class="row">
+			<div class="large-6 medium-6 columns">
+			<br>
+			Select User Access:
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="large-2 columns">
+				<input type="radio" id="public" name="access" value="public" checked>Public
+			</div>
+			<div class="large-2 columns">
+				<input type="radio" id="private" name="access" value="private">Private
+			</div>
+			<div class="large-2 columns">
+				<input type="radio" id="group" name="access" value="group">Group:
+			</div>
+			<div class="large-6 columns">
+				<select id="groups" disabled="true">
+					<option value="pnnl">PNNL</option>
+					<option value="UW">UW</option>
+					<option value="NASPI">NASPI</option>
+				</select>
+			</div>
+		</div>
+	</div>
+</div>
+ <a class="close-reveal-modal" aria-label="Save">&#215;</a>
+ <button id="save_model_access" onclick=save_access()>Save</button>
+
 </div>
 
 
@@ -166,7 +208,8 @@ $(document).ready(function() {
 	            			'<td>' + row.created_by + '</td>'+
 	            			'<td>' + row.desc + '</td>'+
 	            			'<td onclick=viewDetails('+row.id+')>' + '<a>View Details</a>' + '</td>'+
-	            			'<td>' + row.status + '</td>';
+	            			'<td>' + row.status + '</td>'+
+	            			'<td onclick=share('+row.id+')><a>Share</a></td>';
 
 	            			if(row.status='complete'){
 	            				trHTML +='<td onclick=download('+row.id+')>' + '<a>Download</a>' + '</td>';
@@ -189,6 +232,17 @@ function download(id){
 	
 	alert(id);
 	
+}
+
+function share(id){
+	$('#viewUserAccess').foundation('reveal', 'open');
+	
+}
+
+function save_access(){
+	//TODO save settings
+	$('#viewUserAccess').foundation('reveal', 'close');
+
 }
 
 

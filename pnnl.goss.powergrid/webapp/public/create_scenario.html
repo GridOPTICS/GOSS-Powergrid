@@ -60,21 +60,36 @@
 
     <div class="row">
 	  <div class="large-12 columns">
-        <h3>Create Scenario</h3>
+        <h3>New Scenario</h3>
       </div>
     </div>
 	<br/>
+	<div class="row" id="attributes_div">
+	<div class="large-8 medium-8 columns">
 
 	<div class="row">
-		<div class="large-4 columns">
-			<label>Name
-				<input type="text" id="name"/>
+		
+			<div class="large-6 columns">
+				<label>Name
+					<input type="text" id="name"/>
+				</label>
+			</div>
+			<div class="large-6 medium-6 columns">
+			<label>Model
+			
+		
+			<select id="model" >
+				<option value="default">Select Model</option>
+				<option value="lineOutage">Greek 118 pti</option>
+				<option value="genOutage">North</option>
+				<option value="genOutage">South</option>
+			</select>
 			</label>
 		</div>
+		
 	</div>
 	
-	<div class="row" id="attributes_div">
-		<div class="large-8 medium-8 columns">
+	
 		
 		
 	<div class="row">
@@ -93,30 +108,6 @@
 	</div>
 		
 		
-		<!--	<div class="row">
-				<div class="large-6 medium-6 columns">
-				<br>
-				Select Load Profile:
-				</div>
-			</div>
-			
-			<div class="row">
-				<div class="large-6 medium-6 columns">
-					<input type="radio" id="winter" name="profile" value="winter" checked>Winter (January 1, from 00:00 to 23:59)<br>
-				</div>
-				<div class="large-6 medium-6 columns">
-					<input type="radio" id="summer" name="profile" value="summer">Summer (August 1, from 00:00 to 23:59)
-				</div>
-			</div>
-			
-			<div class="row">
-				<div class="large-2 columns">
-					<label>Start Time
-						<input type="text" id="startTime" placeholder="hh:ss"/>
-					</label>
-				</div>
-			</div>-->
-			
 	<div class="row">
 		<div class="large-4 medium-4 columns">
 			<input type="button" id="addEvents" class="button round info tiny" id="addEvents" value="Add Events"/> 
@@ -167,7 +158,7 @@
 	
 	<div class="row">
 		<div class="large-4 medium-4 columns">
-		<input type="button" id="upload_file" class="button small round" value="Generate Scenario"/> 
+		<input type="button" id="create" class="button small round" value="Generate Scenario" onclick="create()"/> 
 		</div>
 	</div>
 	
@@ -184,6 +175,12 @@
 $(document).ready(function() {
 	$(document).foundation();
 });
+
+function create(){
+	
+	window.location.replace('/powergrid/view_scenario.html');
+	
+}
 
 $('#addEvents').click(function(){
 

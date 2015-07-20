@@ -132,7 +132,7 @@
 	<div class="row">
 		<div class="large-8 columns">
 		  <label>Description
-			<textarea rows="10" id="description" placeholder="Model Description in few lines"></textarea>
+			<textarea rows="5" id="description" placeholder="Model Description in few lines"></textarea>
 		  </label>
 		</div>
 	</div>
@@ -169,12 +169,14 @@ $("input[name=access]").click(function(){
 });
 
 $('#upload_file').click(function(){
+	
+	
 // 	var authToken  = document.cookie.split("=")[1]
 // 	var authToken = localStorage.getItem("authToken");
 	parameters['AuthToken'] = authToken;
 	parameters['description'] = $('#description').val();
 	parameters['name'] = $('#name').val();
-	parameters['access_level'] = $('#access_level').val();
+	parameters['access_level'] = 'public';
 	
 	validateAndPost();    	
 });
@@ -201,7 +203,8 @@ function readFile(input) {
              // Update the page level parameters
              parameters['model_file_name'] = input.files[0].name;
              parameters['model_file_content'] = e.target.result;
-             $('#name').val(name + input.files[0].name);
+            //$('#name').val(name + input.files[0].name);
+             parameters['access_level'] = 'public'
                     
         };
         
@@ -217,34 +220,41 @@ $("#model_file").change(function(){
 });
 
 function validateAndPost(){
+	
+	
 console.log(authToken);
 	console.log('Posting parameters\n'+ JSON.stringify(parameters));
 	if (parameters['model_file_name'] != null && parameters['model_file_name'].length > 0){
-		localStorage.setItem("modelId", 15);
-        	window.location.replace('/powergrid/view.html');
-	/*
+		//localStorage.setItem("modelId", 15);
+        	//window.location.replace('/powergrid/view.html');
+	
 		$.ajax({
             type: 'POST',
             url: '/powergrid/api/create',
             data: JSON.stringify(parameters),
             dataType: 'json',
             contentType: 'application/json',
+            data: JSON.stringify(parameters), 
             success: function(data){
+				alert('Success')
             	console.log('Success');
             	console.log(data.toString());
             	alert("Got "+data.toString());
             	//get id from success data
-            	localStorage.setItem("modelId", 15);
-        		window.location.replace('/powergrid/view.html);
+            	//localStorage.setItem("modelId", "43699ce1-7d44-4ce0-bcba-f6c3a078abed");
+        		window.location.replace('/powergrid/view.html');
             	
 			},
             failure: function(data){
             	console.log('Failure');
                 console.log(data.toString());
                 alert("Falure: "+ data.toString());
+            },
+            error: function(a, b, c){
+                alert(a+ b+ c);
             }
 
-        });	*/
+        });	
 	}
 	else {
 		alert('Invalid model file!');

@@ -93,7 +93,7 @@
 		</div>
 		<div class="large-6 columns">
 		  <label>Filename
-		  <label onclick=viewFile()><a href="GreekPti_v29.raw" data-reveal-id="myModal">Greepti118.raw</a></label>
+		  <label><a href="GreekPti_v29.raw">Greepti118.raw</a></label>
 		  
 		  
 		  </label>
@@ -103,24 +103,13 @@
 	
 	<div class="row">
 		<div class="large-8 columns">
-		  <label>Description
-			<textarea rows="5" id="description" value="This is a test Description" disabled></textarea>
+		  <label>Details
+			<textarea rows="15" id="description" value=""></textarea>
 		  </label>
 		</div>
 	</div>
 	
-	<div class="row">
-		<div class="large-4 medium-4 columns">
-			<div>
-				<button id="upload_file">Upload</button>
-			</div>
-        </div>
-	</div>
 	
-	<div id="viewFileDiv" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
-	<div id="viewFileText"></div>
-	<a class="close-reveal-modal" aria-label="Close">&#215;</a>
-	</div>
 	
 	<br>
 
@@ -129,6 +118,37 @@
 
 $(document).ready(function() {
 	$(document).foundation();
+	
+	var varhtml = "";
+	$.ajax({
+        type: 'POST',
+        url: '/powergrid/api/43699ce1-7d44-4ce0-bcba-f6c3a078abed',
+        dataType: 'json',
+        headers: { 'AuthToken': authToken },
+        contentType: 'application/json',
+        success: function(data){
+        	console.log('Success');
+        	console.log(JSON.stringify(data));
+        	varhtml = JSON.stringify(data, null, 2);
+        	$('#description').val(varhtml);
+		},
+        failure: function(data){
+        	console.log('Failure');
+            console.log(data.toString());
+            alert("Falure: "+ data.toString());
+        },
+        error: function(a, b, c){
+            alert(a+ b+ c);
+        }
+
+    });	
+	
+	
+	
+	
+
+
+
 });
 
 function viewFile(){
