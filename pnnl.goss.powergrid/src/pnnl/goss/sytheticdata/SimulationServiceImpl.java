@@ -10,10 +10,10 @@ import org.apache.felix.dm.annotation.api.Component;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import pnnl.goss.sytheticdata.api.Simulator;
+import pnnl.goss.sytheticdata.api.SimulatorService;
 
 @Component
-public class SimulationService implements Simulator {
+public class SimulationServiceImpl implements SimulatorService {
 
 	private Map<String, JsonObject> simulations = new ConcurrentHashMap<>();
 	

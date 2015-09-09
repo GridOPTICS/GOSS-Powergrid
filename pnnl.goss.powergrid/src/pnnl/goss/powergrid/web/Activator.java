@@ -7,6 +7,7 @@ import org.osgi.framework.BundleContext;
 import pnnl.goss.core.server.RequestHandlerRegistry;
 import pnnl.goss.powergrid.api.PowergridService;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
+import pnnl.goss.sytheticdata.api.SimulatorService;
 
 public class Activator extends DependencyActivatorBase {
 
@@ -17,14 +18,16 @@ public class Activator extends DependencyActivatorBase {
 				.setInterface(Object.class.getName(), null)
 				.setImplementation(PowergridWebService.class)
 				.add(createServiceDependency()
-						.setService(RequestHandlerRegistry.class))
+						.setService(RequestHandlerRegistry.class).setRequired(true))
 				.add(createServiceDependency()
-						.setService(PowergridService.class))
+						.setService(PowergridService.class).setRequired(true))
 				.add(createServiceDependency()
-						.setService(RequestSubjectService.class)));
+						.setService(RequestSubjectService.class).setRequired(true)));
 		manager.add(createComponent()
 				.setInterface(Object.class.getName(), null)
 				.setImplementation(SyntheticDataWebService.class)
+				.add(createServiceDependency()
+						.setService(SimulatorService.class).setRequired(true))
 				.add(createServiceDependency()
 						.setService(RequestHandlerRegistry.class))
 				.add(createServiceDependency()

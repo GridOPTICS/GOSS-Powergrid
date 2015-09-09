@@ -1,6 +1,6 @@
 package pnnl.goss.sytheticdata.api;
 
-public interface Simulator {
+public interface SimulatorService {
 	
 	/**
 	 * Starts a simulation process using the passed JSON simulation
