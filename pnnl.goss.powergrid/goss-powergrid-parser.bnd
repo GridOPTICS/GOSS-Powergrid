@@ -1,6 +1,6 @@
 Private-Package:  \
 	pnnl.goss.powergrid.parsers
-Bundle-Version: 1.0.0.${tstamp}
+Bundle-Version: 1.0.1.${tstamp}
 
 
 Include-Resource: \

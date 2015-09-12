@@ -5,4 +5,6 @@ Private-Package:  \
 	pnnl.goss.powergrid.server,\
 	pnnl.goss.powergrid.server.dao,\
 	pnnl.goss.powergrid.listeners
-Bundle-Version: 1.0.0.${tstamp}
+Bundle-Version: 1.0.1.${tstamp}
+Export-Package:  \
+	pnnl.goss.powergrid.server.api
