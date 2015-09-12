@@ -210,7 +210,7 @@ public class PowergridWebService {
 				}
 				else {
 					String data = ((String)res.getData());
-					response = Response.ok(data).build();
+					response = Response.ok(data).build(); //.header("Access-Control-Allow-Origin", "*").build();
 				}
 			} catch (HandlerNotFoundException e) {
 				e.printStackTrace();
