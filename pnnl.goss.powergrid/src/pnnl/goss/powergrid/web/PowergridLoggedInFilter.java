@@ -40,31 +40,31 @@ import com.google.gson.JsonObject;
  * @author Craig Allwardt
  *
  */
-@Component
-public class LoggedInFilter implements Filter
+//@Component
+public class PowergridLoggedInFilter implements Filter
 {
 
-	@ServiceDependency
+//	@ServiceDependency
     private volatile ExtHttpService httpService;
 
-	@ServiceDependency
+//	@ServiceDependency
 	private volatile TokenIdentifierMap idMap;
 
     @Start
     public void start() throws ServletException{
     	System.out.println("Starting "+this.getClass().getName());
-    	try {
-			httpService.registerFilter(this, "/powergrid/api/.*",  null,  100,  null);
-		} catch (ServletException e) {
-			e.printStackTrace();
-			throw e;
-		}
+//    	try {
+//			httpService.registerFilter(this, "/powergrid/api/.*",  null,  100,  null);
+//		} catch (ServletException e) {
+//			e.printStackTrace();
+//			throw e;
+//		}
 
     }
 
     @Stop
     public void stop(){
-    	httpService.unregisterFilter(this);
+    	//httpService.unregisterFilter(this);
     }
 
     @Override
@@ -88,10 +88,11 @@ public class LoggedInFilter implements Filter
 
     	// Not available through the header
     	if (token == null || token.isEmpty()){
-
+    		
     		// If POST request then check the content of the body for an
     		// AuthToken element
-    		if (request.getMethod().equalsIgnoreCase("POST")){
+    		if (request.getMethod().equalsIgnoreCase("POST") ||
+    				request.getMethod().equalsIgnoreCase("OPTIONS")){
     			StringBuilder body = new StringBuilder();
         		char[] charBuffer = new char[128];
         		InputStream inputStream;
@@ -156,11 +157,21 @@ public class LoggedInFilter implements Filter
         throws IOException, ServletException
     {
     	HttpServletRequest httpReq = (HttpServletRequest) req;
+    	HttpServletResponse httpResp = (HttpServletResponse)res; 
+    	
     	MultiReadHttpServletRequestWrapper wrapper = new MultiReadHttpServletRequestWrapper(httpReq);
     	String authToken = getTokenIfPresent(wrapper);
     	String ip = httpReq.getRemoteAddr();
     	String identifier = null;
     	boolean identifierSet = false;
+    	
+//    	WebUtil.addXDomainSupport(httpResp);
+//    	
+    	if (httpReq.getMethod().equals("OPTIONS")){
+    		//WebUtil.addXDomainSupport(httpResp);
+    		httpResp.setStatus(200);
+    		return;
+    	}
 
     	if (authToken != null){
     		identifier = idMap.getIdentifier(ip, authToken);
