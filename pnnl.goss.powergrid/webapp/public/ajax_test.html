@@ -1,0 +1,41 @@
+<html>
+<head>
+  <script src="js/jquery-2.1.4.min.js"></script>  
+</head>
+<body>
+  <button id="authenticate">Authenticate</button>
+  <button id="listPowergrids">List Powergrid</button>
+  <br/>
+  <textarea cols="800" rows="100" id="response">
+  </textarea>
+
+  <script>
+    //var root = "http://superfly.pnl.gov";
+    var token = '8c95cdc1-35c1-46ff-a22a-b8287588f743';
+        
+    $("#authenticate").click(function(){
+    	$.ajax({
+    		url: "/login", 
+    		headers: {Accept: "application/json", 'Content-Type': "application/json"},
+    		data: JSON.stringify({username: 'erin', password: 'erin'}),
+    		method: 'POST'    		
+    	}).success (function(data){
+    	  $("#response").val(JSON.stringify(data));
+      	  token = data['token'];
+        })
+    });
+    
+    $( "#listPowergrids" ).click(function(){
+      $.ajax({
+        url: "api/list",
+        headers: {Accept: "application/json", AuthToken: token, 'Content-Type': "application/json"},
+        method: 'POST',
+        
+      }).success (function(data){
+    	$("#response").val(JSON.stringify(data));
+      })
+    });
+  </script>
+  
+</body>
+</html>
