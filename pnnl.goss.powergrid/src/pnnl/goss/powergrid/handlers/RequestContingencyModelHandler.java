@@ -72,7 +72,7 @@ import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.requests.RequestContingencyModel;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.server.PowergridDataSourceEntries;
-import pnnl.goss.powergrid.server.dao.PowergridDao;
+import pnnl.goss.powergrid.server.api.PowergridDao;
 import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
 
 

@@ -42,7 +42,7 @@
     operated by BATTELLE for the UNITED STATES DEPARTMENT OF ENERGY
     under Contract DE-AC05-76RL01830
 */
-package pnnl.goss.powergrid.server.dao;
+package pnnl.goss.powergrid.server.api;
 
 import java.sql.Timestamp;
 import java.util.List;

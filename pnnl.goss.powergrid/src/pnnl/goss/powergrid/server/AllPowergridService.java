@@ -19,7 +19,7 @@ import pnnl.goss.powergrid.api.PowergridService;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.handlers.RequestPowergridHandler;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
-import pnnl.goss.powergrid.server.dao.PowergridDao;
+import pnnl.goss.powergrid.server.api.PowergridDao;
 import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
 
 @Component

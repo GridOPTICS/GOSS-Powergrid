@@ -58,7 +58,7 @@ public class CreatePowergridHandler implements RequestHandler {
 		handles.put(CreatePowergridRequest.class, AuthorizeAll.class);
 		return handles;
 	}
-
+	
 	@Override
 	public Response handle(Request request) {
 

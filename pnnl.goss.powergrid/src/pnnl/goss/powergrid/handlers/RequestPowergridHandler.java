@@ -83,7 +83,7 @@ import pnnl.goss.powergrid.requests.RequestPowergridPart;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStep;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStepValues;
 import pnnl.goss.powergrid.server.PowergridDataSourceEntries;
-import pnnl.goss.powergrid.server.dao.PowergridDao;
+import pnnl.goss.powergrid.server.api.PowergridDao;
 import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
 
 @Component
