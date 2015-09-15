@@ -3,7 +3,6 @@ package pnnl.goss.sytheticdata;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.Scanner;
 
 import com.google.gson.Gson;
@@ -11,7 +10,8 @@ import com.google.gson.JsonObject;
 
 public class PowerflowExecutor {
 	
-	final static String command = "/C:/Users/d3m614/pypowertests/Scripts/python.exe ";
+	final static String python = "/C:/Users/d3m614/pypowertests/Scripts/python.exe";
+	final static String command = "C:/Users/d3m614/git/GOSS-Powergrid/pnnl.goss.syntheticdata/cases/dopf.py";
 	private String rawError = null;
 	private String rawOutput = null;
 	private JsonObject jsonObject = null;
@@ -30,15 +30,20 @@ public class PowerflowExecutor {
 	}
 	
 	private void parseResults(){
-		// The output of this execution will have a pretty header followed by a json string with
-		// the output values in it.
-		int jsonStart = rawOutput.indexOf("{");
-		prettyResults = rawOutput.substring(0, jsonStart-1);
-		jsonObject = new Gson().fromJson(rawOutput.substring(jsonStart), JsonObject.class);
+		try{
+			// The output of this execution will have a pretty header followed by a json string with
+			// the output values in it.
+			int jsonStart = rawOutput.indexOf("{");
+			prettyResults = rawOutput.substring(0, jsonStart-1);
+			jsonObject = new Gson().fromJson(rawOutput.substring(jsonStart), JsonObject.class);
+		}
+		catch(StringIndexOutOfBoundsException e){
+			// Invalid data was returned from the function.
+		}
 	}
 	
 	public void execute(String case_file){
-		ProcessBuilder builder = new ProcessBuilder(command, case_file);
+		ProcessBuilder builder = new ProcessBuilder(python, command, case_file);
 		Process process = null;
 		try {
 
