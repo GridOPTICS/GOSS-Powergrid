@@ -1,0 +1,8 @@
+Bundle-Version: 0.0.0.${tstamp}
+-buildpath:  \
+		../cnf/plugins/org.apache.felix.dependencymanager.annotation-3.2.0.jar;version=file,\
+	com.google.gson
+Private-Package:  \
+	pnnl.goss.sytheticdata
+Export-Package:  \
+	pnnl.goss.sytheticdata.api
