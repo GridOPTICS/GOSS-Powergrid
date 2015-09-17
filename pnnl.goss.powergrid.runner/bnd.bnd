@@ -2,7 +2,7 @@ Bundle-Version: 1.0.0.${tstamp}
 Export-Package:  \
 	pnnl.goss.powergrid.runner
 -buildpath:  \
-	biz.aQute.bnd.annotation,\
+	${dm-buildpath},\
 	org.apache.activemq.activemq-osgi;version=5.11,\
 	org.apache.activemq.shiro;version=5.11,\
 	org.fusesource.stompjms.stompjms-client,\
@@ -26,6 +26,5 @@ Export-Package:  \
 	pnnl.goss.core.goss-core-security;version=2.1,\
 	pnnl.goss.core.security-propertyfile;version=2.0,\
 	osgi.cmpn
-	
-	
+
 	
