@@ -8,6 +8,9 @@ import javax.servlet.Filter;
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.http.HttpContext;
+import org.osgi.service.http.HttpService;
 
 import pnnl.goss.core.server.RequestHandlerRegistry;
 import pnnl.goss.core.server.TokenIdentifierMap;
@@ -23,9 +26,12 @@ public class Activator extends DependencyActivatorBase {
 			throws Exception {
 		
 		Hashtable loggedProps = new Hashtable();
-		loggedProps.put("pattern", "/powergrid/api/.*");
+		loggedProps.put("pattern", "/powergrid/api.*");
+		loggedProps.put("service.ranking", 10);
 		loggedProps.put("contextId", "GossContext");
-			
+		loggedProps.put("context.shared", true);
+		
+		
 		// Login filter
 		manager.add(createComponent()
 				.setInterface(Filter.class.getName(), loggedProps)

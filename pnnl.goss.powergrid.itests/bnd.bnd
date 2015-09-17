@@ -9,7 +9,7 @@ Private-Package:  \
 	../cnf/plugins/org.apache.felix.dependencymanager.annotation-3.2.0.jar;version=file,\
 	osgi.cmpn;version=4.3,\
 	osgi.core;version=5.0,\
-	org.amdatu.testing.configurator;version=3.0,\
+	org.amdatu.testing.configurator;version=3.1,\
 	biz.aQute.junit;version=1.3,\
 	org.apache.felix.dependencymanager,\
 	org.apache.felix.dependencymanager.runtime,\
@@ -19,14 +19,15 @@ Private-Package:  \
 	org.apache.httpcomponents.httpclient;version=4.2,\
 	pnnl.goss.core.runner;version=latest,\
 	org.apache.activemq.activemq-osgi,\
+	org.apache.commons.io,\
 	com.springsource.javax.jms,\
-	org.amdatu.configurator.api,\
-	org.amdatu.configurator.autoconf,\
-	org.amdatu.configurator.properties,\
 	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
 	pnnl.goss.core.core-api,\
 	pnnl.goss.core.goss-core-server-api,\
-	org.apache.commons.io
+	org.amdatu.configurator.api;version=1.0,\
+	org.amdatu.configurator.autoconf;version=1.0,\
+	org.amdatu.configurator.properties;version=1.0,\
+	org.amdatu.configurator.shell;version=1.0
 
 Test-Cases: ${classes;ANNOTATION;org.junit.Test}
 

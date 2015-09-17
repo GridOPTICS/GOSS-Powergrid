@@ -2,8 +2,8 @@ package pnnl.goss.powergrid.itests.tests;
 
 import static org.amdatu.testing.configurator.TestConfigurator.cleanUp;
 import static org.amdatu.testing.configurator.TestConfigurator.configure;
-import static org.amdatu.testing.configurator.TestConfigurator.serviceDependency;
-import static org.amdatu.testing.configurator.TestConfigurator.configuration;
+//import static org.amdatu.testing.configurator.TestConfigurator.serviceDependency;
+//import static org.amdatu.testing.configurator.TestConfigurator.configuration;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -39,10 +39,10 @@ public class CreatePowergridHandlerTests {
 		
 		// In order to be able to test the configuration handler the handler must
 		// be registered with the osgi container.
-		testConfig = configure(this)
-				.add(serviceDependency(RequestHandlerRegistry.class))
-//				.add(serviceDependency(ParserService.class))
-				.add(serviceDependency(RequestHandler.class));
+//		testConfig = configure(this)
+//				.add(serviceDependency(RequestHandlerRegistry.class))
+////				.add(serviceDependency(ParserService.class))
+//				.add(serviceDependency(RequestHandler.class));
 		
 		
 	}

@@ -4,8 +4,7 @@ var definition = {
 	description : [
 			"This configuration file was created with the help of the IEEE14 bus model ",
 			"and the information located at: https://www.ee.washington.edu/research/pstca/formats/pti.txt.",
-			"The assumption that it is accurate however that can not be guaranteed." ]
-			.join(" \n")
+			"The assumption that it is accurate however that can not be guaranteed."].join(" \n")
 };
 
 function column(fieldName, dataType, description, outputFormat) {
@@ -135,11 +134,13 @@ var zoneColumnsDef = [ new column('zoneNumber', 'int', ''),
 var ownerColumnsDef = [ new column('ownerNumber', 'int', ''),
 		new column('name', 'String', '') ];
 
+
 /**
  * Validator of branch object.
  *
  * Requires that branch elements are in the buses object.
  */
+
 var branchValidator = function (branch, model){
 	this.hasFrom = false;
 	this.hasTo = false;
@@ -164,6 +165,7 @@ var branchValidator = function (branch, model){
 	
 	return (this.hasTo && this.hasFrom);
 }
+
 
 function card(name, columns, validator){
 	this.name = name;
@@ -192,5 +194,5 @@ var cards = [
 
 var cardModel = JSON.stringify(cards);
 
-print("Done transforming!");
-print(JSON.stringify(cards));
+//print("Done transforming!");
+//print(JSON.stringify(cards));

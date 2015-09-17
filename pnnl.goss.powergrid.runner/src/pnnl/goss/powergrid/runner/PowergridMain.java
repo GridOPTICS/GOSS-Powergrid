@@ -6,6 +6,8 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
+import javax.naming.ConfigurationException;
+
 import org.apache.http.auth.UsernamePasswordCredentials;
 
 import pnnl.goss.core.Client;
@@ -65,6 +67,8 @@ public class PowergridMain {
 		try {
 			request.setPowergridFile(file);
 			request.setPowergridName(name);
+			request.setAccessLevel("group");
+			request.setDescription("This is a description for this property.");
 			client = getNewClient();
 			Response response = client.getResponse(request);
 			
@@ -74,6 +78,8 @@ public class PowergridMain {
 				obj = res.getData();
 			}
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (Exception e){
 			e.printStackTrace();
 		}
 		finally{
@@ -131,7 +137,7 @@ public class PowergridMain {
 		}
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws FileNotFoundException, ConfigurationException {
 		Dictionary<String, Object> properties = new Hashtable<>();
 		properties.put("activemq.host", "localhost");
 		properties.put("openwire.port", "61616");
@@ -143,6 +149,9 @@ public class PowergridMain {
 		factory = new ClientServiceFactory();
 		((ClientServiceFactory)factory).updated(properties);
 		File pgFile = new File("../pnnl.goss.powergrid.itests/resources/118.raw");
+		if (!pgFile.exists()){
+			throw new FileNotFoundException();
+		}
 		Object obj = createModel("PSSE-118", pgFile);
 		if (obj instanceof ParserResults){
 			

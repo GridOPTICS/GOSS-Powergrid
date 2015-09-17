@@ -3,13 +3,6 @@ Export-Package:  \
 	pnnl.goss.powergrid.runner
 -buildpath:  \
 	biz.aQute.bnd.annotation,\
-	pnnl.goss.core.goss-core-server;version=latest,\
-	pnnl.goss.core.goss-core-server-api;version=latest,\
-	pnnl.goss.core.goss-core-server-web;version=latest,\
-	pnnl.goss.core.core-api;version=latest,\
-	pnnl.goss.core.goss-client;version=latest,\
-	pnnl.goss.core.goss-core-exceptions;version=latest,\
-	pnnl.goss.core.security-propertyfile;version=latest,\
 	org.apache.activemq.activemq-osgi;version=5.11,\
 	org.apache.activemq.shiro;version=5.11,\
 	org.fusesource.stompjms.stompjms-client,\
@@ -22,7 +15,17 @@ Export-Package:  \
 	pnnl.goss.core.goss-core-security,\
 	pnnl.goss.powergrid.goss-powergrid-mongodb;version=latest,\
 	org.mongodb.mongo-java-driver;version='[3.0,4)',\
-	com.google.gson
+	com.google.gson,\
+	pnnl.goss.powergrid.goss-synthetic-api,\
+	pnnl.goss.core.core-api;version=2.0.3,\
+	pnnl.goss.core.goss-client;version=2.0.5,\
+	pnnl.goss.core.goss-core-server-api;version=2.0.6,\
+	pnnl.goss.core.goss-core-server-registry;version=1.0,\
+	pnnl.goss.core.goss-core-server;version=2.0.7,\
+	pnnl.goss.core.goss-core-exceptions;version=2.1,\
+	pnnl.goss.core.goss-core-security;version=2.1,\
+	pnnl.goss.core.security-propertyfile;version=2.0,\
+	osgi.cmpn
 	
 	
 	
