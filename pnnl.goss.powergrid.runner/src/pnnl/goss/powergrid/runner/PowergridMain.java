@@ -18,6 +18,7 @@ import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.GossCoreContants;
 import pnnl.goss.core.Response;
 import pnnl.goss.core.client.ClientServiceFactory;
+import pnnl.goss.core.client.GossClient;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.SavePowergridResults;
 import pnnl.goss.powergrid.datamodel.Branch;
@@ -67,6 +68,7 @@ public class PowergridMain {
 		try {
 			request.setPowergridFile(file);
 			request.setPowergridName(name);
+			request.setOriginalFilename(file.getName());
 			request.setAccessLevel("group");
 			request.setDescription("This is a description for this property.");
 			client = getNewClient();
