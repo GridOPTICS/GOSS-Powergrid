@@ -107,7 +107,8 @@ public class CreatePowergridHandler implements RequestHandler {
 			JsonObject parsedData) {
 		DataSourcePooledJdbc obj = (DataSourcePooledJdbc)datasourceRegistry.get("goss.powergrids.north");
 		//DataSourceObject obj = datasourceRegistry.get("goss.powergrids");
-		PowergridDaoMySql mydata = new PowergridDaoMySql(obj, subjectService.getIdentity(request));
+		// TODO Request must add to the subjectservice rather than having this hard coded here.
+		PowergridDaoMySql mydata = new PowergridDaoMySql(obj, "craig"); // subjectService.getIdentity(request));
 
 		// PowergridDaoMySql mydata = new PowergridDaoMySql((DataSource) obj);
 		return mydata.createPowergrid(request.getPowergridName(),  parsedData);
