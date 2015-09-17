@@ -101,13 +101,13 @@ public class PowergridDaoMySql implements PowergridDao {
     protected DataSourcePooledJdbc pooledDatasource;
     private AlertContext alertContext;
     private PowergridTimingOptions powergridTimingOptions;
-    private String identifier;
+    private String user_identifier;
 
     List<String> getUserGroups(){
     	List<String> groups = new ArrayList<>();
-    	String select = "SELECT goss_group FROM goss_user_group WHERE goss_identifier=@identifier;";
+    	String select = "SELECT goss_group FROM goss_user_group WHERE goss_identifier=@user_identifier;";
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), select)){
-    		namedStmt.setString("identifier", identifier);
+    		namedStmt.setString("user_identifier", user_identifier);
 
     		try(ResultSet rs = namedStmt.executeQuery()){
     			while(rs.next()){
@@ -142,7 +142,7 @@ public class PowergridDaoMySql implements PowergridDao {
     	String origFilename = params.get("original_filename").getAsString();
     	String description = params.get("description").getAsString();
 
-    	if (identifier == null || accessLevel == null || md5Hash == null){
+    	if (user_identifier == null || accessLevel == null || md5Hash == null){
     		throw new InvalidParameterException("Invalid identifier, access_level, and/or md5_content_hash specified");
     	}
 
@@ -968,7 +968,7 @@ public class PowergridDaoMySql implements PowergridDao {
     		stmt.setString("OriginalFormat",  originalFormatVersion);
     		stmt.setString("OriginalFilename", originalFilename);
     		stmt.setString("AccessLevel", accessLevel);
-    		stmt.setString("CreatedBy", identifier);
+    		stmt.setString("CreatedBy", user_identifier);
     		stmt.setString("FileHash",  md5Hash);
     		stmt.setString("Description", description);
     		stmt.execute();
@@ -1003,7 +1003,7 @@ public class PowergridDaoMySql implements PowergridDao {
     public PowergridDaoMySql(DataSourcePooledJdbc datasource, String identifier) {
         log.debug("Creating " + PowergridDaoMySql.class + " with identifier: " + identifier);
         this.pooledDatasource = datasource;
-        this.identifier = identifier;
+        this.user_identifier = identifier;
         alertContext = new AlertContext();
         initializeAlertContext();
     }
