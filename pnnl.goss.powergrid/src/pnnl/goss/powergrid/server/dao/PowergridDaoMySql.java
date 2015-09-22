@@ -222,12 +222,12 @@ public class PowergridDaoMySql implements PowergridDao {
     				data.get("branches").getAsJsonObject(), problems);
     	}
 
-//    	if (buses == null){
-//    		problems.add("Substations can't be created!");
-//    	}
-//    	else{
-//    		substations = insertSubstations(pgId, buses, areas, zones, problems);
-//    	}
+    	if (buses == null){
+    		problems.add("Substations can't be created!");
+    	}
+    	else{
+    		substations = insertSubstations(pgId, buses, areas, zones, problems);
+    	}
     	SavePowergridResults results = new SavePowergridResults(pgUUID, problems);
 
     	results.addProperty("# areas", areas.size());
@@ -528,19 +528,19 @@ public class PowergridDaoMySql implements PowergridDao {
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    	
+
     	// Lines and Transformers are branches in the pti-23 file.
     	insert = "INSERT INTO line ("+
     			"PowergridId, FromBusNumber, ToBusNumber, Ckt, Gi, Bi, Gj, Bj, BCap, Mrid) " +
     			"VALUES ( " +
     			"@PowergridId, @FromBusNumber, @ToBusNumber, @Ckt, @Gi, @Bi, @Gj, @Bj, @BCap, @Mrid);";
-    	
+
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
     		JsonArray dataArray = branches.get("data").getAsJsonArray();
     		for(int i=0; i<dataArray.size(); i++) {
     			JsonArray aRow = dataArray.get(i).getAsJsonArray();
     			String guid = UUID.randomUUID().toString();
-    			
+
     			// The guid has already been generated for this element because the lines are shared between
     			// lines and transformers.
     			namedStmt.setString("Mrid", branchGuids.get(i));
@@ -580,18 +580,18 @@ public class PowergridDaoMySql implements PowergridDao {
     	} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    	
+
     	// Lines and Transformers are branches in the pti-23 file.
     	insert = "INSERT INTO transformer ("+
     			"PowergridId, FromBusNumber, ToBusNumber, Ckt, Ratio, ICont, TapPosition, Angle, Rma, Rmi, Vma, Mrid) "+
     			"VALUES ( " +
     			"@PowergridId, @FromBusNumber, @ToBusNumber, @Ckt, @Ratio, @ICont, @TapPosition, @Angle, @Rma, @Rmi, @Vma, @Mrid);";
-    	
+
     	try(NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), insert)){
     		JsonArray dataArray = branches.get("data").getAsJsonArray();
     		for(int i=0; i<dataArray.size(); i++) {
     			JsonArray aRow = dataArray.get(i).getAsJsonArray();
-    			
+
     			// The guid has already been generated for this element because the lines are shared between
     			// lines and transformers.
     			namedStmt.setString("Mrid", branchGuids.get(i));
@@ -604,7 +604,7 @@ public class PowergridDaoMySql implements PowergridDao {
     				namedStmt.setDouble("ICont", 0);
     				namedStmt.setDouble("Rmi", 0);
     			}
-    			
+
     			for(int j=0; j<aRow.size(); j++){
     				String modelProperty = ptiFieldNames.get(j).getAsString();
         			String gossProperty = prefixMap.getGossPropertyName("transformer", version, modelProperty);
@@ -656,7 +656,7 @@ public class PowergridDaoMySql implements PowergridDao {
     			// Start with properties that aren't in the pti file.
     			namedStmt.setString("Mrid", UUID.randomUUID().toString());
     			namedStmt.setInt("PowergridId", powergridId);
-    			
+
     			for(int j=0; j<aRow.size(); j++){
     				String modelProperty = ptiFieldNames.get(j).getAsString();
         			String gossProperty = prefixMap.getGossPropertyName("area", version, modelProperty);
@@ -1048,7 +1048,7 @@ public class PowergridDaoMySql implements PowergridDao {
 	                item.setAccessLevel(rs.getString("AccessLevel"));
 	                item.setCreatedBy(rs.getString("CreatedBy"));
 	                item.setCreatedOn(rs.getString("createdOn"));
-	                
+
 	                grids.add(item);
 	            }
         	}
@@ -1524,7 +1524,7 @@ public class PowergridDaoMySql implements PowergridDao {
         			grid.setAccessLevel(rs.getString("AccessLevel"));
         			grid.setCreatedBy(rs.getString("CreatedBy"));
         			grid.setCreatedOn(rs.getString("CreatedOn"));
-        			
+
         		}
     		}
         } catch (SQLException e) {
