@@ -49,12 +49,12 @@ public class AllPowergridService implements PowergridService {
 			DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByKey(k);
     		PowergridDao dao = new PowergridDaoMySql(ds, identifier);
     		for(Powergrid g:dao.getAvailablePowergrids()){
-    			if (identifier == null || "public".equalsIgnoreCase(g.getAccessLevel()) ||
-    					(identifier.equals(g.getCreatedBy()) && "private".equalsIgnoreCase(g.getAccessLevel()))) {
+//    			if (identifier == null || "public".equalsIgnoreCase(g.getAccessLevel()) ||
+//    					(identifier.equals(g.getCreatedBy()) && "private".equalsIgnoreCase(g.getAccessLevel()))) {
 	    			mridToDatasourceKeyMap.put(g.getMrid(), k);
 	    			mridToPowergridMap.put(g.getMrid(), g);
 	    			availablePowergrids.add(g);
-    			}
+//    			}
     		}
     	}
 
@@ -66,14 +66,14 @@ public class AllPowergridService implements PowergridService {
 		PowergridModel model = null;
 		// Load the powergrid map so we know which datasource to look
 		// up the powergrid model from.
-		if (mridToDatasourceKeyMap.isEmpty()){
-			getPowergrids(identifier);
-		}
+		//if (mridToDatasourceKeyMap.isEmpty()){
+		getPowergrids(identifier);
+		//}
 
 		if (mridToDatasourceKeyMap.containsKey(mrid)){
 			String dsKey = mridToDatasourceKeyMap.get(mrid);
 			DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(dsKey);
-			PowergridDao dao = null; // new PowergridDaoMySql(ds, iden);
+			PowergridDao dao = new PowergridDaoMySql(ds, identifier);
 			model = dao.getPowergridModel(mridToPowergridMap.get(mrid).getPowergridId());
 		}
 

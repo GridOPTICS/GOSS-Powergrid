@@ -10,6 +10,8 @@ import javax.naming.ConfigurationException;
 
 import org.apache.http.auth.UsernamePasswordCredentials;
 
+import com.google.gson.Gson;
+
 import pnnl.goss.core.Client;
 import pnnl.goss.core.Client.PROTOCOL;
 import pnnl.goss.core.ClientFactory;
@@ -18,7 +20,6 @@ import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.GossCoreContants;
 import pnnl.goss.core.Response;
 import pnnl.goss.core.client.ClientServiceFactory;
-import pnnl.goss.core.client.GossClient;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.SavePowergridResults;
 import pnnl.goss.powergrid.datamodel.Branch;
@@ -32,25 +33,22 @@ import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridPart;
 import pnnl.goss.powergrid.requests.RequestPowergridPart.PowergridPartType;
 
-import com.google.common.base.Enums;
-import com.google.gson.Gson;
-
 public class PowergridMain {
 	private static ClientFactory factory;
-	
+
 	private static Client getNewClient(){
 		Client client = null;
 		try {
-			client = factory.create(PROTOCOL.OPENWIRE, 
+			client = factory.create(PROTOCOL.OPENWIRE,
 					new UsernamePasswordCredentials("system", "manager"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return client;
 	}
-	
+
 	public static boolean handleError(Response response){
-		
+
 		if (response instanceof DataResponse){
 			DataResponse res = (DataResponse) response;
 			if(res.getData() instanceof DataError){
@@ -58,9 +56,28 @@ public class PowergridMain {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
+
+	public static String getPyPowerFormat(String mrid){
+		Client client = null;
+		String formatString = "";
+		try{
+			RequestPowergrid pgRequest = new RequestPowergrid(mrid);
+			client = getNewClient();
+			Response response = client.getResponse(pgRequest);
+			formatString = ((PowergridModel)((DataResponse)response).getData()).toString();
+
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+		finally{
+			if (client != null)	client.close();
+		}
+		return formatString;
+	}
+
 	public static Object createModel(String name, File file){
 		Object obj = null;
 		Client client = null;
@@ -73,7 +90,7 @@ public class PowergridMain {
 			request.setDescription("This is a description for this property.");
 			client = getNewClient();
 			Response response = client.getResponse(request);
-			
+
 			// If there wasn't an error follow this path.
 			if (!handleError(response)){
 				DataResponse res = (DataResponse)response;
@@ -87,10 +104,10 @@ public class PowergridMain {
 		finally{
 			client.close();
 		}
-		
+
 		return obj;
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "incomplete-switch" })
 	public static void doGetPartsForPowergrid(String mrid) {
 		Client client = getNewClient();
@@ -121,12 +138,12 @@ public class PowergridMain {
 					System.out.println("Switched Shunts:\n" + gson.toJson(shunts));
 					break;
 				}
-			
+
 			}
 		}
 		client.close();
 	}
-	
+
 	public static void printPowergrid(String mrid){
 		Gson gson = new Gson();
 		RequestPowergrid request = new RequestPowergrid(mrid);
@@ -147,23 +164,31 @@ public class PowergridMain {
 		properties.put("ws.port", "61614");
 		properties.put(GossCoreContants.PROP_OPENWIRE_URI, "tcp://localhost:61616");
 		properties.put(GossCoreContants.PROP_STOMP_URI, "tcp://localhost:61613");
-		
+
+		String mrid = "fa53b14e-df4a-4795-a2e8-8b484f6735ff";
+
 		factory = new ClientServiceFactory();
 		((ClientServiceFactory)factory).updated(properties);
 		File pgFile = new File("../pnnl.goss.powergrid.itests/resources/118.raw");
 		if (!pgFile.exists()){
 			throw new FileNotFoundException();
 		}
+/*
+		System.out.println(getPyPowerFormat(mrid));
+
+		if (true){
+			System.exit(0);
+		}*/
 		Object obj = createModel("PSSE-118", pgFile);
 		if (obj instanceof ParserResults){
-			
+
 		}
 		else if(obj instanceof SavePowergridResults){
 			SavePowergridResults results = (SavePowergridResults)obj;
 			if (results.isSuccess()){
 				System.out.println("Successful Guid: " + results.getPowergridGuid());
 			}
-			
+
 			List<String> errors = results.getErrorsAndWarnings();
 			if (errors.size() > 0 ){
 				System.out.println("Errors or warnings");
@@ -174,14 +199,14 @@ public class PowergridMain {
 			else{
 				System.out.println("No errors or warnings.");
 			}
-			
+
 			if(results.isSuccess()){
 				printPowergrid(results.getPowergridGuid());
-				
+
 				doGetPartsForPowergrid(results.getPowergridGuid());
 			}
 		}
-		
+
 		System.exit(0);
 	}
 
