@@ -16,7 +16,7 @@ import pnnl.goss.core.server.RequestHandlerRegistry;
 import pnnl.goss.core.server.TokenIdentifierMap;
 import pnnl.goss.powergrid.api.PowergridService;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
-import pnnl.goss.sytheticdata.api.SimulatorService;
+import pnnl.goss.syntheticdata.api.SimulatorService;
 
 public class Activator extends DependencyActivatorBase {
 
@@ -24,21 +24,21 @@ public class Activator extends DependencyActivatorBase {
 	@Override
 	public void init(BundleContext context, DependencyManager manager)
 			throws Exception {
-		
+
 		Hashtable loggedProps = new Hashtable();
 		loggedProps.put("pattern", "/powergrid/api.*");
 		loggedProps.put("service.ranking", 10);
 		loggedProps.put("contextId", "GossContext");
 		loggedProps.put("context.shared", true);
-		
-		
+
+
 		// Login filter
 		manager.add(createComponent()
 				.setInterface(Filter.class.getName(), loggedProps)
 				.setImplementation(PowergridLoggedInFilter.class)
 				.add(createServiceDependency()
 						.setService(TokenIdentifierMap.class)));
-		
+
 		manager.add(createComponent()
 				.setInterface(Object.class.getName(), null)
 				.setImplementation(PowergridWebService.class)

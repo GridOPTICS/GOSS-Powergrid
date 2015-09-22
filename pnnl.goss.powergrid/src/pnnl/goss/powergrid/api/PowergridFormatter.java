@@ -1,8 +1,6 @@
-package pnnl.goss.powergrid.formatters;
+package pnnl.goss.powergrid.api;
 
 import java.util.Map;
-
-import pnnl.goss.powergrid.api.PowergridModel;
 
 public interface PowergridFormatter {
 	

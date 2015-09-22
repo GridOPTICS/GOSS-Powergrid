@@ -1,3 +1,0 @@
-Private-Package:  \
-	pnnl.goss.powergrid.server.mongodb
-Bundle-Version: 1.0.1.${tstamp}

@@ -1,0 +1,4 @@
+Export-Package: \
+	pnnl.goss.syntheticdata.api,\
+	pnnl.goss.syntheticdata.requests
+Bundle-Version: 1.0.0.${tstamp}

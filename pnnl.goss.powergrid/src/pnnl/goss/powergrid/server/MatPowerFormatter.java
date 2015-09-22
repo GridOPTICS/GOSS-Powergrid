@@ -1,15 +1,26 @@
-package pnnl.goss.powergrid.formatters;
+package pnnl.goss.powergrid.server;
 
 import java.util.Map;
 
+import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.Property;
+import org.apache.felix.dm.annotation.api.Start;
+
+import pnnl.goss.powergrid.api.PowergridFormatter;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.datamodel.Branch;
 import pnnl.goss.powergrid.datamodel.Bus;
 import pnnl.goss.powergrid.datamodel.Machine;
 
-public class PyPowerFormatter implements PowergridFormatter {
+//@Component(properties=@Property(name="formattype", value="matpower"))
+public class MatPowerFormatter implements PowergridFormatter {
 
 	private PowergridModel model;
+
+//	@Start
+	public void start(){
+		System.out.println("Starting");
+	}
 
 	@Override
 	public String format(PowergridModel powergridModel) {
@@ -19,41 +30,36 @@ public class PyPowerFormatter implements PowergridFormatter {
 	@Override
 	public String format(PowergridModel powergridModel,
 			Map<String, String> options) {
+
 		model = powergridModel;
+
 		StringBuilder builder = new StringBuilder();
+
 		addHeading(builder, "powergrid");
 		addBuses(builder);
 		addMachines(builder);
 		addBranches(builder);
-		builder.append("    return ppc\n");
+
 		return builder.toString();
 	}
+
 	private void addHeading(StringBuilder builder, String functionName){
+		builder.append("function mpc = "+functionName+"\n");
 		// TODO Document what case it is when created etc here in the comments
-		builder.append(
-			"from numpy import array\n\n"+
-			"def "+functionName+"():\n"+
-			"    '''Powerflow function for powergrid.'''\n" +
-			"    ppc = {'version': '2'}\n\n"+
-			"    ##-----  Power Flow Data  -----##\n"+
-		    "    ## system MVA base\n"+
-		    "    ppc['baseMVA'] = 100.0\n\n"
-		);
+		builder.append("%% MATPOWER Case Format : Version 2\n");
+		builder.append("mpc.version = '2';\n\n");
+		builder.append("%%-----  Power Flow Data  -----%%\n");
+		builder.append("%% system MVA base\n");
+		builder.append("mpc.baseMVA = "+ model.getPowergrid().getSbase().toString() +";\n\n");
 	}
 
 
 	private void addBuses(StringBuilder builder){
-		builder.append(
-		"    ## bus data\n" +
-		"    # bus_i type Pd Qd Gs Bs area Vm Va baseKV zone Vmax Vmin\n" +
-		"    ppc['bus'] = array([\n"
-		);
-		int i = 0;
-		int count = model.getBuses().size();
+		builder.append("%% bus data\n");
+		builder.append("%	bus_i	type	Pd	Qd	Gs	Bs	area	Vm	Va	baseKV	zone	Vmax	Vmin\n");
+		builder.append("mpc.bus = [");
 		for (Bus b: model.getBuses()){
-			builder.append("        [");
-			addCommaDelimiter(builder,
-					b.getBusNumber(),
+			addTabDelimit(builder, b.getBusNumber(),
 					b.getCode(),
 					b.getTotalPLoad(),
 					b.getTotalQLoad(),
@@ -67,29 +73,19 @@ public class PyPowerFormatter implements PowergridFormatter {
 					1.05, // v-min
 					0.95  // v-max
 				);
-			i = i+1;
-			if (i < count){
-				builder.append("],\n");
-			}
-			else{
-				builder.append("]\n");
-			}
+			builder.append("\n");
 		}
 
-		builder.append("    ])\n\n");
+		builder.append("];\n\n");
 	}
 
 	private void addMachines(StringBuilder builder){
 		builder.append(
-			"    ## generator data\n"+
-			"    # bus, Pg, Qg, Qmax, Qmin, Vg, mBase, status, Pmax, Pmin, Pc1, Pc2,\n"+
-			"    # Qc1min, Qc1max, Qc2min, Qc2max, ramp_agc, ramp_10, ramp_30, ramp_q, apf\n"+
-			"    ppc['gen'] = array([\n");
-		int i = 0;
-		int count = model.getBranches().size();
+			"%% generator data\n" +
+			"%	bus	Pg	Qg	Qmax	Qmin	Vg	mBase	status	Pmax	Pmin	Pc1	Pc2	Qc1min	Qc1max	Qc2min	Qc2max	ramp_agc	ramp_10	ramp_30	ramp_q	apf\n"+
+			"mpc.gen = [\n");
 		for (Machine m: model.getMachines()){
-			builder.append("        [");
-			addCommaDelimiter(builder,
+			addTabDelimit(builder,
 					m.getBusNumber(),
 					m.getPgen(),
 					m.getQgen(),
@@ -112,28 +108,19 @@ public class PyPowerFormatter implements PowergridFormatter {
 					0,  // ramp_q
 					0	// apf
 				);
-			i = i+1;
-			if (i < count){
-				builder.append("],\n");
-			}
-			else{
-				builder.append("]\n");
-			}
+			builder.append("\n");
 		}
 
-		builder.append("    ])\n\n");
+		builder.append("];\n\n");
 	}
 
 	private void addBranches(StringBuilder builder){
 		builder.append(
-			"    ## branch data\n"+
-			"    # fbus, tbus, r, x, b, rateA, rateB, rateC, ratio, angle, status, angmin, angmax\n"+
-			"    ppc['branch'] = array([\n");
-		int i = 0;
-		int count = model.getBranches().size();
+			"%% branch data\n"+
+			"%	fbus	tbus	r	x	b	rateA	rateB	rateC	ratio	angle	status	angmin	angmax\n"+
+			"mpc.branch = [\n");
 		for (Branch b: model.getBranches()){
-			builder.append("        [");
-			addCommaDelimiter(builder,
+			addTabDelimit(builder,
 				b.getFromBusNumber(),
 				b.getToBusNumber(),
 				b.getR(),
@@ -149,20 +136,14 @@ public class PyPowerFormatter implements PowergridFormatter {
 				360 // Angle max
 			);
 
-			i = i+1;
-			if (i < count){
-				builder.append("],\n");
-			}
-			else{
-				builder.append("]\n");
-			}
+			builder.append("\n");
 		}
 
-		builder.append("    ])\n\n");
+		builder.append("];\n\n");
 
 	}
 
-	private void addDelimiter(StringBuilder builder,  String delimiter, Object ... items){
+	private void addDelimit(StringBuilder builder,  String delimiter, Object ... items){
 		boolean first = true;
 		for(Object o: items){
 			if (first){
@@ -174,7 +155,9 @@ public class PyPowerFormatter implements PowergridFormatter {
 			}
 		}
 	}
-	private void addCommaDelimiter(StringBuilder builder, Object ... items){
-		addDelimiter(builder, ",", items);
+	private void addTabDelimit(StringBuilder builder, Object ... items){
+		addDelimit(builder, "\t", items);
 	}
+
+
 }

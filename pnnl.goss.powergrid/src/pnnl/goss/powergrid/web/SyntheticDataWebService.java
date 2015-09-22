@@ -16,16 +16,16 @@ import com.google.gson.JsonObject;
 
 import pnnl.goss.core.server.RequestHandlerRegistry;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
-import pnnl.goss.sytheticdata.api.SimulatorService;
+import pnnl.goss.syntheticdata.api.SimulatorService;
 
 @Path("/synthetic")
 @Produces(MediaType.APPLICATION_JSON)
 public class SyntheticDataWebService {
 
 	private volatile RequestHandlerRegistry handlers;
-	
+
 	private volatile SimulatorService simulators;
-	
+
 	String lastStartedToken = null;
 
 	private volatile RequestSubjectService subjectService;

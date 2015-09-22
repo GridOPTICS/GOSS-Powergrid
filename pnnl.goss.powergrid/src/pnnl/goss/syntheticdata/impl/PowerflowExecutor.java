@@ -1,4 +1,4 @@
-package pnnl.goss.sytheticdata;
+package pnnl.goss.syntheticdata.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
