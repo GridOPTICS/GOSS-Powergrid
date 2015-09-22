@@ -45,14 +45,12 @@
 package pnnl.goss.powergrid.handlers;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import org.apache.felix.dm.annotation.api.Component;
 import org.apache.felix.dm.annotation.api.ServiceDependency;
+import org.apache.felix.dm.annotation.api.Start;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,24 +63,22 @@ import pnnl.goss.core.Response;
 import pnnl.goss.core.security.AuthorizationHandler;
 import pnnl.goss.core.security.AuthorizeAll;
 import pnnl.goss.core.server.DataSourcePooledJdbc;
-import pnnl.goss.core.server.DataSourceRegistry;
 import pnnl.goss.core.server.RequestHandler;
+import pnnl.goss.powergrid.api.PowergridFormatter;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.PowergridService;
 import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
-import pnnl.goss.powergrid.formatters.MatPowerFormatter;
-import pnnl.goss.powergrid.formatters.PowergridFormatter;
-import pnnl.goss.powergrid.formatters.PyPowerFormatter;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
-import pnnl.goss.powergrid.requests.RequestContingencyModelTimeStepValues;
 import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.requests.RequestPowergridPart;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStep;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStepValues;
+import pnnl.goss.powergrid.server.MatPowerFormatter;
 import pnnl.goss.powergrid.server.PowergridDataSourceEntries;
+import pnnl.goss.powergrid.server.PyPowerFormatter;
 import pnnl.goss.powergrid.server.api.PowergridDao;
 import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
 
@@ -95,6 +91,9 @@ public class RequestPowergridHandler implements RequestHandler {
 	public static String EXT_SHUNTS = "switchedshunt";
 
 	@ServiceDependency
+	private volatile PowergridFormatter pypowerFormatter;
+
+	@ServiceDependency
 	private volatile PowergridService powergridService;
 
 	@ServiceDependency
@@ -105,6 +104,11 @@ public class RequestPowergridHandler implements RequestHandler {
 
     private static Logger log = LoggerFactory.getLogger(RequestPowergridHandler.class);
     private static PowergridList availablePowergrids = null;
+
+    @Start
+    public void start(){
+    	System.out.println("Starting now?");
+    }
 
     private DataResponse getPowergridModleAtTimestepResponse(RequestPowergridTimeStep request) {
     	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
