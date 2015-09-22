@@ -1,10 +1,7 @@
-Private-Package:  \
-	pnnl.goss.powergrid.handlers,\
-	pnnl.goss.powergrid.formatters,\
-	pnnl.goss.powergrid.server.datasources,\
+Bundle-Version: 1.0.2.${tstamp}
+Private-Package: \
 	pnnl.goss.powergrid.server,\
 	pnnl.goss.powergrid.server.dao,\
+	pnnl.goss.powergrid.handlers,\
 	pnnl.goss.powergrid.listeners
-Bundle-Version: 1.0.1.${tstamp}
-Export-Package:  \
-	pnnl.goss.powergrid.server.api
+Export-Package: pnnl.goss.powergrid.server.api

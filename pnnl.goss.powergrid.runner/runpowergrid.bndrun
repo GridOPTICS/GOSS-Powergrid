@@ -5,7 +5,7 @@
 
 -resolve.effective: active;skip:="osgi.service"
 
--runbundles:  \
+-runbundles: \
 	${gogo-runpath},\
 	${osgi-runpath},\
 	${activemq-runpath},\
@@ -40,17 +40,17 @@
 	org.ops4j.pax.logging.pax-logging-api;version='[1.7.0,1.7.1)',\
 	org.ops4j.pax.logging.pax-logging-service;version='[1.7.0,1.7.1)',\
 	org.apache.geronimo.specs.geronimo-jms_1.1_spec;version=1.1.1,\
-	pnnl.goss.core.core-api;version=2.0.3,\
-	pnnl.goss.core.goss-client;version=2.0.5,\
-	pnnl.goss.core.goss-core-server-api;version=2.0.6,\
-	pnnl.goss.core.goss-core-server-registry;version=1.0,\
-	pnnl.goss.core.goss-core-server;version=2.0.7,\
-	pnnl.goss.core.goss-core-exceptions;version=2.1,\
-	pnnl.goss.core.goss-core-security;version=2.1,\
-	pnnl.goss.core.security-propertyfile;version=2.0,\
+	pnnl.goss.core.core-api;version=latest,\
+	pnnl.goss.core.goss-client;version=latest,\
+	pnnl.goss.core.goss-core-server-api;version=latest,\
+	pnnl.goss.core.goss-core-server-registry;version=latest,\
+	pnnl.goss.core.goss-core-server;version=latest,\
+	pnnl.goss.core.goss-core-exceptions;version=latest,\
+	pnnl.goss.core.goss-core-security;version=latest,\
+	pnnl.goss.core.security-propertyfile;version=latest,\
 	org.apache.httpcomponents.httpclient;version=4.2.3,\
 	org.apache.httpcomponents.httpcore;version=4.2.3,\
-	org.mongodb.mongo-java-driver;version='[3.0,4)',\
+	org.mongodb.mongo-java-driver,\
 	com.google.gson;version=2.3.1,\
 	javax.persistence;version=2.1.0,\
 	org.amdatu.persistence2_0;version=1.0.0,\
@@ -59,17 +59,16 @@
 	org.amdatu.web.resourcehandler;version=1.0.8,\
 	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
 	pnnl.goss.powergrid.goss-powergrid-web;version=latest,\
-	pnnl.goss.core.goss-core-server-web,\
+	pnnl.goss.core.goss-core-server-web;version=latest,\
 	pnnl.goss.powergrid.goss-powergrid-parser;version=latest,\
 	pnnl.goss.powergrid.goss-powergrid-parser-api;version=latest,\
-	org.apache.commons.codec,\
-	pnnl.goss.powergrid.goss-synthetic;version=latest,\
-	pnnl.goss.powergrid.goss-synthetic-api;version=latest,\
-	pnnl.goss.powergrid.goss-powergrid-mongodb;version=latest,\
 	pnnl.goss.powergrid.goss-powergrid-server;version=latest,\
-	${swagger-runpath}
-	
-	
+	org.apache.commons.codec,\
+	${swagger-runpath},\
+	pnnl.goss.powergrid.goss-syntheticdata-api;version=latest,\
+	pnnl.goss.powergrid.goss-syntheticdata-impl;version=latest
+
+
 
 	#${gossserver}
 	#,\

@@ -9,21 +9,11 @@ Export-Package:  \
 	org.apache.httpcomponents.httpclient,\
 	org.apache.httpcomponents.httpcore,\
 	org.apache.commons.io,\
-	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
-	pnnl.goss.powergrid.goss-powergrid-parser-api;version=latest,\
-	pnnl.goss.core.goss-core-server-registry;version=1.0,\
-	pnnl.goss.core.goss-core-security;version=2.1,\
-	pnnl.goss.powergrid.goss-powergrid-mongodb;version=latest,\
 	org.mongodb.mongo-java-driver;version='[3.0,4)',\
 	com.google.gson,\
-	pnnl.goss.powergrid.goss-synthetic-api,\
-	pnnl.goss.core.core-api;version=2.0.3,\
-	pnnl.goss.core.goss-client;version=2.0.5,\
-	pnnl.goss.core.goss-core-server-api;version=2.0.6,\
-	pnnl.goss.core.goss-core-server;version=2.0.7,\
-	pnnl.goss.core.goss-core-exceptions;version=2.1,\
-	pnnl.goss.core.security-propertyfile;version=2.0,\
 	osgi.cmpn,\
-	pnnl.goss.core.client-all
+	pnnl.goss.core.client-all;version=2.0,\
+	pnnl.goss.powergrid.goss-powergrid-api,\
+	pnnl.goss.powergrid.goss-powergrid-parser-api
 
-	
+
