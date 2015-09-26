@@ -89,13 +89,17 @@ public class PowergridMain {
 			request.setAccessLevel("group");
 			request.setDescription("This is a description for this property.");
 			client = getNewClient();
-			Response response = client.getResponse(request);
+			Object response = client.getResponse(request);
+			System.out.println(response.toString());
+			if (response instanceof Response){
+				
+			}
 
 			// If there wasn't an error follow this path.
-			if (!handleError(response)){
-				DataResponse res = (DataResponse)response;
-				obj = res.getData();
-			}
+//			if (!handleError(response)){
+//				DataResponse res = (DataResponse)response;
+//				obj = res.getData();
+//			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (Exception e){
@@ -169,7 +173,7 @@ public class PowergridMain {
 
 		factory = new ClientServiceFactory();
 		((ClientServiceFactory)factory).updated(properties);
-		File pgFile = new File("../pnnl.goss.powergrid.itests/resources/118.raw");
+		File pgFile = new File("../pnnl.goss.powergrid.itests/resources/IEEE14.raw");
 		if (!pgFile.exists()){
 			throw new FileNotFoundException();
 		}
@@ -179,7 +183,7 @@ public class PowergridMain {
 		if (true){
 			System.exit(0);
 		}*/
-		Object obj = createModel("PSSE-118", pgFile);
+		Object obj = createModel("PSSE-114", pgFile);
 		if (obj instanceof ParserResults){
 
 		}
