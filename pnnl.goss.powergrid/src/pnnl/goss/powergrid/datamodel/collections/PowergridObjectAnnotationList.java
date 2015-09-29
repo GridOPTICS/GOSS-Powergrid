@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2014, Battelle Memorial Institute
+    Copyright (c) 2014, Battelle Memorial Institute
     All rights reserved.
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -42,23 +42,27 @@
     operated by BATTELLE for the UNITED STATES DEPARTMENT OF ENERGY
     under Contract DE-AC05-76RL01830
 */
-package pnnl.goss.powergrid.server.api;
+package pnnl.goss.powergrid.datamodel.collections;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import pnnl.goss.powergrid.datamodel.PowergridObjectAnnotation;
-import pnnl.goss.powergrid.datamodel.PowergridProvenance;
-import pnnl.goss.powergrid.datamodel.PowergridRating;
 
-public interface PowergridProvenanceDao {
+public class PowergridObjectAnnotationList implements Serializable {
 
-	List<PowergridRating> getPowergridRatingsById(String mrId);
-	PowergridProvenance getPowergridProvenanceById(String mrId);
-	PowergridProvenance getPowergridProvenanceChainById(String mrId);
-	List<PowergridObjectAnnotation> getPowergridObjectAnnotationsById(String objectMrid, String objectType);
-	List<PowergridObjectAnnotation> getPowergridObjectAnnotationsByPowergridId(String powergridMrid, String objectType);
-	
+    private static final long serialVersionUID = 8262849484576170794L;
+    private List<PowergridObjectAnnotation> annotations = new ArrayList<PowergridObjectAnnotation>();
 
-	void persistRating(PowergridRating powergridRating);
-	void persistProvenance(PowergridProvenance powergridProvenance);
+    public PowergridObjectAnnotationList(List<PowergridObjectAnnotation> availablePowergrids) {
+        annotations = availablePowergrids;
+    }
+
+    public List<PowergridObjectAnnotation> toList() {
+        // TODO Auto-generated method stub
+        return Collections.unmodifiableList(annotations);
+    }
+
 }

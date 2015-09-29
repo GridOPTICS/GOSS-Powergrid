@@ -20,14 +20,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PowergridObjectAnnotation", propOrder = {
     "powerGridObjectAnnotationId",
-    "powerGridId",
-    "objectId",
+    "PowergridMrid",
+    "objectMrid",
     "user",
     "rating",
     "comments",
     "created",
-    "objectType",
-    "mrid"
+    "objectType"
 })
 public class PowergridObjectAnnotation
     implements Serializable
@@ -36,10 +35,8 @@ public class PowergridObjectAnnotation
     private final static long serialVersionUID = 12343L;
     @XmlElement(name = "PowerGridObjectAnnotationId")
     protected int powerGridObjectAnnotationId;
-    @XmlElement(name = "PowerGridId")
-    protected int powergridId;
-    @XmlElement(name = "ObjectId")
-    protected int objectId;
+    @XmlElement(name = "ObjectMrid")
+    protected String objectMrid;
     @XmlElement(name = "ObjectType", required = true)
     protected String objectType;
     @XmlElement(name = "User", required = true)
@@ -48,26 +45,14 @@ public class PowergridObjectAnnotation
     protected String comments;
     @XmlElement(name = "Created", required = true)
     protected Date created;
-    @XmlElement(name = "Mrid")
-    protected String mrid;
+    @XmlElement(name = "PowergridMrid")
+    protected String powergridMrid;
     
 	public int getPowerGridObjectAnnotationId() {
 		return powerGridObjectAnnotationId;
 	}
 	public void setPowerGridObjectAnnotationId(int powerGridObjectAnnotationId) {
 		this.powerGridObjectAnnotationId = powerGridObjectAnnotationId;
-	}
-	public int getPowergridId() {
-		return powergridId;
-	}
-	public void setPowergridId(int powergridId) {
-		this.powergridId = powergridId;
-	}
-	public int getObjectId() {
-		return objectId;
-	}
-	public void setObjectId(int objectId) {
-		this.objectId = objectId;
 	}
 	public String getObjectType() {
 		return objectType;
@@ -93,11 +78,17 @@ public class PowergridObjectAnnotation
 	public void setCreated(Date created) {
 		this.created = created;
 	}
-	public String getMrid() {
-		return mrid;
+	public String getPowergridMrid() {
+		return powergridMrid;
 	}
-	public void setMrid(String mrid) {
-		this.mrid = mrid;
+	public void setPowergridMrid(String mrid) {
+		this.powergridMrid = mrid;
+	}
+	public String getObjectMrid() {
+		return objectMrid;
+	}
+	public void setObjectMrid(String objectMrid) {
+		this.objectMrid = objectMrid;
 	}
     
 

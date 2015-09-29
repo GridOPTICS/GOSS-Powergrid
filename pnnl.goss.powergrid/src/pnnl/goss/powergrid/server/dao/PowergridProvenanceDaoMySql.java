@@ -83,6 +83,7 @@ import pnnl.goss.powergrid.datamodel.Line;
 import pnnl.goss.powergrid.datamodel.Load;
 import pnnl.goss.powergrid.datamodel.Machine;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.datamodel.PowergridObjectAnnotation;
 import pnnl.goss.powergrid.datamodel.PowergridProvenance;
 import pnnl.goss.powergrid.datamodel.PowergridRating;
 import pnnl.goss.powergrid.datamodel.PowergridTimingOptions;
@@ -1614,6 +1615,73 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
 		return prov;
 	}
 
+	@Override
+	public List<PowergridObjectAnnotation> getPowergridObjectAnnotationsById(String objectMrid, String objectType) {
+		String dbQuery = "select * from powergridobjectannotation pg where ObjectMrid=@Mrid and ObjectType=@Type";
+		List<PowergridObjectAnnotation> annotations = new ArrayList<PowergridObjectAnnotation>();
+
+        try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
+        	namedStmt.setString("ObjectMrid", objectMrid);
+        	namedStmt.setString("ObjectType", objectType);
+        	try(ResultSet rs = namedStmt.executeQuery()){
+        		while (rs.next()){
+        			PowergridObjectAnnotation annot = new PowergridObjectAnnotation();
+        			annot.setPowerGridObjectAnnotationId(rs.getInt("PowerGridObjectAnnotationId"));
+        			annot.setObjectMrid(rs.getString("ObjectMrid"));
+        			annot.setUser(rs.getString("User"));
+        			annot.setComments(rs.getString("Comments"));
+        			annot.setCreated(rs.getDate("Created"));
+        			annot.setObjectType(rs.getString("ObjectType"));
+        			annot.setPowergridMrid(rs.getString("PowergridMrid"));
+        			annotations.add(annot);
+
+        		}
+    		}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return annotations;
+	}
+
+
+	@Override
+	public List<PowergridObjectAnnotation> getPowergridObjectAnnotationsByPowergridId(String powergridMrid,
+			String objectType) {
+		String dbQuery = "select * from powergridobjectannotation pg where PowergridMrid=@Mrid";
+		if(objectType!=null){
+			dbQuery += " and ObjectType=@Type";
+		}
+		List<PowergridObjectAnnotation> annotations = new ArrayList<PowergridObjectAnnotation>();
+
+        try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
+        	namedStmt.setString("PowergridMrid", powergridMrid);
+        	if(objectType!=null){
+        		namedStmt.setString("ObjectType", objectType);
+        	}
+        	try(ResultSet rs = namedStmt.executeQuery()){
+        		while (rs.next()){
+        			PowergridObjectAnnotation annot = new PowergridObjectAnnotation();
+        			annot.setPowerGridObjectAnnotationId(rs.getInt("PowerGridObjectAnnotationId"));
+        			annot.setObjectMrid(rs.getString("ObjectMrid"));
+        			annot.setUser(rs.getString("User"));
+        			annot.setComments(rs.getString("Comments"));
+        			annot.setCreated(rs.getDate("Created"));
+        			annot.setObjectType(rs.getString("ObjectType"));
+        			annot.setPowergridMrid(rs.getString("PowergridMrid"));
+        			annotations.add(annot);
+
+        		}
+    		}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return annotations;
+	}
+
+	
+	
 //	@Override
 //	public JsonObject getExtension(int poewrgridId, String ext_table) {
 //		String dbQuery = "select * from ext_"+ext_table;

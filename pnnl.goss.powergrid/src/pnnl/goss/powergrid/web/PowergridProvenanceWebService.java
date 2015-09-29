@@ -37,10 +37,12 @@ import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.PowergridProvenance;
 import pnnl.goss.powergrid.datamodel.PowergridRating;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
+import pnnl.goss.powergrid.datamodel.collections.PowergridObjectAnnotationList;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
 import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
+import pnnl.goss.powergrid.requests.RequestPowergridAnnotation;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.requests.RequestPowergridPart;
 import pnnl.goss.powergrid.requests.RequestPowergridPart.PowergridPartType;
@@ -171,6 +173,57 @@ public class PowergridProvenanceWebService {
 
 		return response;
 	}
+	
+	
+	@POST
+	@Path("/provenance/annotations")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Description(
+		"Returns the details for hte scenario. "
+	)
+	@ReturnType(PowergridObjectAnnotationList.class)
+	public Response getPowerGridProvenanceChain(String identifier,
+			@Context HttpServletRequest req) throws HandlerNotFoundException {
+	
+		RequestHandler handler = handlers.getHandler(RequestPowergridAnnotation.class);
+		JsonObject requestBody = WebUtil.getRequestJsonBody(req);
+
+		
+		
+		RequestPowergridAnnotation pgRequest = new RequestPowergridAnnotation();
+		Response response = null;
+//
+		if (handlers.checkAccess((Request)pgRequest, identifier)){
+			DataResponse res;
+			
+			if (requestBody!=null && requestBody.has("PowergridMrid") ){
+				pgRequest.setPowergridMrid(requestBody.get("PowergridMrid").getAsString());
+			}
+			if (requestBody!=null && requestBody.has("ObjectMrid") ){
+				pgRequest.setObjectMrid(requestBody.get("ObjectMrid").getAsString());
+			}
+			if (requestBody!=null && requestBody.has("ObjectType") ){
+				pgRequest.setObjectType(requestBody.get("ObjectType").getAsString());
+			}
+			try {
+				res = (DataResponse)handlers.handle(pgRequest);
+				if (WebUtil.wasError(res.getData())){
+					response = Response.status(Response.Status.BAD_REQUEST)
+							.entity(res.getData()).build();
+				}
+				else {
+					Object data = res.getData();
+					response = Response.status(Response.Status.OK).entity(data).build();
+				}
+			} catch (HandlerNotFoundException e) {
+				e.printStackTrace();
+
+			}
+		}
+
+		return response;
+	}
+	
 //	@POST
 //	@Path("/pg_ratings/{pgid}")
 //	@Consumes(MediaType.APPLICATION_JSON)

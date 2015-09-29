@@ -42,23 +42,59 @@
     operated by BATTELLE for the UNITED STATES DEPARTMENT OF ENERGY
     under Contract DE-AC05-76RL01830
 */
-package pnnl.goss.powergrid.server.api;
+package pnnl.goss.powergrid.requests;
 
-import java.util.List;
+import pnnl.goss.core.Request;
 
-import pnnl.goss.powergrid.datamodel.PowergridObjectAnnotation;
-import pnnl.goss.powergrid.datamodel.PowergridProvenance;
-import pnnl.goss.powergrid.datamodel.PowergridRating;
+public class RequestPowergridAnnotation extends Request {
 
-public interface PowergridProvenanceDao {
+	private static final long serialVersionUID = -2681838737290484689L;
+	String objectMrid = null;
+	String objectType = null;
+	String powergridMrid = null;
 
-	List<PowergridRating> getPowergridRatingsById(String mrId);
-	PowergridProvenance getPowergridProvenanceById(String mrId);
-	PowergridProvenance getPowergridProvenanceChainById(String mrId);
-	List<PowergridObjectAnnotation> getPowergridObjectAnnotationsById(String objectMrid, String objectType);
-	List<PowergridObjectAnnotation> getPowergridObjectAnnotationsByPowergridId(String powergridMrid, String objectType);
-	
+	/**
+	 * Request a powergrid object annotation with the passed mrid associated with it.  The
+	 * server will manage the "where" this data is located in order to fulfill
+	 * the request.
+	 * 
+	 * If the objectMrid is empty then it will return all for that powergridMrid
+	 * 
+	 *
+	 * @param mrid
+	 */
+	public RequestPowergridAnnotation(){
+		
+	}
+	public RequestPowergridAnnotation(String objectMrid, String objectType, String powergridMrid){
+		this.objectMrid = objectMrid;
+		this.objectType = objectType;
+		this.powergridMrid = powergridMrid;
+	}
 
-	void persistRating(PowergridRating powergridRating);
-	void persistProvenance(PowergridProvenance powergridProvenance);
+	public String getObjectMrid() {
+		return objectMrid;
+	}
+
+	public void setObjectMrid(String objectMrid) {
+		this.objectMrid = objectMrid;
+	}
+
+	public String getObjectType() {
+		return objectType;
+	}
+
+	public void setObjectType(String objectType) {
+		this.objectType = objectType;
+	}
+
+	public String getPowergridMrid() {
+		return powergridMrid;
+	}
+
+	public void setPowergridMrid(String powergridMrid) {
+		this.powergridMrid = powergridMrid;
+	}
+
+
 }
