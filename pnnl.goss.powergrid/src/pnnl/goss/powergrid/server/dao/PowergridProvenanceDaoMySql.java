@@ -1567,7 +1567,7 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
 
 	@Override
 	public PowergridProvenance getPowergridProvenanceById(String mrId) {
-		String dbQuery = "select * from powergridprovenance pg where PowerGridId=@Mrid";
+		String dbQuery = "select * from powergridprovenance pg where Mrid=@Mrid";
 		PowergridProvenance prov = null;
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
@@ -1592,6 +1592,26 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
         }
 
         return prov;
+	}
+	
+	@Override
+	public PowergridProvenance getPowergridProvenanceChainById(String mrId){
+		PowergridProvenance prov = getPowergridProvenanceById(mrId);
+		if(prov!=null){
+			String prevMrid = prov.getPreviousMrid();
+			PowergridProvenance prevProvenanceObj = null;
+			while(prevMrid!=null){
+				prevProvenanceObj = getPowergridProvenanceById(prevMrid);
+				if(prevProvenanceObj!=null){
+					prov.setPreviousProvenance(prevProvenanceObj);
+					prevMrid=prevProvenanceObj.getPreviousMrid();
+				} else {
+					prevMrid = null;
+				}
+				
+			}
+		}
+		return prov;
 	}
 
 //	@Override

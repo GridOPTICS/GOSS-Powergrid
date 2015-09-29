@@ -53,6 +53,10 @@ public class PowergridProvenance
     @XmlElement(name = "PreviousMrid")
     protected String previousMrid;
     
+    @XmlElement (name = "PreviousProvenanceObject")
+    protected PowergridProvenance previousProvenance;
+    
+    
     
 	public int getPowergridProvenanceId() {
 		return powergridProvenanceId;
@@ -107,6 +111,12 @@ public class PowergridProvenance
 	}
 	public void setPreviousMrid(String previousMrid) {
 		this.previousMrid = previousMrid;
+	}
+	public PowergridProvenance getPreviousProvenance() {
+		return previousProvenance;
+	}
+	public void setPreviousProvenance(PowergridProvenance previousProvenance) {
+		this.previousProvenance = previousProvenance;
 	}
 
 

@@ -50,6 +50,15 @@ public class Activator extends DependencyActivatorBase {
 						.setService(RequestSubjectService.class).setRequired(true)));
 		manager.add(createComponent()
 				.setInterface(Object.class.getName(), null)
+				.setImplementation(PowergridProvenanceWebService.class)
+				.add(createServiceDependency()
+						.setService(RequestHandlerRegistry.class).setRequired(true))
+				.add(createServiceDependency()
+						.setService(PowergridService.class).setRequired(true))
+				.add(createServiceDependency()
+						.setService(RequestSubjectService.class).setRequired(true)));
+		manager.add(createComponent()
+				.setInterface(Object.class.getName(), null)
 				.setImplementation(SyntheticDataWebService.class)
 				.add(createServiceDependency()
 						.setService(SimulatorService.class).setRequired(true))

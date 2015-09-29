@@ -42,26 +42,29 @@
     operated by BATTELLE for the UNITED STATES DEPARTMENT OF ENERGY
     under Contract DE-AC05-76RL01830
 */
-package pnnl.goss.powergrid.server.api;
+package pnnl.goss.powergrid.requests;
 
-import java.util.List;
+import pnnl.goss.core.Request;
 
-import pnnl.goss.powergrid.datamodel.PowergridProvenance;
-import pnnl.goss.powergrid.datamodel.PowergridRating;
+public class RequestPowergridProvenance extends Request {
 
-public interface PowergridProvenanceDao {
+	private static final long serialVersionUID = -2681838737290484689L;
+	String mrid = null;
 
-//	PowergridRating getPowergridByMrid(String mrid);
-	List<PowergridRating> getPowergridRatingsById(String mrId);
-	PowergridProvenance getPowergridProvenanceById(String mrId);
-	PowergridProvenance getPowergridProvenanceChainById(String mrId);
 	/**
-	 * Returns the context of an alert.
+	 * Request a powergrid rating with the passed mrid associated with it.  The
+	 * server will manage the "where" this data is located in order to fulfill
+	 * the request.
 	 *
-	 * @param powergridId
-	 * @return
+	 * @param mrid
 	 */
+	public RequestPowergridProvenance(String mrid){
+		this.mrid = mrid;
+	}
 
-	void persistRating(PowergridRating powergridRating);
-	void persistProvenance(PowergridProvenance powergridProvenance);
+	public String getMrid(){
+		return this.mrid;
+	}
+
+
 }

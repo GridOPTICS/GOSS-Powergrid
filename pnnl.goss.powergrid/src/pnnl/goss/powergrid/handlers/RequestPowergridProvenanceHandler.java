@@ -60,14 +60,17 @@ import pnnl.goss.core.DataResponse;
 import pnnl.goss.core.Request;
 import pnnl.goss.core.Response;
 import pnnl.goss.core.security.AuthorizationHandler;
+import pnnl.goss.core.security.AuthorizeAll;
 import pnnl.goss.core.server.DataSourcePooledJdbc;
 import pnnl.goss.core.server.RequestHandler;
 import pnnl.goss.powergrid.api.PowergridService;
+import pnnl.goss.powergrid.datamodel.PowergridProvenance;
 import pnnl.goss.powergrid.datamodel.PowergridRating;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
 import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
+import pnnl.goss.powergrid.requests.RequestPowergridProvenance;
 import pnnl.goss.powergrid.requests.RequestPowergridRating;
 import pnnl.goss.powergrid.server.PowergridDataSourceEntries;
 import pnnl.goss.powergrid.server.api.PowergridProvenanceDao;
@@ -89,26 +92,7 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
     private static Logger log = LoggerFactory.getLogger(RequestPowergridProvenanceHandler.class);
     private static PowergridList availablePowergrids = null;
 
-    private DataResponse getPowergridRatingResponse(RequestPowergridRating request) {
-    	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
-    	PowergridProvenanceDao dao = new PowergridProvenanceDaoMySql(ds, subjectService.getIdentity(request));
-
-    	List<PowergridRating> ratings = dao.getPowergridRatingsById(request.getMrid());
-    	
-
-        DataResponse response = new DataResponse();
-        if (ratings!=null && ratings.size()>0) {
-        	
-        	
-//            PowergridModel model = dao.getPowergridModelAtTime(grid.getPowergridId(), request.getTimestep());
-//            response.setData(model);
-        } else {
-            response.setData(new DataError("Powergrid not found!"));
-        }
-
-        return response;
-    }
-
+   
 
     public DataResponse getResponse(Request request) {
         DataResponse response = null;
@@ -119,27 +103,13 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
         	subRequest = ((RequestEnvelope) request).getWrappedRequest();
         }
 
-        // All of the requests must stem from RequestPowergrid.
-        if (!(subRequest instanceof RequestPowergrid)){
-            response = new DataResponse(new DataError("Unkown request: " + request.getClass().getName()));
-            return response;
-        }
-
-
 
 
         if (request instanceof RequestPowergridRating) {
             response = getPowergridRatingResponse((RequestPowergridRating) request);
+        } else if (request instanceof RequestPowergridProvenance) {
+            response = getPowergridProvenanceResponse((RequestPowergridProvenance) request);
         } 
-//        else if (request instanceof RequestPowergridList) {
-//            response = getAvailablePowergrids();
-//        } else if (request instanceof RequestPowergridTimeStepValues) {
-//            response = new DataResponse(new DataError("RequestPowergridTimeStepValues not implemented yet!"));
-//        } else if (request instanceof RequestPowergridPart) {
-//        	response = getPowergridPartType((RequestPowergridPart) request);
-//        } else{
-//            response = getPowergridModelResponse((RequestPowergrid) request);
-//        }
 
         // A data response if there is an invalid request type.
         if (response == null) {
@@ -172,11 +142,49 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
     @Override
 	public Map<Class<? extends Request>, Class<? extends AuthorizationHandler>> getHandles() {
 		Map<Class<? extends Request>, Class<? extends AuthorizationHandler>> auths = new HashMap<>();
-//		auths.put(RequestPowergrid.class, AuthorizeAll.class);
+		auths.put(RequestPowergridProvenance.class, AuthorizeAll.class);
 //		auths.put(RequestPowergridPart.class, AuthorizeAll.class);
 //		auths.put(RequestPowergridTimeStep.class, AuthorizeAll.class);
 //		auths.put(RequestPowergridList.class, AuthorizeAll.class);
 //		auths.put(RequestPowergridTimeStepValues.class, AuthorizeAll.class);
 		return auths;
 	}
+    
+    
+    
+    private DataResponse getPowergridRatingResponse(RequestPowergridRating request) {
+    	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
+    	PowergridProvenanceDao dao = new PowergridProvenanceDaoMySql(ds, subjectService.getIdentity(request));
+
+    	List<PowergridRating> ratings = dao.getPowergridRatingsById(request.getMrid());
+    	
+
+        DataResponse response = new DataResponse();
+        if (ratings!=null && ratings.size()>0) {
+        	
+        	
+//            PowergridModel model = dao.getPowergridModelAtTime(grid.getPowergridId(), request.getTimestep());
+//            response.setData(model);
+        } else {
+            response.setData(new DataError("Powergrid not found!"));
+        }
+
+        return response;
+    }
+    private DataResponse getPowergridProvenanceResponse(RequestPowergridProvenance request) {
+    	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
+    	PowergridProvenanceDao dao = new PowergridProvenanceDaoMySql(ds, subjectService.getIdentity(request));
+
+    	PowergridProvenance prov = dao.getPowergridProvenanceChainById(request.getMrid());
+        DataResponse response = new DataResponse();
+        if (prov!=null){ // && ratings.size()>0) {
+        	response.setData(prov);
+//            PowergridModel model = dao.getPowergridModelAtTime(grid.getPowergridId(), request.getTimestep());
+//            response.setData(model);
+        } else {
+            response.setData(new DataError("Powergrid not found!"));
+        }
+
+        return response;
+    }
 }

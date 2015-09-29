@@ -34,6 +34,7 @@ import pnnl.goss.core.server.RequestHandlerRegistry;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.SavePowergridResults;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.datamodel.PowergridProvenance;
 import pnnl.goss.powergrid.datamodel.PowergridRating;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
@@ -43,6 +44,7 @@ import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.requests.RequestPowergridPart;
 import pnnl.goss.powergrid.requests.RequestPowergridPart.PowergridPartType;
+import pnnl.goss.powergrid.requests.RequestPowergridProvenance;
 import pnnl.goss.powergrid.requests.RequestPowergridRating;
 
 @Path("/powergridprovenance/api")
@@ -134,7 +136,41 @@ public class PowergridProvenanceWebService {
 	}
 
 
+	@POST
+	@Path("/provenance/{mrid}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Description(
+		"Returns the details for hte scenario. "
+	)
+	@ReturnType(PowergridProvenance.class)
+	public Response getPowerGridProvenanceChain(String identifier,
+			@PathParam("mrid") String mrid,
+			@Context HttpServletRequest req) throws HandlerNotFoundException {
+	
+		RequestHandler handler = handlers.getHandler(RequestPowergridProvenance.class);
+		RequestPowergridProvenance pgRequest = new RequestPowergridProvenance(mrid);
+		Response response = null;
+//
+		if (handlers.checkAccess((Request)pgRequest, identifier)){
+			DataResponse res;
+			try {
+				res = (DataResponse)handlers.handle(pgRequest);
+				if (WebUtil.wasError(res.getData())){
+					response = Response.status(Response.Status.BAD_REQUEST)
+							.entity(res.getData()).build();
+				}
+				else {
+					Object data = res.getData();
+					response = Response.status(Response.Status.OK).entity(data).build();
+				}
+			} catch (HandlerNotFoundException e) {
+				e.printStackTrace();
 
+			}
+		}
+
+		return response;
+	}
 //	@POST
 //	@Path("/pg_ratings/{pgid}")
 //	@Consumes(MediaType.APPLICATION_JSON)
