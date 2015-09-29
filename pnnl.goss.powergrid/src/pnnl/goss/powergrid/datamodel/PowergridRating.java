@@ -30,7 +30,8 @@ import javax.xml.bind.annotation.XmlType;
     "user",
     "rating",
     "comment",
-    "created"
+    "created",
+    "mrid"
 })
 public class PowergridRating
     implements Serializable
@@ -49,12 +50,9 @@ public class PowergridRating
     protected String comment;
     @XmlElement(name = "Created", required = true)
     protected Date created;
-	public int getPowergridRatingId() {
-		return powerGridRatingId;
-	}
-	public void setPowergridRatingId(int powergridRatingId) {
-		this.powerGridRatingId = powergridRatingId;
-	}
+    @XmlElement(name = "Mrid")
+    protected String mrid;
+    
 	public int getPowergridId() {
 		return powergridId;
 	}
@@ -84,6 +82,18 @@ public class PowergridRating
 	}
 	public void setCreated(Date created) {
 		this.created = created;
+	}
+	public int getPowerGridRatingId() {
+		return powerGridRatingId;
+	}
+	public void setPowerGridRatingId(int powerGridRatingId) {
+		this.powerGridRatingId = powerGridRatingId;
+	}
+	public String getMrid() {
+		return mrid;
+	}
+	public void setMrid(String mrid) {
+		this.mrid = mrid;
 	}
 
 

@@ -21,7 +21,8 @@ import javax.xml.bind.annotation.XmlType;
     "powerGridProvenanceId",
     "objectNewId",
     "objectPreviousId",
-    "objectType"
+    "objectType",
+    "mrid"
 })
 public class PowergridProvenanceChanges
     implements Serializable
@@ -38,6 +39,9 @@ public class PowergridProvenanceChanges
     protected int objectOldId;
     @XmlElement(name = "ObjectType", required = true)
     protected String objectType;
+    @XmlElement(name = "Mrid")
+    protected String mrid;
+    
 	public int getPowerGridProvenanceChangeId() {
 		return powerGridProvenanceChangeId;
 	}
@@ -67,6 +71,12 @@ public class PowergridProvenanceChanges
 	}
 	public void setObjectType(String objectType) {
 		this.objectType = objectType;
+	}
+	public String getMrid() {
+		return mrid;
+	}
+	public void setMrid(String mrid) {
+		this.mrid = mrid;
 	}
     
     

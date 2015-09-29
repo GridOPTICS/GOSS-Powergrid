@@ -55,9 +55,9 @@ public class AllPowergridService implements PowergridService {
 //    			if (identifier == null || "public".equalsIgnoreCase(g.getAccessLevel()) ||
 //    					(identifier.equals(g.getCreatedBy()) && "private".equalsIgnoreCase(g.getAccessLevel()))) {
     			
-    				//TODO move up to web service call
-    				g.setRatings(daoProv.getPowergridRatingsById(g.getPowergridId()));
-    				g.setProvenance(daoProv.getPowergridProvenanceById(g.getPowergridId()));
+    				//TODO move up to web service call 
+    				g.setRatings(daoProv.getPowergridRatingsById(g.getMrid()));
+    				g.setProvenance(daoProv.getPowergridProvenanceById(g.getMrid()));
     			
 	    			mridToDatasourceKeyMap.put(g.getMrid(), k);
 	    			mridToPowergridMap.put(g.getMrid(), g);

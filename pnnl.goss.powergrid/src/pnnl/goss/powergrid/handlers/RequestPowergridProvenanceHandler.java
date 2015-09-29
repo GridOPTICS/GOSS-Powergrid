@@ -90,10 +90,10 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
     private static PowergridList availablePowergrids = null;
 
     private DataResponse getPowergridRatingResponse(RequestPowergridRating request) {
-    	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getPowerGridId());
+    	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
     	PowergridProvenanceDao dao = new PowergridProvenanceDaoMySql(ds, subjectService.getIdentity(request));
 
-    	List<PowergridRating> ratings = dao.getPowergridRatingsById(new Integer(request.getPowerGridId()));
+    	List<PowergridRating> ratings = dao.getPowergridRatingsById(request.getMrid());
     	
 
         DataResponse response = new DataResponse();

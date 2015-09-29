@@ -25,7 +25,9 @@ import javax.xml.bind.annotation.XmlType;
     "user",
     "rating",
     "comment",
-    "created"
+    "created",
+    "mrid",
+    "previousMrid"
 })
 public class PowergridProvenance
     implements Serializable
@@ -46,6 +48,10 @@ public class PowergridProvenance
     protected String comments;
     @XmlElement(name = "Created", required = true)
     protected Date created;
+    @XmlElement(name = "Mrid")
+    protected String mrid;
+    @XmlElement(name = "PreviousMrid")
+    protected String previousMrid;
     
     
 	public int getPowergridProvenanceId() {
@@ -89,6 +95,18 @@ public class PowergridProvenance
 	}
 	public void setCreated(Date created) {
 		this.created = created;
+	}
+	public String getMrid() {
+		return mrid;
+	}
+	public void setMrid(String mrid) {
+		this.mrid = mrid;
+	}
+	public String getPreviousMrid() {
+		return previousMrid;
+	}
+	public void setPreviousMrid(String previousMrid) {
+		this.previousMrid = previousMrid;
 	}
 
 

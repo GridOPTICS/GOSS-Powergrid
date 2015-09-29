@@ -49,7 +49,7 @@ import pnnl.goss.core.Request;
 public class RequestPowergridRating extends Request {
 
 	private static final long serialVersionUID = -2681838737290484689L;
-	String powergridId = null;
+	String mrid = null;
 
 	/**
 	 * Request a powergrid rating with the passed mrid associated with it.  The
@@ -58,12 +58,12 @@ public class RequestPowergridRating extends Request {
 	 *
 	 * @param mrid
 	 */
-	public RequestPowergridRating(String powergridId){
-		this.powergridId = powergridId;
+	public RequestPowergridRating(String mrid){
+		this.mrid = mrid;
 	}
 
-	public String getPowerGridId(){
-		return this.powergridId;
+	public String getMrid(){
+		return this.mrid;
 	}
 
 

@@ -26,7 +26,8 @@ import javax.xml.bind.annotation.XmlType;
     "rating",
     "comments",
     "created",
-    "objectType"
+    "objectType",
+    "mrid"
 })
 public class PowergridObjectAnnotation
     implements Serializable
@@ -47,7 +48,8 @@ public class PowergridObjectAnnotation
     protected String comments;
     @XmlElement(name = "Created", required = true)
     protected Date created;
-    
+    @XmlElement(name = "Mrid")
+    protected String mrid;
     
 	public int getPowerGridObjectAnnotationId() {
 		return powerGridObjectAnnotationId;
@@ -90,6 +92,12 @@ public class PowergridObjectAnnotation
 	}
 	public void setCreated(Date created) {
 		this.created = created;
+	}
+	public String getMrid() {
+		return mrid;
+	}
+	public void setMrid(String mrid) {
+		this.mrid = mrid;
 	}
     
 

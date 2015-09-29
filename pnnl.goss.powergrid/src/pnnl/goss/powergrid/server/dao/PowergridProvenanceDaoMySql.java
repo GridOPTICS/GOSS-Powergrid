@@ -1526,18 +1526,19 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
 
 
 	@Override
-	public List<PowergridRating> getPowergridRatingsById(int powergridId) {
-		String dbQuery = "select * from powergridrating pg where PowerGridId=@powergridId";
+	public List<PowergridRating> getPowergridRatingsById(String mrId) {
+		String dbQuery = "select * from powergridrating pg where mrId=@mrId";
         List<PowergridRating> ratings = new ArrayList<PowergridRating>();
         JsonObject props = new JsonObject();
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
-        	namedStmt.setInt("powergridId", powergridId);
+        	namedStmt.setString("mrId", mrId);
         	try(ResultSet rs = namedStmt.executeQuery()){
         		while (rs.next()){
         			PowergridRating rating = new PowergridRating();
-        			rating.setPowergridRatingId(rs.getInt("PowergridRatingId"));
+        			rating.setPowerGridRatingId(rs.getInt("PowergridRatingId"));
         			rating.setPowergridId(rs.getInt("PowergridId"));
+        			rating.setMrid(rs.getString("Mrid"));
         			rating.setUser(rs.getString("User"));
         			rating.setComment(rs.getString("Comment"));
         			rating.setRating(rs.getInt("Rating"));
@@ -1565,17 +1566,19 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
 	}
 
 	@Override
-	public PowergridProvenance getPowergridProvenanceById(int powergridId) {
+	public PowergridProvenance getPowergridProvenanceById(String mrId) {
 		String dbQuery = "select * from powergridprovenance pg where PowerGridId=@Mrid";
 		PowergridProvenance prov = null;
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
-        	namedStmt.setInt("Mrid", powergridId);
+        	namedStmt.setString("Mrid", mrId);
         	try(ResultSet rs = namedStmt.executeQuery()){
         		if (rs.first()){
         			prov = new PowergridProvenance();
         			prov.setPowergridProvenanceId(rs.getInt("PowerGridProvenanceId"));
         			prov.setPowergridId(rs.getInt("PowerGridId"));
+        			prov.setMrid(rs.getString("Mrid"));
+        			prov.setPreviousMrid(rs.getString("PreviousMrid"));
         			prov.setPreviousPowerGridId(rs.getInt("PreviousPowerGridId"));
         			prov.setAction(rs.getString("Action"));
         			prov.setUser(rs.getString("User"));
