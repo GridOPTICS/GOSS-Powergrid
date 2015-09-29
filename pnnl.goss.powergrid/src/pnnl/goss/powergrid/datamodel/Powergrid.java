@@ -9,12 +9,12 @@
 package pnnl.goss.powergrid.datamodel;
 
 import java.io.Serializable;
+import java.util.List;
 
 import pnnl.goss.powergrid.api.topology.IdentifiedObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.gson.JsonObject;
 
 @JsonIgnoreProperties({ "powergridId",
 	"setPowergridId", "setCoordinateSystem", "coordinateSystem",
@@ -61,6 +61,9 @@ public class Powergrid
     private String originalFilename;
     private String accessLevel;
     private String createdOn;   
+    
+    private List<PowergridRating> ratings;
+    private PowergridProvenance provenance;
     
 
     public String getCreatedBy() {
@@ -220,4 +223,33 @@ public class Powergrid
 	public void setIdentifiedObject(IdentifiedObject identifiedObject) {
 		this.identifiedObject = identifiedObject;
 	}
+
+	public List<PowergridRating> getRatings() {
+		return ratings;
+	}
+
+	public void setRatings(List<PowergridRating> ratings) {
+		this.ratings = ratings;
+	}
+	public float getAverageRating(){
+		if(ratings==null || ratings.size()==0){
+			return 0;
+		} else {
+			float total = 0;
+			for(PowergridRating rating: ratings){
+				total += rating.getRating();
+			}
+			return (total/ratings.size());
+		}
+	}
+
+	public PowergridProvenance getProvenance() {
+		return provenance;
+	}
+
+	public void setProvenance(PowergridProvenance provenance) {
+		this.provenance = provenance;
+	}
+	
+	
 }

@@ -20,7 +20,9 @@ import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.handlers.RequestPowergridHandler;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
 import pnnl.goss.powergrid.server.api.PowergridDao;
+import pnnl.goss.powergrid.server.api.PowergridProvenanceDao;
 import pnnl.goss.powergrid.server.dao.PowergridDaoMySql;
+import pnnl.goss.powergrid.server.dao.PowergridProvenanceDaoMySql;
 
 @Component
 public class AllPowergridService implements PowergridService {
@@ -48,9 +50,15 @@ public class AllPowergridService implements PowergridService {
 		for(String k: dataSourceEntries.getDataSourceKeys()){
 			DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByKey(k);
     		PowergridDao dao = new PowergridDaoMySql(ds, identifier);
+    		PowergridProvenanceDao daoProv = new PowergridProvenanceDaoMySql(ds, identifier);
     		for(Powergrid g:dao.getAvailablePowergrids()){
 //    			if (identifier == null || "public".equalsIgnoreCase(g.getAccessLevel()) ||
 //    					(identifier.equals(g.getCreatedBy()) && "private".equalsIgnoreCase(g.getAccessLevel()))) {
+    			
+    				//TODO move up to web service call
+    				g.setRatings(daoProv.getPowergridRatingsById(g.getPowergridId()));
+    				g.setProvenance(daoProv.getPowergridProvenanceById(g.getPowergridId()));
+    			
 	    			mridToDatasourceKeyMap.put(g.getMrid(), k);
 	    			mridToPowergridMap.put(g.getMrid(), g);
 	    			availablePowergrids.add(g);

@@ -57,12 +57,11 @@ public class PowergridWebService {
 		"Returns a list of Powergrid instances which contains it's mrid.  " +
 		"Using the mrid the application can then post a request for a specific " +
 		"PowergridModel instance or lists of it's components.")
-	public Response list(@Context HttpServletRequest request){
-
+	public Response list(String identifier, @Context HttpServletRequest request){
 		JsonObject jsonBody = WebUtil.getRequestJsonBody(request);
 		RequestPowergridList reqList = new RequestPowergridList();
 
-		String identifier = (String) request.getAttribute("identifier");
+//		String identifier = (String) request.getAttribute("identifier");
 		List<Powergrid> data = null;
 		Response response= null;
 
@@ -370,35 +369,41 @@ public class PowergridWebService {
 
 		System.out.println("Retrieving powergrid details for mrid: "+ mrid);
 
-
-
+		RequestPowergrid pgReq = new RequestPowergrid(mrid);
+		
+		Response response;
+		if (!handlers.checkAccess(pgReq, identifier)){
+			response = Response.status(Response.Status.UNAUTHORIZED).build();
+		} else {
 		String respStr = "{\"id\":\""+mrid+"\",\"name\":\"Scenario X\",\"profile\":\"winter\",\"startTime\":\"10:01\",\"events\":[{\"timeOffset\":\"5 min\",\"event\":\"line trip\"},{\"timeOffset\":\"10 min\",\"event\":\"line trip\"},{\"timeOffset\":\"12 min\",\"event\":\"generator outage\"}]}";
 
-		Response response =  Response.status(Response.Status.OK)
+			response =  Response.status(Response.Status.OK)
 				.entity(respStr).build();
 
-//		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
-//		pgRequest.addExtesion("ext_table", extensionType);
-//		Response response = null;
-//
-//		if (handlers.checkAccess((Request)pgRequest, identifier)){
-//			DataResponse res;
-//			try {
-//				res = (DataResponse)handlers.handle(pgRequest);
-//				if (WebUtil.wasError(res.getData())){
-//					response = Response.status(Response.Status.BAD_REQUEST)
-//							.entity(res.getData()).build();
-//				}
-//				else {
-//					String data = ((String)res.getData());
-//					response = Response.status(Response.Status.OK).entity(data).build();
-//				}
-//			} catch (HandlerNotFoundException e) {
-//				e.printStackTrace();
-//
-//			}
-//		}
+	//		RequestPowergrid pgRequest = new RequestPowergrid(mrid);
+	//		pgRequest.addExtesion("ext_table", extensionType);
+	//		Response response = null;
+	//
+	//		if (handlers.checkAccess((Request)pgRequest, identifier)){
+	//			DataResponse res;
+	//			try {
+	//				res = (DataResponse)handlers.handle(pgRequest);
+	//				if (WebUtil.wasError(res.getData())){
+	//					response = Response.status(Response.Status.BAD_REQUEST)
+	//							.entity(res.getData()).build();
+	//				}
+	//				else {
+	//					String data = ((String)res.getData());
+	//					response = Response.status(Response.Status.OK).entity(data).build();
+	//				}
+	//			} catch (HandlerNotFoundException e) {
+	//				e.printStackTrace();
+	//
+	//			}
+	//		}
 
+			
+		}
 		return response;
 	}
 
