@@ -44,6 +44,7 @@
 */
 package pnnl.goss.powergrid.handlers;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ import pnnl.goss.powergrid.datamodel.PowergridRating;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.datamodel.collections.PowergridObjectAnnotationList;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
+import pnnl.goss.powergrid.requests.CreatePowergridProvenanceRequest;
 import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
 import pnnl.goss.powergrid.requests.RequestPowergridAnnotation;
@@ -114,6 +116,9 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
             response = getPowergridProvenanceResponse((RequestPowergridProvenance) request);
         } else if (request instanceof RequestPowergridAnnotation) {
         	response = getPowergridAnnotationResponse((RequestPowergridAnnotation)request);
+        } else if (request instanceof CreatePowergridProvenanceRequest){
+        	System.out.println("TODO IMPLEMETN CREATE");
+        	response = createPowergridProvenance((CreatePowergridProvenanceRequest)request);
         }
 
         // A data response if there is an invalid request type.
@@ -150,6 +155,7 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
 		auths.put(RequestPowergridProvenance.class, AuthorizeAll.class);
 		auths.put(RequestPowergridAnnotation.class, AuthorizeAll.class);
 		auths.put(RequestPowergridRating.class, AuthorizeAll.class);
+		auths.put(CreatePowergridProvenanceRequest.class, AuthorizeAll.class);
 //		auths.put(RequestPowergridPart.class, AuthorizeAll.class);
 //		auths.put(RequestPowergridTimeStep.class, AuthorizeAll.class);
 //		auths.put(RequestPowergridList.class, AuthorizeAll.class);
@@ -165,34 +171,32 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
 
     	List<PowergridRating> ratings = dao.getPowergridRatingsById(request.getMrid());
     	
-
-        DataResponse response = new DataResponse();
-        if (ratings!=null && ratings.size()>0) {
-        	
-        	
-//            PowergridModel model = dao.getPowergridModelAtTime(grid.getPowergridId(), request.getTimestep());
-//            response.setData(model);
-        } else {
-            response.setData(new DataError("Powergrid not found!"));
-        }
-
-        return response;
+    	//TODO make collection obj
+    	//return packageResponse(ratings, "Powergrid ratings not found!");
+    	return null;
+       
     }
     private DataResponse getPowergridProvenanceResponse(RequestPowergridProvenance request) {
     	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
     	PowergridProvenanceDao dao = new PowergridProvenanceDaoMySql(ds, subjectService.getIdentity(request));
 
     	PowergridProvenance prov = dao.getPowergridProvenanceChainById(request.getMrid());
-        DataResponse response = new DataResponse();
-        if (prov!=null){ // && prov.size()>0) {
-        	response.setData(prov);
-//            PowergridModel model = dao.getPowergridModelAtTime(grid.getPowergridId(), request.getTimestep());
-//            response.setData(model);
-        } else {
-            response.setData(new DataError("Powergrid not found!"));
-        }
+    	return packageResponse(prov, "Powergrid not found!");
+    }
+    
+    private DataResponse createPowergridProvenance(CreatePowergridProvenanceRequest request){
+    	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
+    	PowergridProvenanceDao dao = new PowergridProvenanceDaoMySql(ds, subjectService.getIdentity(request));
 
-        return response;
+    	PowergridProvenance result = new PowergridProvenance();
+    	result.setAction(request.getAction());
+    	result.setUser(request.getUser());
+    	result.setPowergridProvenanceId(1);
+    	result.setComments(request.getComments());
+    	result.setCreated(request.getCreated());
+    	result.setMrid(request.getMrid());
+    	result.setPreviousMrid(request.getPreviousMrid());
+    	return packageResponse(result, "Powergrid annotations not found!");
     }
     
     private DataResponse getPowergridAnnotationResponse(RequestPowergridAnnotation request){
@@ -205,15 +209,22 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
     	} else if(request.getPowergridMrid()!=null){
     		annotations = dao.getPowergridObjectAnnotationsByPowergridId(request.getPowergridMrid(), request.getObjectType());
     	} 
+    	PowergridObjectAnnotationList result = null;
+    	if(annotations!=null)
+    		result = new PowergridObjectAnnotationList(annotations);
     	
+    	return packageResponse(result, "Powergrid annotations not found!");
     	
-        DataResponse response = new DataResponse();
-        if (annotations!=null){ // && prov.size()>0) {
-        	response.setData(new PowergridObjectAnnotationList(annotations));
-        } else {
-            response.setData(new DataError("Powergrid annotations not found!"));
-        }
-
-        return response;
+    }
+    
+    
+    private DataResponse packageResponse(Serializable data, String errorMsg){
+    	  DataResponse response = new DataResponse();
+          if (data!=null){ 
+          		response.setData(data);
+          } else {
+              response.setData(new DataError(errorMsg));
+          }
+          return response;
     }
 }

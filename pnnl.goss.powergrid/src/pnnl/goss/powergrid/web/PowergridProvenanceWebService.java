@@ -39,6 +39,7 @@ import pnnl.goss.powergrid.datamodel.PowergridRating;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.datamodel.collections.PowergridObjectAnnotationList;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
+import pnnl.goss.powergrid.requests.CreatePowergridProvenanceRequest;
 import pnnl.goss.powergrid.requests.CreatePowergridRequest;
 import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
@@ -58,7 +59,7 @@ public class PowergridProvenanceWebService {
 	private volatile RequestSubjectService subjectService;
 
 	@POST
-	@Path("/create")
+	@Path("/create/provenance")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Description("Parse and store a powergrid rating in the database.  The" +
 			"The passed data must be a base64 encoded file with "+
@@ -70,69 +71,76 @@ public class PowergridProvenanceWebService {
 		String identifier = (String) req.getAttribute("identifier");
 		JsonObject requestBody = WebUtil.getRequestJsonBody(req);
 
-//		List<String> errors = new ArrayList<>();
-//
-//		if (!requestBody.has("name") ||
-//				requestBody.get("name").getAsString().isEmpty()){
-//			errors.add("Invalid powergrid name specified");
-//		}
-//		if (!requestBody.has("model_file_content") ||
-//				requestBody.get("model_file_content").getAsString().isEmpty()){
-//			errors.add("Invalid powergridContent specified");
-//		}
-//
-//		if (!requestBody.has("access_level") ||
-//				requestBody.get("access_level").getAsString().isEmpty()){
-//			errors.add("Invalid access level specified");
-//		}
-//
-//		if (errors.size() > 0){
-//			response = Response.status(Response.Status.BAD_REQUEST)
-//					.entity(errors).build();
-//
-//		}
-//		else{
-//
-//			CreatePowergridRequest createReq = new CreatePowergridRequest();
-//
-//			// Make sure the user has access to do this request.
-//			if (!handlers.checkAccess(createReq, identifier)){
-//				response = Response.status(Response.Status.UNAUTHORIZED).build();
-//			}
-//			else{
+		List<String> errors = new ArrayList<>();
+		if (!requestBody.has("Action") ||
+				requestBody.get("Action").getAsString().isEmpty()){
+			errors.add("Invalid Action name specified");
+		}
+		if (!requestBody.has("Comments") ||
+				requestBody.get("Comments").getAsString().isEmpty()){
+			errors.add("Invalid Comments specified");
+		}
+		if (!requestBody.has("Mrid") ||
+				requestBody.get("Mrid").getAsString().isEmpty()){
+			errors.add("Invalid Mrid specified");
+		}
+		if (!requestBody.has("PreviousMrid") ||
+				requestBody.get("PreviousMrid").getAsString().isEmpty()){
+			errors.add("Invalid PreviousMrid specified");
+		}
+
+		if (errors.size() > 0){
+			response = Response.status(Response.Status.BAD_REQUEST)
+					.entity(errors).build();
+
+		}
+		else{
+			CreatePowergridProvenanceRequest createReq = new CreatePowergridProvenanceRequest();
+			createReq.setAction(requestBody.get("Action").getAsString());
+			createReq.setComments(requestBody.get("Comments").getAsString());
+			createReq.setMrid(requestBody.get("Mrid").getAsString());
+			createReq.setPreviousMrid(requestBody.get("PreviousMrid").getAsString());
+			createReq.setUser(identifier);
+			
+			
+			// Make sure the user has access to do this request.
+			if (!handlers.checkAccess(createReq, identifier)){
+				response = Response.status(Response.Status.UNAUTHORIZED).build();
+			}
+			else{
+			
+				
+			
 //				JsonObject params = new JsonObject();
 //				subjectService.addRequest(createReq, identifier);
 //				createReq.setAccessLevel(requestBody.get("access_level").getAsString());
 //				createReq.setOriginalFilename("original_file.raw");
 //				createReq.setDescription(requestBody.get("description").getAsString());
-//				DataResponse res;
-//				try{
-//
+				DataResponse res;
+				try{
+
 //					String content = requestBody.get("model_file_content").getAsString();
 //					byte[] decoded = Base64.decodeBase64(content.split(";")[1].split(",")[1]);
 //					File tmpFile = File.createTempFile("upload", "tmp");
 //					FileUtils.writeByteArrayToFile(tmpFile,  decoded);
 //					createReq.setPowergridFile(tmpFile);
-//					res = (DataResponse)handlers.handle(createReq);
-//					if (WebUtil.wasError(res.getData())){
-//						response = Response.status(Response.Status.BAD_REQUEST)
-//								.entity(res.getData()).build();
-//					}
-//					else {
+					res = (DataResponse)handlers.handle(createReq);
+					if (WebUtil.wasError(res.getData())){
+						response = Response.status(Response.Status.BAD_REQUEST)
+								.entity(res.getData()).build();
+					}
+					else {
 //						SavePowergridResults results = ((SavePowergridResults)res.getData());
-//						//PowergridModel model = ((PowergridModel)res.getData());
-//						response = Response.ok(results).build();
-//						//response = Response.status(Response.Status.OK).build();
-//					}
+						PowergridProvenance model = ((PowergridProvenance)res.getData());
+						response = Response.ok(model).build();
+						//response = Response.status(Response.Status.OK).build();
+					}
 //
-//				} catch (HandlerNotFoundException e) {
-//					e.printStackTrace();
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//			}
-//		}
+				} catch (HandlerNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 //
 		return response;
 	}

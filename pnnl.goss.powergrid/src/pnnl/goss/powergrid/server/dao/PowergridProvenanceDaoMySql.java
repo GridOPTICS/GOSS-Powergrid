@@ -1577,10 +1577,8 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
         		if (rs.first()){
         			prov = new PowergridProvenance();
         			prov.setPowergridProvenanceId(rs.getInt("PowerGridProvenanceId"));
-        			prov.setPowergridId(rs.getInt("PowerGridId"));
         			prov.setMrid(rs.getString("Mrid"));
         			prov.setPreviousMrid(rs.getString("PreviousMrid"));
-        			prov.setPreviousPowerGridId(rs.getInt("PreviousPowerGridId"));
         			prov.setAction(rs.getString("Action"));
         			prov.setUser(rs.getString("User"));
         			prov.setComments(rs.getString("Comments"));

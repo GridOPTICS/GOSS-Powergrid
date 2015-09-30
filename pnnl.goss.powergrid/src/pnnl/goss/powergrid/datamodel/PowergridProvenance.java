@@ -20,8 +20,6 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PowergridProvenance", propOrder = {
     "powergridProvenanceId",
-    "powergridId",
-    "previousPowerGridId",
     "user",
     "rating",
     "comment",
@@ -36,10 +34,6 @@ public class PowergridProvenance
     private final static long serialVersionUID = 12343L;
     @XmlElement(name = "PowerGridProvenanceId")
     protected int powergridProvenanceId;
-    @XmlElement(name = "PowerGridId")
-    protected int powergridId;
-    @XmlElement(name = "PreviousPowerGridId")
-    protected int previousPowerGridId;
     @XmlElement(name = "Action", required = true)
     protected String action;
     @XmlElement(name = "User", required = true)
@@ -64,23 +58,11 @@ public class PowergridProvenance
 	public void setPowergridProvenanceId(int powergridProvenanceId) {
 		this.powergridProvenanceId = powergridProvenanceId;
 	}
-	public int getPreviousPowerGridId() {
-		return previousPowerGridId;
-	}
-	public void setPreviousPowerGridId(int previousPowerGridId) {
-		this.previousPowerGridId = previousPowerGridId;
-	}
 	public String getAction() {
 		return action;
 	}
 	public void setAction(String action) {
 		this.action = action;
-	}
-	public int getPowergridId() {
-		return powergridId;
-	}
-	public void setPowergridId(int powergridId) {
-		this.powergridId = powergridId;
 	}
 	public String getUser() {
 		return user;
