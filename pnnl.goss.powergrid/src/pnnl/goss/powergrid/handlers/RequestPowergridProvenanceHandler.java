@@ -112,7 +112,9 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
             response = getPowergridRatingResponse((RequestPowergridRating) request);
         } else if (request instanceof RequestPowergridProvenance) {
             response = getPowergridProvenanceResponse((RequestPowergridProvenance) request);
-        } 
+        } else if (request instanceof RequestPowergridAnnotation) {
+        	response = getPowergridAnnotationResponse((RequestPowergridAnnotation)request);
+        }
 
         // A data response if there is an invalid request type.
         if (response == null) {

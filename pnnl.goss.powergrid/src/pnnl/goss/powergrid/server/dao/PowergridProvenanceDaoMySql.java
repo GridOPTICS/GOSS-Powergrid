@@ -1617,7 +1617,7 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
 
 	@Override
 	public List<PowergridObjectAnnotation> getPowergridObjectAnnotationsById(String objectMrid, String objectType) {
-		String dbQuery = "select * from powergridobjectannotation pg where ObjectMrid=@Mrid and ObjectType=@Type";
+		String dbQuery = "select * from powergridobjectannotation pg where ObjectMrid=@ObjectMrid and ObjectType=@ObjectType";
 		List<PowergridObjectAnnotation> annotations = new ArrayList<PowergridObjectAnnotation>();
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
@@ -1648,9 +1648,9 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
 	@Override
 	public List<PowergridObjectAnnotation> getPowergridObjectAnnotationsByPowergridId(String powergridMrid,
 			String objectType) {
-		String dbQuery = "select * from powergridobjectannotation pg where PowergridMrid=@Mrid";
+		String dbQuery = "select * from powergridobjectannotation pg where PowergridMrid=@PowergridMrid";
 		if(objectType!=null){
-			dbQuery += " and ObjectType=@Type";
+			dbQuery += " and ObjectType=@ObjectType";
 		}
 		List<PowergridObjectAnnotation> annotations = new ArrayList<PowergridObjectAnnotation>();
 

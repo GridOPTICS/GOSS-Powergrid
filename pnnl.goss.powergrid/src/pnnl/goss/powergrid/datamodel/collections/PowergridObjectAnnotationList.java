@@ -53,7 +53,7 @@ import pnnl.goss.powergrid.datamodel.PowergridObjectAnnotation;
 
 public class PowergridObjectAnnotationList implements Serializable {
 
-    private static final long serialVersionUID = 8262849484576170794L;
+    private static final long serialVersionUID = 8262849234576170794L;
     private List<PowergridObjectAnnotation> annotations = new ArrayList<PowergridObjectAnnotation>();
 
     public PowergridObjectAnnotationList(List<PowergridObjectAnnotation> availablePowergrids) {
@@ -64,5 +64,13 @@ public class PowergridObjectAnnotationList implements Serializable {
         // TODO Auto-generated method stub
         return Collections.unmodifiableList(annotations);
     }
+
+	public List<PowergridObjectAnnotation> getAnnotations() {
+		return annotations;
+	}
+
+	public void setAnnotations(List<PowergridObjectAnnotation> annotations) {
+		this.annotations = annotations;
+	}
 
 }
