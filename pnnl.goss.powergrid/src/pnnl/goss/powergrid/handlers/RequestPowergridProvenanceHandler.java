@@ -109,7 +109,6 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
         }
 
 
-
         if (request instanceof RequestPowergridRating) {
             response = getPowergridRatingResponse((RequestPowergridRating) request);
         } else if (request instanceof RequestPowergridProvenance) {
@@ -117,7 +116,6 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
         } else if (request instanceof RequestPowergridAnnotation) {
         	response = getPowergridAnnotationResponse((RequestPowergridAnnotation)request);
         } else if (request instanceof CreatePowergridProvenanceRequest){
-        	System.out.println("TODO IMPLEMETN CREATE");
         	response = createPowergridProvenance((CreatePowergridProvenanceRequest)request);
         }
 
@@ -185,18 +183,25 @@ public class RequestPowergridProvenanceHandler implements RequestHandler {
     }
     
     private DataResponse createPowergridProvenance(CreatePowergridProvenanceRequest request){
+    	
+    	if(request.getMrid().equals(request.getPreviousMrid())){
+    		return packageResponse(null, "Could not persist powergrid provenance, same mrid and previous mrid");
+    	}
+    	
+    	
     	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
     	PowergridProvenanceDao dao = new PowergridProvenanceDaoMySql(ds, subjectService.getIdentity(request));
-
-    	PowergridProvenance result = new PowergridProvenance();
-    	result.setAction(request.getAction());
-    	result.setUser(request.getUser());
-    	result.setPowergridProvenanceId(1);
-    	result.setComments(request.getComments());
-    	result.setCreated(request.getCreated());
-    	result.setMrid(request.getMrid());
-    	result.setPreviousMrid(request.getPreviousMrid());
-    	return packageResponse(result, "Powergrid annotations not found!");
+    	PowergridProvenance prov = new PowergridProvenance();
+    	prov.setAction(request.getAction());
+    	prov.setUser(request.getUser());
+    	prov.setComments(request.getComments());
+    	prov.setCreated(request.getCreated());
+    	prov.setMrid(request.getMrid());
+    	prov.setPreviousMrid(request.getPreviousMrid());
+    	PowergridProvenance result = dao.persistProvenance(prov);
+    	
+    	
+    	return packageResponse(result, "Could not persist powergrid provenance!");
     }
     
     private DataResponse getPowergridAnnotationResponse(RequestPowergridAnnotation request){

@@ -59,6 +59,6 @@ public interface PowergridProvenanceDao {
 	List<PowergridObjectAnnotation> getPowergridObjectAnnotationsByPowergridId(String powergridMrid, String objectType);
 	
 
-	void persistRating(PowergridRating powergridRating);
-	void persistProvenance(PowergridProvenance powergridProvenance);
+	PowergridRating persistRating(PowergridRating powergridRating);
+	PowergridProvenance persistProvenance(PowergridProvenance powergridProvenance);
 }

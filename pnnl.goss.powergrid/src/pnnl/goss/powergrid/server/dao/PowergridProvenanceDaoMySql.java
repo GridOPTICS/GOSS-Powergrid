@@ -44,69 +44,29 @@
 */
 package pnnl.goss.powergrid.server.dao;
 
-import java.security.InvalidParameterException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
 
-import javax.naming.ConfigurationException;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pnnl.goss.core.server.DataSourcePooledJdbc;
-import pnnl.goss.powergrid.api.PowergridModel;
-import pnnl.goss.powergrid.api.SavePowergridResults;
-import pnnl.goss.powergrid.datamodel.AlertContext;
-import pnnl.goss.powergrid.datamodel.AlertContextItem;
-import pnnl.goss.powergrid.datamodel.AlertSeverity;
-import pnnl.goss.powergrid.datamodel.AlertType;
-import pnnl.goss.powergrid.datamodel.Area;
-import pnnl.goss.powergrid.datamodel.Branch;
-import pnnl.goss.powergrid.datamodel.Bus;
-import pnnl.goss.powergrid.datamodel.Line;
-import pnnl.goss.powergrid.datamodel.Load;
-import pnnl.goss.powergrid.datamodel.Machine;
-import pnnl.goss.powergrid.datamodel.Powergrid;
 import pnnl.goss.powergrid.datamodel.PowergridObjectAnnotation;
 import pnnl.goss.powergrid.datamodel.PowergridProvenance;
 import pnnl.goss.powergrid.datamodel.PowergridRating;
-import pnnl.goss.powergrid.datamodel.PowergridTimingOptions;
-import pnnl.goss.powergrid.datamodel.Substation;
-import pnnl.goss.powergrid.datamodel.SwitchedShunt;
-import pnnl.goss.powergrid.datamodel.Transformer;
-import pnnl.goss.powergrid.datamodel.Zone;
-import pnnl.goss.powergrid.parser.api.PropertyGroup;
-import pnnl.goss.powergrid.parsers.PsseParser.PTI_VERSION;
-import pnnl.goss.powergrid.server.api.PowergridDao;
 import pnnl.goss.powergrid.server.api.PowergridProvenanceDao;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
 
     private static Logger log = LoggerFactory.getLogger(PowergridProvenanceDaoMySql.class);
     protected DataSourcePooledJdbc pooledDatasource;
-    private AlertContext alertContext;
-    private PowergridTimingOptions powergridTimingOptions;
-    private String user_identifier;
 
     
   /**
@@ -116,7 +76,7 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
  public PowergridProvenanceDaoMySql(DataSourcePooledJdbc datasource, String identifier) {
      log.debug("Creating " + PowergridProvenanceDaoMySql.class + " with identifier: " + identifier);
      this.pooledDatasource = datasource;
-     this.user_identifier = identifier;
+//     this.user_identifier = identifier;
 //     alertContext = new AlertContext();
 //     initializeAlertContext();
  }
@@ -1530,7 +1490,6 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
 	public List<PowergridRating> getPowergridRatingsById(String mrId) {
 		String dbQuery = "select * from powergridrating pg where mrId=@mrId";
         List<PowergridRating> ratings = new ArrayList<PowergridRating>();
-        JsonObject props = new JsonObject();
 
         try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
         	namedStmt.setString("mrId", mrId);
@@ -1556,14 +1515,44 @@ public class PowergridProvenanceDaoMySql implements PowergridProvenanceDao {
 
 
 	@Override
-	public void persistRating(PowergridRating powergridRating) {
+	public PowergridRating persistRating(PowergridRating powergridRating) {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 	@Override
-	public void persistProvenance(PowergridProvenance powergridProvenance) {
+	public PowergridProvenance persistProvenance(PowergridProvenance powergridProvenance) {
 		// TODO Auto-generated method stub
+		String selectMax = "select max(PowerGridProvenanceId) as maxId from powergridprovenance";
+		String insert = "INSERT INTO powergridprovenance(PowerGridProvenanceId, Action, User, Comments, Created, Mrid, PreviousMrid) "
+				+ "	VALUES(@PowerGridProvenanceId, @Action, @User, @Comments, @Created, @Mrid, @PreviousMrid);";
+		try{
+				Connection conn = pooledDatasource.getConnection();
+				NamedParamStatement namedStmt = new NamedParamStatement(conn, selectMax);
+				ResultSet rs = namedStmt.executeQuery();
+				int id = 1;
+				if (rs.first()){
+					id = rs.getInt("maxId"); 
+					id++;
+				}
+				
+				NamedParamStatement insertstmt = new NamedParamStatement(conn, insert);
+				insertstmt.setInt("PowerGridProvenanceId", id);
+				insertstmt.setString("Action", powergridProvenance.getAction());
+				insertstmt.setString("User", powergridProvenance.getUser());
+				insertstmt.setString("Comments", powergridProvenance.getComments());
+				insertstmt.setDate("Created", new java.sql.Date(powergridProvenance.getCreated().getTime()));
+				insertstmt.setString("Mrid", powergridProvenance.getMrid());
+				insertstmt.setString("PreviousMrid", powergridProvenance.getPreviousMrid());
+				insertstmt.execute();
+				
+				powergridProvenance.setPowergridProvenanceId(id);
+
+    	} catch (SQLException e) {
+			e.printStackTrace();
+			powergridProvenance = null;
+		}
 		
+		return powergridProvenance;
 	}
 
 	@Override
