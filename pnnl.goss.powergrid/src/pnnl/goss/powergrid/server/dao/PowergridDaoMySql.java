@@ -82,6 +82,7 @@ import pnnl.goss.powergrid.datamodel.Line;
 import pnnl.goss.powergrid.datamodel.Load;
 import pnnl.goss.powergrid.datamodel.Machine;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.datamodel.PowergridDetail;
 import pnnl.goss.powergrid.datamodel.PowergridTimingOptions;
 import pnnl.goss.powergrid.datamodel.Substation;
 import pnnl.goss.powergrid.datamodel.SwitchedShunt;
@@ -1556,5 +1557,22 @@ public class PowergridDaoMySql implements PowergridDao {
         }
 
 		return jsonObj;
+	}
+
+
+	@Override
+	public PowergridDetail getPowergridDetailByMrid(String mrid) {
+		// TODO Auto-generated method stub
+		String dbQuery = "select * from switchedshunt where PowerGridId=@powergridId";
+		
+        try (NamedParamStatement namedStmt = new NamedParamStatement(pooledDatasource.getConnection(), dbQuery)) {
+        	PowergridDetail detail = new PowergridDetail();
+        	
+        	
+        	
+        }catch (SQLException e) {
+        	e.printStackTrace();
+		}
+		return null;
 	}
 }

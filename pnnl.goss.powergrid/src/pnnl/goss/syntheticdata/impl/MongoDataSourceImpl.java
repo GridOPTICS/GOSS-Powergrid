@@ -23,7 +23,7 @@ public class MongoDataSourceImpl implements DataSourceObject, MongoDataSource {
 
 	@Start
 	public void start() throws UnknownHostException{
-		client = new MongoClient("localhost");
+		client = new MongoClient("eioc-goss");
 	}
 
 	@Stop

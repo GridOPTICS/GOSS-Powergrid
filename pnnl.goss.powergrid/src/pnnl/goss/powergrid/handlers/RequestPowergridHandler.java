@@ -68,10 +68,12 @@ import pnnl.goss.powergrid.api.PowergridFormatter;
 import pnnl.goss.powergrid.api.PowergridModel;
 import pnnl.goss.powergrid.api.PowergridService;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.datamodel.PowergridDetail;
 import pnnl.goss.powergrid.datamodel.collections.PowergridList;
 import pnnl.goss.powergrid.parser.api.RequestSubjectService;
 import pnnl.goss.powergrid.requests.RequestEnvelope;
 import pnnl.goss.powergrid.requests.RequestPowergrid;
+import pnnl.goss.powergrid.requests.RequestPowergridDetail;
 import pnnl.goss.powergrid.requests.RequestPowergridList;
 import pnnl.goss.powergrid.requests.RequestPowergridPart;
 import pnnl.goss.powergrid.requests.RequestPowergridTimeStep;
@@ -227,6 +229,7 @@ public class RequestPowergridHandler implements RequestHandler {
         	return getAvailablePowergrids(identifier);
         }
 
+       
         // Make sure there is a valid name.
 //        if(requestPowergrid.getPowergridName() == null || requestPowergrid.getPowergridName().isEmpty()){
 //            response = new DataResponse(new DataError("Bad powergrid name"));
@@ -251,6 +254,8 @@ public class RequestPowergridHandler implements RequestHandler {
             response = new DataResponse(new DataError("RequestPowergridTimeStepValues not implemented yet!"));
         } else if (request instanceof RequestPowergridPart) {
         	response = getPowergridPartType((RequestPowergridPart) request);
+        } else if (request instanceof RequestPowergridDetail) {
+        	response = getPowergridDetail((RequestPowergridDetail) request);
         } else{
             response = getPowergridModelResponse((RequestPowergrid) request);
         }
@@ -265,6 +270,18 @@ public class RequestPowergridHandler implements RequestHandler {
         return response;
     }
 
+    
+    private DataResponse getPowergridDetail(RequestPowergridDetail request) {
+    	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
+    	PowergridDao dao = new PowergridDaoMySql(ds, subjectService.getIdentity(request));
+    	DataResponse response = new DataResponse();
+
+    	PowergridDetail grid = dao.getPowergridDetailByMrid(request.getMrid());
+    	
+    	response.setData((Serializable) grid);
+    	return response;
+    }
+    
     private DataResponse getPowergridPartType(RequestPowergridPart request) {
     	DataSourcePooledJdbc ds = dataSourceEntries.getDataSourceByPowergrid(request.getMrid());
     	PowergridDao dao = new PowergridDaoMySql(ds, subjectService.getIdentity(request));
@@ -316,6 +333,7 @@ public class RequestPowergridHandler implements RequestHandler {
 	public Map<Class<? extends Request>, Class<? extends AuthorizationHandler>> getHandles() {
 		Map<Class<? extends Request>, Class<? extends AuthorizationHandler>> auths = new HashMap<>();
 		auths.put(RequestPowergrid.class, AuthorizeAll.class);
+		auths.put(RequestPowergridDetail.class, AuthorizeAll.class);
 		auths.put(RequestPowergridPart.class, AuthorizeAll.class);
 		auths.put(RequestPowergridTimeStep.class, AuthorizeAll.class);
 		auths.put(RequestPowergridList.class, AuthorizeAll.class);

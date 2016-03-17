@@ -37,7 +37,7 @@
 	<br/>
 
 	<div class="row">
-	<table id="example" class="display" cellspacing="0" width="100%">
+	<table id="records_table" class="display" cellspacing="0" width="100%">
         <thead>
             <tr>
                 <th>Id</th>
@@ -131,22 +131,38 @@ $(document).ready(function() {
 	     *  <th>Download</th>
 		 */
 		
-		/*$.ajax({
+		$.ajax({
 		    url: '/powergrid/api/list',
 		    type: 'POST',
-		    data: {
-		        authToken: document.cookie.split("=")[1]
-		    },
+	        headers: { 'AuthToken': localStorage.getItem("authToken"), 'Content-Type': 'application/json' },
 		    success: function (response) {
 		        var trHTML = '';
 		        $.each(response, function (i, row) {
-		            trHTML += '<tr><td>' + item.rank + '</td><td>' + item.content + '</td><td>' + item.UID + '</td></tr>';
+		        	 trHTML += "<tr>"+
+         			"<td>" + (i+1) + "</td>"+
+         			"<td>" + row.powergridName +"</td>"+
+         			"<td>" + row.createdBy + "</td>"+
+         			"<td>" + row.originalFilename + "</td>"+
+         			"<td>" + row.description + "</td>"+
+         			"<td onclick=viewDetails('"+row.mrid+"')><a>View Details</a></td>"+
+         			"<td onclick=download('"+row.mrid+"')><a>Download</a></td>"+
+         			"<td onclick=createScenario('"+row.mrid+"')><a>Create Scenario</a></td>"+
+         			"<td onclick=share('"+row.mrid+"')><a>Share</a></td>"+
+         			"</tr>";
 		        });
-		        $('#records_table').append(trHTML);
-		    }
-		});*/
+		        $('#records_table tbody').append(trHTML);
+		    },
+		    failure: function(data){
+	        	console.log('Failure');
+	            console.log(data.toString());
+	        },
+            error: function(XMLHttpRequest, textStatus, errorThrown) { 
+            	console.log('Error');
+            	console.log(errorThrown);
+            } 
+		});
 		
-		
+		/*
 		var jsonData = [{"id":"1","name":"North","created_by":"Poorva Sharma","filename":"north.raw","desc":"this is a test","details":"This is detail"},
 						{"id":"2","name":"South","created_by":"Craig Allwardt","filename":"south.raw","desc":"this is a test","details":"This is detail"},
 						{"id":"3","name":"Grid 118","created_by":"Tara Gibson","filename":"pti118.raw","desc":"this is a test","details":"This is detail"},
@@ -171,8 +187,8 @@ $(document).ready(function() {
 	            			'</tr>';
 	        });
 	        $('#example tbody').append(trHTML);
-		
-	        $('#example').dataTable();
+		*/
+	        $('#records_table').dataTable();
 		
 		
 		
@@ -200,16 +216,14 @@ function save_access(){
 
 }
 function viewDetails(id){
-	var parameters = {};
-	parameters['AuthToken'] = authToken;
+// 	var parameters = {};
+// 	PARAMETERS['AUTHTOKen'] = authToken;
 // 	console.log('Posting parameters\n'+ JSON.stringify(parameters));
 
 	$.ajax({
             type: 'POST',
             url: '/powergrid/api/model_details/'+id,
-            data: JSON.stringify(parameters),
-            dataType: 'json',
-            contentType: 'application/json',
+            headers: { 'AuthToken': localStorage.getItem("authToken"), 'Content-Type': 'application/json' },
             success: function(data){
             	console.log('Success getting details for model '+id);
             	console.log(data.toString());

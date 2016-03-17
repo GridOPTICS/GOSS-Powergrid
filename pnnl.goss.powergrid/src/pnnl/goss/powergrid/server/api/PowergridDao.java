@@ -58,6 +58,7 @@ import pnnl.goss.powergrid.datamodel.Line;
 import pnnl.goss.powergrid.datamodel.Load;
 import pnnl.goss.powergrid.datamodel.Machine;
 import pnnl.goss.powergrid.datamodel.Powergrid;
+import pnnl.goss.powergrid.datamodel.PowergridDetail;
 import pnnl.goss.powergrid.datamodel.Substation;
 import pnnl.goss.powergrid.datamodel.SwitchedShunt;
 import pnnl.goss.powergrid.datamodel.Transformer;
@@ -78,7 +79,8 @@ public interface PowergridDao {
 	PowergridModel getPowergridModel(int powergridId);
 	PowergridModel getPowergridModelAtTime(int powergridId, Timestamp timestep);
 	List<Powergrid> getAvailablePowergrids();
-
+	PowergridDetail getPowergridDetailByMrid(String mrid);
+	
 	List<Timestamp> getTimeSteps(int powergridId);
 	List<Area> getAreas(int powergridId);
 	List<Branch> getBranches(int powergridId);
@@ -94,4 +96,6 @@ public interface PowergridDao {
 	JsonObject getExtension(int poewrgridId, String ext_table);
 
 	void persist(Powergrid powergrid);
+	
+	
 }

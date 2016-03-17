@@ -4,13 +4,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Dictionary;
 import java.util.List;
 import java.util.Properties;
 
-import javax.sql.ConnectionPoolDataSource;
-import javax.sql.DataSource;
-
 import org.apache.felix.dm.annotation.api.Component;
+import org.apache.felix.dm.annotation.api.ConfigurationDependency;
 import org.apache.felix.dm.annotation.api.ServiceDependency;
 import org.apache.felix.dm.annotation.api.Start;
 import org.apache.felix.dm.annotation.api.Stop;
@@ -23,8 +22,8 @@ import pnnl.goss.core.server.DataSourceRegistry;
 
 @Component
 public class PowergridDataSources implements PowergridDataSourceEntries {
-
-	public static final String DS_NAME = "goss.powergrids";
+	private static final String CONFIG_PID = "pnnl.goss.sql.datasource.powergrids";
+//	public static final String DS_NAME = "goss.powergrids";
 	private static final Logger log = LoggerFactory.getLogger(PowergridDataSources.class);
 //	private DataSource datasource;
 //
@@ -37,6 +36,8 @@ public class PowergridDataSources implements PowergridDataSourceEntries {
 
 	@ServiceDependency
 	private DataSourceRegistry datasourceRegistry;
+	
+	Properties datasourceProperties;
 
 	// These are the datasources that this module has registered.
 	private List<String> registeredDatasources = new ArrayList<>();
@@ -50,17 +51,43 @@ public class PowergridDataSources implements PowergridDataSourceEntries {
 	public void start(){
 		log.debug("Starting "+this.getClass().getName());
 		// Need to read properties from a file and then create the data
+//		Properties properties = new Properties();
+////TODO get this from config
+//		properties.put(DataSourceBuilder.DATASOURCE_NAME, DS_NAME+".north");
+//		properties.put(DataSourceBuilder.DATASOURCE_USER, "powergrid");
+//		properties.put(DataSourceBuilder.DATASOURCE_PASSWORD, "manager");
+//		properties.put(DataSourceBuilder.DATASOURCE_URL, "jdbc:mysql://superfly:3306/dev_powergrids");
+//		properties.put("driverClassName", "com.mysql.jdbc.Driver");
+
+		registerDataSource();
+	}
+
+	@ConfigurationDependency(pid=CONFIG_PID)
+	public synchronized void updated(Dictionary<String, ?> config)  {
 		Properties properties = new Properties();
-
-		properties.put(DataSourceBuilder.DATASOURCE_NAME, DS_NAME+".north");
-		properties.put(DataSourceBuilder.DATASOURCE_USER, "powergrid");
-		properties.put(DataSourceBuilder.DATASOURCE_PASSWORD, "manager");
-		properties.put(DataSourceBuilder.DATASOURCE_URL, "jdbc:mysql://localhost:3306/dev_powergrids");
-		properties.put("driverClassName", "com.mysql.jdbc.Driver");
-
+		String datasourceName = (String)config.get("name");
+		if(datasourceName==null){
+			datasourceName = CONFIG_PID;
+		}
+		properties.put(DataSourceBuilder.DATASOURCE_NAME, datasourceName);
+		properties.put(DataSourceBuilder.DATASOURCE_USER, config.get("username"));
+		properties.put(DataSourceBuilder.DATASOURCE_PASSWORD, config.get("password"));
+		properties.put(DataSourceBuilder.DATASOURCE_URL, config.get("url"));
+		properties.put("driverClassName", config.get("driver"));
+		
+		datasourceProperties = properties;
+		
+		
+	}
+	
+	
+	protected void registerDataSource(){
 		try {
-			datasourceBuilder.create(DS_NAME+".north", properties);
-			registeredDatasources.add(DS_NAME+".north");
+			String datasourceName = datasourceProperties.getProperty(DataSourceBuilder.DATASOURCE_NAME);
+			if(datasourceBuilder!=null && registeredDatasources!=null){
+				datasourceBuilder.create(datasourceName, datasourceProperties);
+				registeredDatasources.add(datasourceName);
+			}
 
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -69,8 +96,10 @@ public class PowergridDataSources implements PowergridDataSourceEntries {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 	}
-
+	
+	
 	@Stop
 	public void stop(){
 		log.debug("Stopping "+this.getClass().getName());

@@ -59,7 +59,7 @@ public class PowergridWebService {
 		"PowergridModel instance or lists of it's components.")
 	public Response list(String identifier, @Context HttpServletRequest request){
 		JsonObject jsonBody = WebUtil.getRequestJsonBody(request);
-		RequestPowergridList reqList = new RequestPowergridList();
+		RequestPowergridList reqList = new RequestPowergridList(); 
 
 //		String identifier = (String) request.getAttribute("identifier");
 		List<Powergrid> data = null;
