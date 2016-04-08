@@ -84,7 +84,7 @@
 			<div class="row">
 				<div class="large-6 medium-6 columns">
 				<br>
-				Select User Access:
+				Select User Access:  
 				</div>
 			</div>
 			
@@ -144,7 +144,7 @@ $(document).ready(function() {
          			"<td>" + row.createdBy + "</td>"+
          			"<td>" + row.originalFilename + "</td>"+
          			"<td>" + row.description + "</td>"+
-         			"<td onclick=viewDetails('"+row.mrid+"')><a>View Details</a></td>"+
+         			"<td> <a href='view_model.html?mrid='"+row.id+">View Details</a></td>"+
          			"<td onclick=download('"+row.mrid+"')><a>Download</a></td>"+
          			"<td onclick=createScenario('"+row.mrid+"')><a>Create Scenario</a></td>"+
          			"<td onclick=share('"+row.mrid+"')><a>Share</a></td>"+
@@ -215,47 +215,47 @@ function save_access(){
 	$('#viewUserAccess').foundation('reveal', 'close');
 
 }
-function viewDetails(id){
+// function viewDetails(id){
 // 	var parameters = {};
 // 	PARAMETERS['AUTHTOKen'] = authToken;
 // 	console.log('Posting parameters\n'+ JSON.stringify(parameters));
+	
+// 	$.ajax({
+//             type: 'POST',
+//             url: '/powergrid/api/model_details/'+id,
+//             headers: { 'AuthToken': localStorage.getItem("authToken"), 'Content-Type': 'application/json' },
+//             success: function(data){
+//             	console.log('Success getting details for model '+id);
+//             	console.log(data.toString());
 
-	$.ajax({
-            type: 'POST',
-            url: '/powergrid/api/model_details/'+id,
-            headers: { 'AuthToken': localStorage.getItem("authToken"), 'Content-Type': 'application/json' },
-            success: function(data){
-            	console.log('Success getting details for model '+id);
-            	console.log(data.toString());
-
-				var detailHtml =   '<p class="lead">Details for Model '+data.name+'</p>';
+// 				var detailHtml =   '<p class="lead">Details for Model '+data.name+'</p>';
 
 					
 					
-				detailHtml+=	'<p>Format: '+data.format+'</p>'+
-								  '<p>User Access: '+data.useraccess+'</p>'+
-								  '<p>Filename: '+data.filename+'</p>'+
-								  '<p>Description:'+data.desc+'</p>';
+// 				detailHtml+=	'<p>Format: '+data.format+'</p>'+
+// 								  '<p>User Access: '+data.useraccess+'</p>'+
+// 								  '<p>Filename: '+data.filename+'</p>'+
+// 								  '<p>Description:'+data.desc+'</p>';
 				
-            	$('#viewDetailText').html(detailHtml);
-            	$('#viewDetail').foundation('reveal', 'open');
-			},
-            failure: function(data){
-            	console.log('Failure getting details for scenaio '+id);
-                console.log(data.toString());
+//             	$('#viewDetailText').html(detailHtml);
+//             	$('#viewDetail').foundation('reveal', 'open');
+// 			},
+//             failure: function(data){
+//             	console.log('Failure getting details for scenaio '+id);
+//                 console.log(data.toString());
                 
-                var detailHtml =   '<p class="lead">Failed to retreive details for model'+id+'</p>';
-                detailHtml += '<p>'+data.toString()+'</p>';
-                $('#viewDetailText').html(detailHtml);
-            	$('#viewDetail').foundation('reveal', 'open');
-            }
+//                 var detailHtml =   '<p class="lead">Failed to retreive details for model'+id+'</p>';
+//                 detailHtml += '<p>'+data.toString()+'</p>';
+//                 $('#viewDetailText').html(detailHtml);
+//             	$('#viewDetail').foundation('reveal', 'open');
+//             }
 
-        });	
+//         });	
 	
 	
 
 	
-}
+// }
 
 $("input[name=access]").click(function(){
    var access = $("input[name='access']:checked").val();

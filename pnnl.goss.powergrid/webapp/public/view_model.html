@@ -1,0 +1,250 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Synthetic Data Generation and Repository | Upload Model</title>
+    <link rel="stylesheet" href="css/foundation.min.css" />
+    <link rel="stylesheet" href="css/jquery-ui.theme.min.css" />
+    <link rel="stylesheet" href="css/jquery-smoothness-theme.css" />
+    <link rel="stylesheet" href="css/tabs-style.css" />
+    <script src="js/vendor/modernizr.js"></script>
+	<script src="js/jquery-2.1.4.min.js"></script>
+	<script src="js/jquery-ui-1.11.4.min.js"></script>
+	<script src="js/foundation.min.js"></script>
+	<script language="javascript" src="/goss/js/goss-auth.js"></script>
+	
+	<!-- For Top Bar -->
+	<script src="js/foundation/foundation.topbar.js"></script>
+  	
+  	
+  	 <script>
+	  $(function() {
+	    $( "#tabs" ).tabs({
+	      event: "mouseover"
+	    });
+	  });
+	  
+	  $(function() {
+		$( "#display_tabs" ).tabs({
+		   event: "mouseover"
+		});
+	  });
+	  </script>
+  </head>
+  
+<body>
+
+
+
+
+  <script src="js/powergrid_nav.js"></script>
+
+
+    <div class="row">
+	  <div class="large-12 columns">
+        <h3>View Power Grid Model  <label for = "model_name"></label></h3>
+      </div>
+    </div>
+	<br/>
+
+
+
+
+<div id="tabs">
+  <ul>
+    <li><a href="#view">View</a></li>
+    <li><a href="#history">History</a></li>
+    <li><a href="#review">Reviews</a></li>
+    <li><a href="#resources">Resources</a></li>
+  </ul>
+  <div id="view">
+	<div class="row">
+		<div class="large-6 columns">
+		  <label>Format
+		  <input type="text" id="format" value="PTI(23,26,29,31)" disabled/>
+		  </label>
+		</div>
+			
+		<div class="row">
+		<div class="large-6 columns">
+			<div class="large-6 columns">
+				<label>User Access
+				<input type="text" id="name" value="Public" disabled/>
+				</label>
+			</div>
+			</div>
+		</div>
+		<div class="row">
+		<div id="display_tabs">
+		  <ul>
+		    <li><a href="#graph">Graph</a></li>
+		    <li><a href="#text">Text</a></li>
+		  </ul>
+		  <div id="graph">
+		  	<div class="row">
+			<div class="large-8 columns">
+				<img src="images/model_graph.png" alt="Rendering of model" />"
+			</div>
+			</div>
+		  </div>
+		  <div id="text">
+		  <div class="row">
+			<div class="large-8 columns">
+			  <label>Details
+				<textarea rows="15" id="description" value=""></textarea>
+			  </label>
+			</div>
+			</div>
+		  </div>
+		 </div> 
+		 </div>
+	</div>
+	
+  </div>
+  <div id="history">
+	<div class="row">
+		 <label>Previous Revisions</label>
+		<table id="history_table" class="display" cellspacing="0" width="100%">
+		  <tbody>
+            
+        	</tbody>
+		</table>
+	</div>
+
+  </div>
+  <div id="review">
+    <div class="row">
+        <button>+ Add Review</button>
+		<table id="reviews_table" class="display" cellspacing="0" width="100%">
+		  <tbody>
+            
+        	</tbody>
+		</table>
+	</div>
+  </div>
+  <div id="resources">
+	<div class="row">
+		<div class="large-6 columns">
+		  <label>Original File</label>
+		  <label><a href="GreekPti_v29.raw">Greepti118.raw</a></label>
+		  
+		  
+		  </label>
+		</div>
+	</div>
+  </div>
+</div>
+ 
+
+
+	<input type="hidden" name="token" value="" />
+	
+
+	
+	<br>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+	$(document).foundation();
+	
+	var varhtml = "";
+	$.ajax({
+        type: 'POST',
+        url: '/powergrid/api/43699ce1-7d44-4ce0-bcba-f6c3a078abed',
+        dataType: 'json',
+        headers: { 'AuthToken': authToken },
+        contentType: 'application/json',
+        success: function(data){
+        	console.log('Success');
+//         	console.log(JSON.stringify(data));
+        	varhtml = JSON.stringify(data, null, 2);
+        	$('#description').val(varhtml);
+		},
+        failure: function(data){
+        	console.log('Failure');
+            console.log(data.toString());
+            alert("Falure: "+ data.toString());
+        },
+        error: function(a, b, c){
+            alert(a+ b+ c);
+        }
+
+    });	
+	
+	
+	var name = 'Greek 118';
+	var format = 'PTI(23,26,29,31)';
+	var user_access = 'Public';
+	
+	
+	$("label[for = model_name]").text(name);
+
+	
+	
+	//Write out history info
+	var jsonData = [{"prov_id":"1","created":"2016-03-15 05:23:07 UTC","created_by":"Poorva","model_name":"Greek 118","desc":"Added two lines"},
+					{"prov_id":"2","created":"2016-03-14 20:32:07 UTC","created_by":"Mark","model_name":"Greek 117","desc":"Cleanup"},
+					{"prov_id":"3","created":"2016-04-14 19:01:07 UTC","created_by":"Tara","model_name":"Greek 117","desc":"this is a test"},
+					{"prov_id":"4","created":"2015-11-02 11:55:10 UTC","created_by":"Mark","model_name":"Greek 117","desc":"Something Else"}];
+							
+	 var trHTML = '';
+        $.each(jsonData, function (i, row) {
+            trHTML += '<tr>'+
+            			'<td>'+
+            			'<p><a href="view_model.html?mrid=' + row.prov_id + '">'+row.created+'</a>   '+row.model_name+'</p>'+
+            			'<p>&nbsp;&nbsp; Modified by: '+row.created_by+'</p>';
+            			
+            			
+            if(row.desc!=null && row.desc!=''){
+            	trHTML += '<p>&nbsp;&nbsp; Comments: '+row.desc+'</p>';
+            }			
+            trHTML += '</td>'+ 
+            			'</tr>';
+        });
+        $('#history_table tbody').append(trHTML);
+        
+         
+    	//Write out reviews
+    	var jsonData = [{"review_id":"1","created":"2016-04-01 20:32:07 UTC","created_by":"Mark","desc":"I liked the previous version better", "rating":"1"},
+    					{"review_id":"2","created":"2016-03-31 14:32:07 UTC","created_by":"Poorva","desc":"I don't know", "rating":""},
+    					{"review_id":"3","created":"2016-03-31 05:32:07 UTC","created_by":"Tara","desc":"But what do we do with it?", "rating":""},
+    					{"review_id":"4","created":"2016-03-07 01:32:07 UTC","created_by":"Anonymous","desc":"Yes it is!", "rating":"5"},
+    					{"review_id":"5","created":"2016-03-06 22:32:07 UTC","created_by":"Poorva","desc":"What a great model!", "rating":"5"}];
+    							
+    	 var trHTML = '';
+            $.each(jsonData, function (i, row) {
+                trHTML += '<tr>'+
+                			'<td>'+
+                			'<p>';
+                			if(row.rating!=null && row.rating!=''){ 
+                				trHTML += '<i class="a-'+row.rating+'-star a-icon-star">'+
+                							'<span class="icon-alt">'+row.rating+' out of 5 stars</span>'+
+                							'</i>';
+                			}
+                trHTML += '  '+row.desc+
+                			'<p>&nbsp;&nbsp; by: <a href="">'+row.created_by+'</a> on '+row.created+'</p>'+
+                 			'</td>'+
+                			'</tr>';
+            });
+            $('#reviews_table tbody').append(trHTML);
+	
+
+});
+
+function viewFile(){
+	 var fileHtml = ' <div id="myModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">'+
+	   '<h2 id="modalTitle">Awesome. I have it.</h2>'+
+	   '<p class="lead">Your couch.  It is mine.</p>'+
+	   '<p>This calls viewFile web service and display details.</p>'+
+	   '<a class="close-reveal-modal" aria-label="Close">&#215;</a>'+
+	 '</div>';
+	
+	 
+	 $('#viewFileDiv').html(fileHtml);
+ 	$('#viewFileText').foundation('reveal', 'open');
+}
+
+</script>
+</body>
