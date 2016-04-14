@@ -41,3 +41,8 @@ body {
     font-size: 1px;
     overflow: hidden;
 }
+.divScroll 
+{
+    height:150px;
+    overflow:auto;
+} 

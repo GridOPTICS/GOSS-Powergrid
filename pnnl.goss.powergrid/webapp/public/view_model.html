@@ -21,13 +21,11 @@
   	 <script>
 	  $(function() {
 	    $( "#tabs" ).tabs({
-	      event: "mouseover"
 	    });
 	  });
 	  
 	  $(function() {
 		$( "#display_tabs" ).tabs({
-		   event: "mouseover"
 		});
 	  });
 	  </script>
@@ -67,7 +65,7 @@
 		</div>
 			
 		<div class="row">
-		<div class="large-6 columns">
+		<div class="large-6 columns"> 
 			<div class="large-6 columns">
 				<label>User Access
 				<input type="text" id="name" value="Public" disabled/>
@@ -79,12 +77,26 @@
 		<div id="display_tabs">
 		  <ul>
 		    <li><a href="#graph">Graph</a></li>
+		    <li><a href="#bus_annotations">Buses</a></li>
 		    <li><a href="#text">Text</a></li>
 		  </ul>
 		  <div id="graph">
 		  	<div class="row">
 			<div class="large-8 columns">
 				<img src="images/model_graph.png" alt="Rendering of model" />"
+			</div>
+			</div>
+		  </div>
+		  <div id="bus_annotations">
+		  <div class="row">
+			<div class="large-8 columns">
+			  <label>Annotations
+				<table id="bus_annotate_table" class="display" cellspacing="0" width="100%">
+				  <tbody>
+		            
+		        	</tbody>
+				</table>
+			  </label>
 			</div>
 			</div>
 		  </div>
@@ -186,14 +198,14 @@ $(document).ready(function() {
 	//Write out history info
 	var jsonData = [{"prov_id":"1","created":"2016-03-15 05:23:07 UTC","created_by":"Poorva","model_name":"Greek 118","desc":"Added two lines"},
 					{"prov_id":"2","created":"2016-03-14 20:32:07 UTC","created_by":"Mark","model_name":"Greek 117","desc":"Cleanup"},
-					{"prov_id":"3","created":"2016-04-14 19:01:07 UTC","created_by":"Tara","model_name":"Greek 117","desc":"this is a test"},
+					{"prov_id":"3","created":"2016-01-14 19:01:07 UTC","created_by":"Tara","model_name":"Greek 117","desc":"this is a test"},
 					{"prov_id":"4","created":"2015-11-02 11:55:10 UTC","created_by":"Mark","model_name":"Greek 117","desc":"Something Else"}];
 							
 	 var trHTML = '';
-        $.each(jsonData, function (i, row) {
+        $.each(jsonData, function (i, row) { 
             trHTML += '<tr>'+
             			'<td>'+
-            			'<p><a href="view_model.html?mrid=' + row.prov_id + '">'+row.created+'</a>   '+row.model_name+'</p>'+
+            			'<p><a class="ui-state-active" href="view_model.html?mrid=' + row.prov_id + '">'+row.created+'</a>   '+row.model_name+'</p>'+
             			'<p>&nbsp;&nbsp; Modified by: '+row.created_by+'</p>';
             			
             			
@@ -204,6 +216,37 @@ $(document).ready(function() {
             			'</tr>';
         });
         $('#history_table tbody').append(trHTML);
+        
+        
+        var jsonData = [{"branch_mrid":"1","branch_text":"\"fromBusNumber\": 1,\"toBusNumber\": 2,\"indexNum\": 0,\"ckt\": \"1\",\"r\": 0,\"x\": 0,\"rating\": 100,\"rateA\": 100,\"rateB\": 110,\"rateC\": 0,\"status\": 1,\"p\": 0,\"q\": 0,\"mrid\": \"7d46f696-0914-4424-b77f-d1fdf56134ac\",\"bCap\": 0,\"ratio\": 0,\"angle\": 0,\"setBranchId\": true,\"setToBusNumber\": true,\"setIndexNum\": true,\"setCkt\": true,\"setR\": true,\"setX\": true,\"setRating\": true,\"setRateA\": true,\"setRateB\": true,\"setRateC\": true,\"setStatus\": true,\"setP\": true,\"setQ\": true,\"setMrid\": true,\"setFromBusNumber\": true","annotations":[{"annot_id":"1","mrid":"11","created":"2016-03-15 05:23:07 UTC","created_by":"Poorva","desc":"Added two lines"},{"annot_id":"2","mrid":"12","created":"2016-03-14 20:32:07 UTC","created_by":"Mark","desc":"Cleanup"}]},
+                        {"branch_mrid":"2","branch_text":"\"fromBusNumber\": 1,\"toBusNumber\": 3,\"indexNum\": 0,\"ckt\": \"1\",\"r\": 0,\"x\": 0,\"rating\": 100,\"rateA\": 100,\"rateB\": 110,\"rateC\": 0,\"status\": 1,\"p\": 0,\"q\": 0,\"mrid\": \"576990e2-7482-401a-910a-99fb006451a3\",\"bCap\": 0,\"ratio\": 0,\"angle\": 0,\"setBranchId\": true,\"setToBusNumber\": true,\"setIndexNum\": true,\"setCkt\": true,\"setR\": true,\"setX\": true,\"setRating\": true,\"setRateA\": true,\"setRateB\": true,\"setRateC\": true,\"setStatus\": true,\"setP\": true,\"setQ\": true,\"setMrid\": true,\"setFromBusNumber\": true"},
+                        {"branch_mrid":"3","branch_text":"\"fromBusNumber\": 2,\"toBusNumber\": 12,\"indexNum\": 0,\"ckt\": \"1\",\"r\": 0,\"x\": 0,\"rating\": 100,\"rateA\": 100,\"rateB\": 110,\"rateC\": 0,\"status\": 1,\"p\": 0,\"q\": 0,\"mrid\": \"81f42248-ed21-4438-927d-1b3d3cf51df4\",\"bCap\": 0,\"ratio\": 0,\"angle\": 0,\"setBranchId\": true,\"setToBusNumber\": true,\"setIndexNum\": true,\"setCkt\": true,\"setR\": true,\"setX\": true,\"setRating\": true,\"setRateA\": true,\"setRateB\": true,\"setRateC\": true,\"setStatus\": true,\"setP\": true,\"setQ\": true,\"setMrid\": true,\"setFromBusNumber\": true"},
+                        {"branch_mrid":"4","branch_text":"\"fromBusNumber\": 3,\"toBusNumber\": 5,\"indexNum\": 0,\"ckt\": \"1\",\"r\": 0,\"x\": 0,\"rating\": 100,\"rateA\": 100,\"rateB\": 110,\"rateC\": 0,\"status\": 1,\"p\": 0,\"q\": 0,\"mrid\": \"f3c8160b-6b43-4808-9a65-70cf5747ffdd\",\"bCap\": 0,\"ratio\": 0,\"angle\": 0,\"setBranchId\": true,\"setToBusNumber\": true,\"setIndexNum\": true,\"setCkt\": true,\"setR\": true,\"setX\": true,\"setRating\": true,\"setRateA\": true,\"setRateB\": true,\"setRateC\": true,\"setStatus\": true,\"setP\": true,\"setQ\": true,\"setMrid\": true,\"setFromBusNumber\": true"},
+                        {"branch_mrid":"5","branch_text":"\"fromBusNumber\": 3,\"toBusNumber\": 12,\"indexNum\": 0,\"ckt\": \"1\",\"r\": 0,\"x\": 0,\"rating\": 100,\"rateA\": 100,\"rateB\": 110,\"rateC\": 0,\"status\": 1,\"p\": 0,\"q\": 0,\"mrid\": \"45c8b9aa-9bc4-4ddf-bf71-c4c5817ceab4\",\"bCap\": 0,\"ratio\": 0,\"angle\": 0,\"setBranchId\": true,\"setToBusNumber\": true,\"setIndexNum\": true,\"setCkt\": true,\"setR\": true,\"setX\": true,\"setRating\": true,\"setRateA\": true,\"setRateB\": true,\"setRateC\": true,\"setStatus\": true,\"setP\": true,\"setQ\": true,\"setMrid\": true,\"setFromBusNumber\": true","annotations":[{"annot_id":"3","mrid":"13","created":"2016-01-14 19:01:07 UTC","created_by":"Tara","desc":"this is a test"}]},
+                        {"branch_mrid":"6","branch_text":"\"fromBusNumber\": 4,\"toBusNumber\": 5,\"indexNum\": 0,\"ckt\": \"1\",\"r\": 0,\"x\": 0,\"rating\": 120,\"rateA\": 120,\"rateB\": 130,\"rateC\": 0,\"status\": 1,\"p\": 0,\"q\": 0,\"mrid\": \"d7de561f-a82d-44e5-ba59-bbedf82be2da\",\"bCap\": 0,\"ratio\": 0,\"angle\": 0,\"setBranchId\": true,\"setToBusNumber\": true,\"setIndexNum\": true,\"setCkt\": true,\"setR\": true,\"setX\": true,\"setRating\": true,\"setRateA\": true,\"setRateB\": true,\"setRateC\": true,\"setStatus\": true,\"setP\": true,\"setQ\": true,\"setMrid\": true,\"setFromBusNumber\": true","annotations":[{"annot_id":"4","mrid":"14","created":"2015-11-02 11:55:10 UTC","created_by":"Mark","desc":"Something Else"}]
+                        }];
+        var trHTML = '';
+        $.each(jsonData, function (i, row) { 
+            trHTML += '<tr>'+
+            			'<td width="60%">'+
+            			'<p>'+row.branch_text+'</p>'+
+            			'</td><td>';
+            trHTML += '<div class="divScroll">';
+            if(row.annotations!=null){
+            	
+	            $.each(row.annotations, function(i, annot) {
+	            	trHTML += annot.created+' : '+annot.created_by+'<br/>'+
+	            	 '&nbsp;'+annot.desc+
+	            	 '<hr/>';
+	            });			
+	            
+	        }
+            trHTML += '<button>+ Annotation</button>';
+            trHTML += '</div>'; 
+            trHTML += '</td>'+ 
+            			'</tr>';
+        });
+        $('#bus_annotate_table tbody').append(trHTML);
         
          
     	//Write out reviews
