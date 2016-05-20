@@ -8,5 +8,5 @@ X-Web-Resource-Version: 1.0
 
 Private-Package:  \
 	pnnl.goss.powergrid.web
-Bundle-Version: 1.0.17.${tstamp}
+Bundle-Version: 1.0.18.${tstamp}
 Bundle-Activator: pnnl.goss.powergrid.web.Activator

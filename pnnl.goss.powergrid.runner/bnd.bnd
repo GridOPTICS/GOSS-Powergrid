@@ -13,7 +13,7 @@ Export-Package:  \
 	com.google.gson,\
 	osgi.cmpn,\
 	pnnl.goss.core.client-all;version=2.0,\
-	pnnl.goss.powergrid.goss-powergrid-api,\
-	pnnl.goss.powergrid.goss-powergrid-parser-api
+	pnnl.goss.powergrid.goss-powergrid-api;version=latest,\
+	pnnl.goss.powergrid.goss-powergrid-parser-api;version=latest
 
 
