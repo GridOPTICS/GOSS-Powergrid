@@ -4,13 +4,13 @@ GOSS-Powergrid
 A powergrid project cabable of dealing with node/breaker and bus/branch constructs.
 
 Installation for testing
-1. Download or clone the repository from github
+1.  Download or clone the repository from github
     a.  Install sourcetree https://www.atlassian.com/software/sourcetree/overview  and Clone the goss repository using sourcetree (https://github.com/GridOPTICS/GOSS-Powergrid)  
     b.  Or download the source  (https://github.com/GridOPTICS/GOSS-Powergrid/archive/master.zip)
-2. Install java 1.8 SDK and set java_home
-2. Run gradlew build
-3. Copy jar into felix
-4. Run via felix
+2.  Install java 1.8 SDK and set java_home
+3.  Run gradlew build
+4.  Copy jar into felix
+5.  Run via felix
 
 
 Installation for development 
