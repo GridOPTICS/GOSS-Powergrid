@@ -27,7 +27,7 @@ Installation for development
     a. File->Import    General->Existing Projects into workspace
     b. Select root directory, powergrid download location
     c. Select cnf, pnnl.goss.powergrid, pnnl.goss.powergrid.runner, and  pnnl.goss.powergrid.itests and import (may need to check the  Search for nested projects)
-7.  
+7.  If errors are detected, Right click on the powergrid project and select release, then release all bundles
 8.  If you would like to you a local version of GOSS-Core  (Optional)
     a.  Update cnf/ext/repositories.bnd, 
     b.  Select source view and add the following
