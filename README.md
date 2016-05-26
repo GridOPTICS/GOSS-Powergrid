@@ -3,7 +3,9 @@ GOSS-Powergrid
 
 A powergrid project cabable of dealing with node/breaker and bus/branch constructs.
 
-Installation for testing
+This project can be downloaded and built two different ways.  You can build it and run it from the command line, or you can build and run it within the Eclipse development platform.
+
+Installation for testing  (command-line)
 
 1.  Download or clone the repository from github
 	a.  Install github desktop https://desktop.github.com/ or sourcetree https://www.atlassian.com/software/sourcetree/overview  and Clone the GOSS Powergrid repository (https://github.com/GridOPTICS/GOSS-Powergrid)  
@@ -21,7 +23,7 @@ Installation for testing
 12.  Verify by going to http://localhost:8181/powergrid/list.html  and log in as test/test
 
 
-Installation for development 
+Installation for development (Eclipse)
 
 1.  Download or clone the repository from github
     a.  Install github desktop https://desktop.github.com/ or sourcetree https://www.atlassian.com/software/sourcetree/overview  and Clone the GOSS Powergrid repository (https://github.com/GridOPTICS/GOSS-Powergrid)  
