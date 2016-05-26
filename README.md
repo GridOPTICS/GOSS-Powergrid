@@ -9,9 +9,16 @@ Installation for testing
 	a.  Install github desktop https://desktop.github.com/ or sourcetree https://www.atlassian.com/software/sourcetree/overview  and Clone the GOSS Powergrid repository (https://github.com/GridOPTICS/GOSS-Powergrid)  
 	b.  Or download the source  (https://github.com/GridOPTICS/GOSS-Powergrid/archive/master.zip)
 2.  Install java 1.8 SDK and set JAVA_HOME variable
-3.  Run gradlew build
-4.  Copy jar into felix
-5.  Run via felix
+3.  Run From the location of the GOSS Powergrid repository run     gradlew clean runbundles
+4.  Download and unpackage Felix  http://felix.apache.org/downloads.cgi
+5.  Download file install jar from same location
+6.  Put file-install bundle in $FELIX_HOME/bundle directory
+7.  Add felix.fileinstall.dir=.load to the $FELIX_HOME/conf/config.properties file
+8.  Test installation by open opening prompt at $FELIX_HOME and executing java -jar bin/felix.jar
+9.  Copy all jars from GOSS Powergrid Repository/pnnl.goss.powergrid.runner/generated/distributions/runbundles/runpowergrid into $FELIX_HOME/bundle
+10.  Copy all config files from GOSS Powergrid Repository/pnnl.goss.powergrid.runner/conf to $FELIX_HOME/conf
+11.  Run via felix - from $FELIX_HOME execute java -jar bin/felix.jar
+12.  Verify by going to http://localhost:8181/powergrid/list.html  and log in as test/test
 
 
 Installation for development 
